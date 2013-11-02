@@ -7,3 +7,9 @@ object <- function(class.name){
   class(self) <- class.name
   self
 }
+
+extend <- function(base,class.name){
+  self <- base()
+  class(self) <- class.name
+  self
+}

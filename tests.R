@@ -6,13 +6,12 @@ fb$species = with(fb,paste(genus,species))
 
 cl <- Class.lookupper()
 cl$fit(fb)
-cl$from
-cl$to
 cl$predict(list(order='Clupeiformes'))
 
-ti <- Taxonomic.imputer('m',3)
+ti <- Taxonomic.imputer('k',3)
+ti$cross(5,fb)
 ti$fit(fb)
-ti$predict(list(
+ti$predict(data.frame(
   species='Pagrus auratus',
   genus='Pagrus',
   family='Sparidae',
@@ -20,7 +19,8 @@ ti$predict(list(
   class='Actinopterygii'
 ))
 
-glm <- Glmer(log(k)~log(linf)+order,exp,3,3)
+glm <- Glmer(log(k)~log(linf)+order+family,exp,3,3)
+glm$cross(10,fb)
 glm$fit(fb)
 glm$predict(list(
   order = 'Perciformes',
@@ -43,17 +43,15 @@ fn <- Fishnet(list(
 
 fn$fit(fb)
 
-fn$predict(list(
+fn$predict(
   species = 'Pagrus auratus',
   genus = 'Pagrus',
   linf = 60,
   k = 0.1,
   tmax = 60
-))
+)
 
-fn$predict(list(
+fn$predict(
   species = 'Katsuwonus pelamis'
-))
-
-
+)
 

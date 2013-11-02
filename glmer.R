@@ -5,7 +5,7 @@
 #' @param numerics.min Minimum records for taxonomic imputation of numeric predictor variables
 #' @param factors.min Minimum records for a level of factor predictor variables
 Glmer <- function(formula,post=identity,numerics.min=3,factors.min=5){
-  self <- object('Glmer')
+  self <- extend(Node,'Glmer')
   
   self$formula <- formula
   self$post <- post
@@ -47,9 +47,10 @@ Glmer <- function(formula,post=identity,numerics.min=3,factors.min=5){
         values[is.na(values)] <- '<unknown>'
         values <- factor(values,levels=levels(self$glm$data[,name]))
         values[is.na(values)] <- '<other>'
+        data[,name] <- values
       }
     }
-    self$post(predict(self$glm,newdata=data))
+    self$post(predict.glm(self$glm,newdata=data))
   }
   
   self

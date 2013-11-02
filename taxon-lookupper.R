@@ -5,22 +5,22 @@ require(plyr)
 #' used in fishnets to save the user having to do that themselves.
 #' e.g. the user can just enter a species name
 Taxon.lookupper <- function(from,to){
-  self <- object('Taxon.lookupper')
+  self <- extend(Node,'Taxon.lookupper')
   
-  self$from <- from
-  self$to <- to
+  self$predictors <- from
+  self$predictand <- to
   
   self$fit <- function(data){
-    self$table <- ddply(data,self$from,function(sub){
-        head(as.character(sub[,self$to]),n=1)
+    self$table <- ddply(data,self$predictors,function(sub){
+        head(as.character(sub[,self$predictand]),n=1)
     })
-    names(self$table) = c(self$from,self$to)
+    names(self$table) = c(self$predictors,self$predictand)
   }
   
   self$predict <- function(variables){
-    which <- match(variables[[self$from]],self$table[,self$from])
-    if(!sum(!is.na(which))==1) stop(paste("Key value is absent:",variables[[self$from]]))
-    self$table[which,self$to]
+    which <- match(variables[[self$predictors]],self$table[,self$predictors])
+    if(!sum(!is.na(which))==1) stop(paste("Key value is absent:",variables[[self$predictors]]))
+    self$table[which,self$predictand]
   }
   
   self

@@ -3,28 +3,29 @@
 #' values for the variable and then uses the median (for numeric variables) or mode (for factors etc)
 #' at that taxonomic level.
 #' 
-#' @param variable The name of the variable of interest
+#' @param predictand The name of the variable of being predicted
 #' @param nmin Minimum sample size required for median/mode
-Taxonomic.imputer <- function(variable,nmin){
-  self <- object('Taxonomic.imputer')
+Taxonomic.imputer <- function(predictand,nmin){
+  self <- extend(Node,'Taxonomic.imputer')
   
-  self$variable <- variable
+  self$predictand <- predictand
+  self$predictors <- c('species','genus','family','order','class')
   self$nmin <- nmin
   
   self$fit <- function(data){
-    # Determine whether to use median or mode for defualt based on type of variable...
-    if(is.numeric(data[,self$variable])){
+    # Determine whether to use median or mode for defualt based on type of predictand
+    if(is.numeric(data[,self$predictand])){
       defaults <- function(subset){    
         list(
-          n = sum(!is.na(subset[,self$variable])),
-          value = median(subset[,self$variable],na.rm=T)
+          n = sum(!is.na(subset[,self$predictand])),
+          value = median(subset[,self$predictand],na.rm=T)
         )
       }
     } else {
       defaults <- function(subset){
         list(
-          n = sum(!is.na(subset[,self$variable])),
-          value = names(which.max(table(subset[,self$variable])))
+          n = sum(!is.na(subset[,self$predictand])),
+          value = names(which.max(table(subset[,self$predictand])))
         )
       }
     }
@@ -39,19 +40,23 @@ Taxonomic.imputer <- function(variable,nmin){
     )
   }
   
-  self$predict <- function(variables){
+  self$predict <- function(data){
     # Try each taxonomic level until sufficient sample size for the
     # variable is obtained
-    for(level in c('species','genus','family','order','class')){
-      value = as.character(variables[[level]])
-      n <- tryCatch(self$defaults[[c(level,value,'n')]],error=function(error) 0)
-      if(!is.null(n)){
-        if(n>=self$nmin) return(self$defaults[[c(level,value,'value')]])
-      }
-    } 
-    # If none of the taxonomic levels has sufficient sample size then just
-    # return the default for all fish
-    return(self$defaults$fish$all$value)
+    preds <- NULL
+    for(row in 1:nrow(data)){
+      for(level in c('species','genus','family','order','class','fish')){
+        group = as.character(data[row,level])
+        n <- tryCatch(self$defaults[[c(level,group,'n')]],error=function(error) 0)
+        if(!is.null(n)){
+          if(n>=self$nmin){
+            preds = c(preds,self$defaults[[c(level,group,'value')]][1])
+            break
+          }
+        }
+      } 
+    }
+    preds
   }
   
   self

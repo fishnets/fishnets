@@ -20,15 +20,15 @@ Fishnet <- function(
   #'Predict values for variables from the network
   #'
   #'@name Fishnet$predict
-  #'@param variables A list of variables
-  self$predict <- function(variables){
-    if(!is.list(variables)) stop('Argument "variables" must be a list')
+  #'@param data A list of variables
+  self$predict <- function(...){
+    data = as.list(match.call())[-1]
     for(name in names(self$nodes)){
-      if(is.null(variables[[name]])){
-        variables[[name]] <- self$nodes[[name]]$predict(variables)
+      if(is.null(data[[name]])){
+        data[[name]] <- self$nodes[[name]]$predict(as.data.frame(data))
       }
     }
-    variables
+    data
   }
   
   self
