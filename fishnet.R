@@ -24,7 +24,9 @@ Fishnet <- function(
   self$predict <- function(variables){
     if(!is.list(variables)) stop('Argument "variables" must be a list')
     for(name in names(self$nodes)){
-      if(is.null(variables[[name]])) variables[[name]] <- self$nodes[[name]]$predict(variables)
+      if(is.null(variables[[name]])){
+        variables[[name]] <- self$nodes[[name]]$predict(variables)
+      }
     }
     variables
   }
