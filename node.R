@@ -35,14 +35,16 @@ Node <- function(){
       me = mean(abs(tests-preds))
       mse = mean((tests-preds)^2)
       mpe = mean(abs((tests-preds)/tests))
+      r2 = cor(tests,preds)^2
       # Add to results
       results = rbind(results,data.frame(
         fold = fold,
         me = me,
         mse = mse,
-        mpe = mpe
+        mpe = mpe,
+        r2 = r2
       ))
-      cat("done\n")
+      cat(mpe,r2,"\n")
     }
     
     # Summarise results

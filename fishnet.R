@@ -34,7 +34,7 @@ Fishnet <- function(
   #' Sample the network based on a list of variable values
   #' 
   #' @name Fishnet$sample.list
-  #' @param data A list of variable valuables
+  #' @param data A list of variable values
   #' @param samples Number of samples to generate
   self$sample.list <- function(data,samples=1){
     # Get nodes to provide one sample and then pass this on to remaining
@@ -52,6 +52,11 @@ Fishnet <- function(
     results
   }
   
+  #' Sample the network based on a list of distributions
+  #' 
+  #' @name Fishnet$sample.distributions
+  #' @param dists A list of Distributions
+  #' @param samples Number of samples to generate
   self$sample.distributions <- function(dists,samples=1){
     results <- NULL
     for(sample in 1:samples){
@@ -66,11 +71,16 @@ Fishnet <- function(
     results
   }  
   
-  self$sample <- function(arg,samples=1){
-    if(inherits(arg,'Distributions')){
+  #' Sample the network
+  #' 
+  #' @name Fishnet$sample
+  #' @param from A list of values or a list of Distributions to sample from
+  #' @param samples Number of samples to generate
+  self$sample <- function(from,samples=1){
+    if(inherits(from,'Distributions')){
       return (self$sample.distributions(arg,samples))
     }
-    if(inherits(arg,'list')){
+    if(inherits(from,'list')){
       return (self$sample.list(arg,samples))
     }
     stop(paste('Unable to handle data of type:',paste(class(data),collapse=",")))
@@ -81,6 +91,8 @@ Fishnet <- function(
   #' 
   #' @param folder Directory in which graph will be produced
   self$graph <- function(folder="."){
+    # Create the folder and DOT file
+    dir.create(folder,showWarnings=F,recursive=T)
     dotname <- file.path(folder,"graph.dot")
 
     out <- file(dotname,open='w')
@@ -104,6 +116,23 @@ Fishnet <- function(
     
     system(paste('dot -Tsvg ',dotname,' -o ',file.path(folder,"graph.svg")))
     system(paste('dot -Tpng ',dotname,' -o ',file.path(folder,"graph.png")))
+  }
+  
+  self$store <- function(from,samples,folder){
+    # Generate samples
+    samples <- self$sample(from,samples)
+    # Create the folder
+    dir.create(folder,showWarnings=F,recursive=T)
+    # Save the samples
+    save(samples,file=file.path(folder,"store.RData"))
+    # Save documentation on this Fishnet
+    self$graph(folder)
+  }
+  
+  self$restore <- function(folder){
+    # Load the store and assign to self
+    load(file.path(folder,"store.RData"))
+    self$stored = samples
   }
   
   self

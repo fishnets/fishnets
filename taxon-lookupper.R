@@ -31,7 +31,8 @@ Taxon.lookupper <- function(from,to){
   self
 }
 
-Class.lookupper = function() Taxon.lookupper('order','class')
-Order.lookupper = function() Taxon.lookupper('family','order')
-Family.lookupper = function() Taxon.lookupper('genus','family')
-Genus.lookupper = function() Taxon.lookupper('species','genus')
+Class.lookupper = function() extend(Taxon.lookupper,'Class.lookupper','order','class')
+Order.lookupper = function() extend(Taxon.lookupper,'Order.lookupper','family','order')
+Family.lookupper = function() extend(Taxon.lookupper,'Family.lookupper','genus','family')
+Genus.lookupper = function() extend(Taxon.lookupper,'Genus.lookupper','species','genus')
+

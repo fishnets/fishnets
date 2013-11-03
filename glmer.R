@@ -21,7 +21,7 @@ Glmer <- function(formula,transform=identity,numerics.min=3,factors.min=5){
     # levels into an '<other>' level and putting NAs into an '<unknown>' level
     for(name in self$predictors){
       values <- data[,name]
-      if(is.factor(values)){
+      if(is.factor(values) | is.character(values)){
         values <- as.character(values)
         # Calculate n in each level
         levels <- as.data.frame(table(values),responseName="n")
@@ -30,7 +30,7 @@ Glmer <- function(formula,transform=identity,numerics.min=3,factors.min=5){
         # Set others, unknowns and recreate factor
         values[!is.na(values) & !(values %in% levels$values)] <- '<other>'
         values[is.na(values)] <- '<unknown>'
-        data[,name] = factor(values,levels=unique(c(unique(values),'<other>','<unknown>')))
+        data[,name] <- factor(values,levels=unique(c(unique(values),'<other>','<unknown>')))
       }
     }
     # Fit the GLM

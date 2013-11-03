@@ -22,10 +22,11 @@ ti$predict(data)
 ti$sample(data,10)
 hist(ti$sample(data,10000),breaks=30)
 
-glm <- Glmer(log(k)~log(linf)+species+genus+family+order+class,exp,10,10)
-#glm$cross(10,fb)
+glm <- Glmer(log(k)~log(linf)+class+order+family+genus+species,exp,5,5)
+glm$cross(10,fb)
 glm$fit(fb)
-data <- data.frame(
+anova(glm$glm)
+data <- list(
   species='Pagrus auratus',
   genus='Pagrus',
   family='Sparidae',
@@ -37,8 +38,23 @@ glm$predict(data)
 glm$sample(data,10)
 hist(glm$sample(data,1000),breaks=30)
 
+svm <- Svmer(log(k)~log(linf)+class+order+family+genus+species,exp)
+#svm$cross(10,fb)
+svm$fit(fb); plot(log(fb$k),log(svm$predict(fb)))
+data <- list(
+  species='Alectis indicus',
+  genus='Alectis',
+  family='Carangidae',
+  order='Perciformes',
+  class='Actinopterygii',
+  linf = 105
+)
+svm$predict(data)
+svm$sample(data,10)
+
 fn <- Fishnet(list(
-  genus = Genus.lookupper()
+  species = Species.any()
+  ,genus = Genus.lookupper()
   ,family = Family.lookupper()
   ,order = Order.lookupper()
   ,class = Class.lookupper()
@@ -53,6 +69,8 @@ fn <- Fishnet(list(
 
 fn$fit(fb)
 
+fn$predict(list(fish=1))
+
 fn$predict(list(
   species = 'Pagrus auratus',
   genus = 'Pagrus',
@@ -60,6 +78,10 @@ fn$predict(list(
   k = 0.1,
   tmax = 60
 ))
+
+fn$graph(".")
+
+fn$sample(list(fish=1),1)
 
 temp <-fn$sample(list(
   species = 'Katsuwonus pelamis'
@@ -69,7 +91,12 @@ hist(temp$m,breaks=30)
 temp <- fn$sample(dists(
   species = Fixed('Katsuwonus pelamis'),
   linf = Normal(90,10),
-  k = Normal(0.4,0.1)
-),100)
-hist(temp$m,breaks=30)
+  k = Triangle(0.1,0.2,0.4),
+  lmat = Trapezoid(30,35,45,50),
+  tmax = Trapezoid(4,5,8,12)
+),1000)
+hist(temp$k,breaks=30)
 
+fn$store(list(species = 'Katsuwonus pelamis'),10,'test')
+
+fn$restore('test')
