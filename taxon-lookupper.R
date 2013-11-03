@@ -17,10 +17,15 @@ Taxon.lookupper <- function(from,to){
     names(self$table) = c(self$predictors,self$predictand)
   }
   
-  self$predict <- function(variables){
-    which <- match(variables[[self$predictors]],self$table[,self$predictors])
-    if(!sum(!is.na(which))==1) stop(paste("Key value is absent:",variables[[self$predictors]]))
+  self$predict <- function(data){
+    which <- match(data[[self$predictors]],self$table[,self$predictors])
+    if(!sum(!is.na(which))==1) stop(paste("Key value is absent:",data[[self$predictors]]))
     self$table[which,self$predictand]
+  }
+  
+  self$sample <- function(data,samples=1){
+    # Samples direct from prediction i.e. 100% certainty
+    rep(self$predict(data),samples)
   }
   
   self

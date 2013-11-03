@@ -45,8 +45,8 @@ Glmer <- function(formula,transform=identity,numerics.min=3,factors.min=5){
       if(is.factor(values) | is.character(values)){
         values <- as.character(values)
         values[is.na(values)] <- '<unknown>'
+        values[is.na(match(values,levels(self$glm$data[,name])))] <- '<other>'
         values <- factor(values,levels=levels(self$glm$data[,name]))
-        values[is.na(values)] <- '<other>'
         data[,name] <- values
       }
     }
@@ -57,16 +57,12 @@ Glmer <- function(formula,transform=identity,numerics.min=3,factors.min=5){
   }
   
   self$sample <- function(data,samples=1){
-    # Replicate each row in the data samples times
-    # There are simpler ways to code this (repeat indices), but I found they did not
-    # return a data.frame when the supplied with a data.frame has only one column
-    data <- do.call("rbind", replicate(samples, data, simplify = FALSE))
     # Get predictions with errors
     predictions <- self$predict(data,errors=T)
     # Calculate a standard deviation that combines se.fit and residual s.d.
     sigma <- sqrt(predictions$se.fit^2 + predictions$residual.scale^2)
     # Sample from normal distribution with that sigma
-    preds <- rnorm(nrow(predictions),predictions$fit,sigma)
+    preds <- rnorm(samples,predictions$fit,sigma)
     # Apply post transformation
     self$transform(preds)
   }

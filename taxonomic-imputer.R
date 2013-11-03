@@ -53,19 +53,19 @@ Taxonomic.imputer <- function(predictand,transform,nmin){
     for(row in 1:nrow(data)){
       # Try each taxonomic level until sufficient sample size for the
       # variable is obtained
-      default <- NULL
+      best <- NULL
       for(level in c('species','genus','family','order','class','fish')){
         group <- as.character(data[row,level])
         defaults <- self$defaults[[c(level,group)]]
         if(!is.null(defaults)){
           if(defaults$n>=self$nmin){
-            default <- defaults
+            best <- defaults
             break
           }
         }
       }
-      if(errors) return(defaults)
-      else preds = c(preds,self$transform[[2]](default$expect))
+      if(errors) return(best)
+      else preds = c(preds,self$transform[[2]](best$expect))
     }
     preds
   }

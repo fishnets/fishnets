@@ -8,8 +8,8 @@ object <- function(class.name){
   self
 }
 
-extend <- function(base,class.name){
-  self <- base()
-  class(self) <- class.name
+extend <- function(base,class.name,...){
+  self <- base(...)
+  class(self) <- c(class.name,class(self))
   self
 }
