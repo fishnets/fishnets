@@ -4,11 +4,11 @@
 #' @param post A function to apply to predicted value after predict.glm. e.g. if formula is log(k)~... use exp
 #' @param numerics.min Minimum records for taxonomic imputation of numeric predictor variables
 #' @param factors.min Minimum records for a level of factor predictor variables
-Glmer <- function(formula,post=identity,numerics.min=3,factors.min=5){
+Glmer <- function(formula,transform=identity,numerics.min=3,factors.min=5){
   self <- extend(Node,'Glmer')
   
   self$formula <- formula
-  self$post <- post
+  self$transform <- transform
   self$predictand <- all.vars(formula)[1]
   self$predictors <- all.vars(formula)[-1]
   self$numerics.min <- numerics.min
@@ -53,13 +53,13 @@ Glmer <- function(formula,post=identity,numerics.min=3,factors.min=5){
     predictions <- predict.glm(self$glm,newdata=data,type='response',se.fit=errors)
     # When called with errors=T do not apply self$post transformation
     if(errors) return(as.data.frame(predictions))
-    else return(self$post(predictions))
+    else return(self$transform(predictions))
   }
   
   self$sample <- function(data,samples=1){
     # Replicate each row in the data samples times
     # There are simpler ways to code this (repeat indices), but I found they did not
-    # retun a data.frame when the supplied data.frame has only one column
+    # return a data.frame when the supplied with a data.frame has only one column
     data <- do.call("rbind", replicate(samples, data, simplify = FALSE))
     # Get predictions with errors
     predictions <- self$predict(data,errors=T)
@@ -68,7 +68,7 @@ Glmer <- function(formula,post=identity,numerics.min=3,factors.min=5){
     # Sample from normal distribution with that sigma
     preds <- rnorm(nrow(predictions),predictions$fit,sigma)
     # Apply post transformation
-    self$post(preds)
+    self$transform(preds)
   }
   
   self
