@@ -76,5 +76,35 @@ Fishnet <- function(
     stop(paste('Unable to handle data of type:',paste(class(data),collapse=",")))
   }
   
+  #' Create a graph visualization of the network
+  #' Requires graphviz to be installed
+  #' 
+  #' @param folder Directory in which graph will be produced
+  self$graph <- function(folder="."){
+    dotname <- file.path(folder,"graph.dot")
+
+    out <- file(dotname,open='w')
+    write <- function(...) cat(...,file=out)
+    write('
+    strict digraph G {
+      node [shape=box,fontsize=9,fontname=Helvetica];
+      edge [fontsize=9,fontname=Helvetica];
+    ')
+    
+    for(name in names(self$nodes)){
+      node <- self$nodes[[name]]
+      write(node$predictand,';\n')
+      for(predictor in node$predictors){
+        write(predictor,'->',node$predictand,';\n')
+      }
+    }
+    
+    write('}')
+    close(out)
+    
+    system(paste('dot -Tsvg ',dotname,' -o ',file.path(folder,"graph.svg")))
+    system(paste('dot -Tpng ',dotname,' -o ',file.path(folder,"graph.png")))
+  }
+  
   self
 }
