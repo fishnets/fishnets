@@ -19,13 +19,16 @@ ti$predict(data.frame(
   class='Actinopterygii'
 ))
 
-glm <- Glmer(log(k)~log(linf)+order+family,exp,3,3)
+glm <- Glmer(log(k)~order,exp,3,3)
 glm$cross(10,fb)
 glm$fit(fb)
-glm$predict(list(
-  order = 'Perciformes',
-  linf = 40
-))
+data <- data.frame(
+  order = 'Perciformes'
+  #,linf = 40
+)
+glm$predict(data)
+glm$sample(data,10)
+hist(glm$sample(data,10000),breaks=30)
 
 fn <- Fishnet(list(
   genus = Genus.lookupper()

@@ -37,7 +37,7 @@ Glmer <- function(formula,post=identity,numerics.min=3,factors.min=5){
     self$glm <- glm(formula,data=data)
   }
   
-  self$predict <- function(data){
+  self$predict <- function(data,errors=F){
     data <- as.data.frame(data)
     # Collapse factors down to the same levels as in the fitted GLM
     for(name in self$predictors){
@@ -50,7 +50,25 @@ Glmer <- function(formula,post=identity,numerics.min=3,factors.min=5){
         data[,name] <- values
       }
     }
-    self$post(predict.glm(self$glm,newdata=data))
+    predictions <- predict.glm(self$glm,newdata=data,type='response',se.fit=errors)
+    # When called with errors=T do not apply self$post transformation
+    if(errors) return(as.data.frame(predictions))
+    else return(self$post(predictions))
+  }
+  
+  self$sample <- function(data,samples=1){
+    # Replicate each row in the data samples times
+    # There are simpler ways to code this (repeat indices), but I found they did not
+    # retun a data.frame when the supplied data.frame has only one column
+    data <- do.call("rbind", replicate(samples, data, simplify = FALSE))
+    # Get predictions with errors
+    predictions <- self$predict(data,errors=T)
+    # Calculate a standard deviation that combines se.fit and residual s.d.
+    sigma <- sqrt(predictions$se.fit^2 + predictions$residual.scale^2)
+    # Sample from normal distribution with that sigma
+    preds <- rnorm(nrow(predictions),predictions$fit,sigma)
+    # Apply post transformation
+    self$post(preds)
   }
   
   self
