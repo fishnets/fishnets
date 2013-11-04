@@ -1,6 +1,7 @@
 #' A network of predictor nodes
 #'
-#' @name Fishnet
+#' @author Nokome Bentley
+#'
 #' @param nodes A list of network nodes
 Fishnet <- function(
   nodes = list()
@@ -14,6 +15,9 @@ Fishnet <- function(
   #' @name Fishnet$fit
   #' @param data Data to be fitted to
   self$fit <- function(data){
+    # Delete stored results since we are refitting network
+    self$stored <- NULL
+    # Fit all nodes
     for(name in names(self$nodes)) self$nodes[[name]]$fit(data)
   }
   
@@ -78,10 +82,10 @@ Fishnet <- function(
   #' @param samples Number of samples to generate
   self$sample <- function(from,samples=1){
     if(inherits(from,'Distributions')){
-      return (self$sample.distributions(arg,samples))
+      return (self$sample.distributions(from,samples))
     }
     if(inherits(from,'list')){
-      return (self$sample.list(arg,samples))
+      return (self$sample.list(from,samples))
     }
     stop(paste('Unable to handle data of type:',paste(class(data),collapse=",")))
   }
@@ -89,6 +93,7 @@ Fishnet <- function(
   #' Create a graph visualization of the network
   #' Requires graphviz to be installed
   #' 
+  #' @name Fishnet$graph
   #' @param folder Directory in which graph will be produced
   self$graph <- function(folder="."){
     # Create the folder and DOT file
@@ -118,6 +123,14 @@ Fishnet <- function(
     system(paste('dot -Tpng ',dotname,' -o ',file.path(folder,"graph.png")))
   }
   
+  #' Store samples from this Fishnet
+  #' 
+  #' @param from Data to be used as starting point of sampling
+  #' @param samples Number of samples
+  #' @param folder Directory where the samples will be stored
+  #' 
+  #' @note To be implemented: as well as storing to .RData this method should store to a text or binary
+  #' file that is suitable for reading into C++ or other language
   self$store <- function(from,samples,folder){
     # Generate samples
     samples <- self$sample(from,samples)
@@ -129,6 +142,14 @@ Fishnet <- function(
     self$graph(folder)
   }
   
+  #' Restore samples into this Fishnet
+  #' 
+  #' Rather than fitting a Fishnet it can be restored from a previous call to $store()
+  #' 
+  #' @param folder Directory where the samples will be stored
+  #' 
+  #' @note To be implemented: methods $sample() and $predict() should check for is.null(self$stored) and sample
+  #' from stored if present.
   self$restore <- function(folder){
     # Load the store and assign to self
     load(file.path(folder,"store.RData"))

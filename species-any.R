@@ -1,4 +1,9 @@
-Species.any <- function(from,to){
+#' A simple network node that 'predicts' the species.
+#' This node simply draws a random species names from the fitted data.
+#' It is needed for the network to produce a generic prior (i.e not specific to any species)
+#'
+#' @author Nokome Bentley
+Species.any <- function(){
   self <- extend(Node,'Species.any')
   
   self$predictors <- 'fish'

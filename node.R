@@ -1,5 +1,7 @@
+#' A base object for a node in a Fishnet
+#' 
+#' @author Nokome Bentley
 Node <- function(){
-  
   self <- object('Node')
   
   #' Cross validation of a node
@@ -46,12 +48,11 @@ Node <- function(){
       ))
       cat(mpe,r2,"\n")
     }
-    
     # Summarise results
     summary = colMeans(results)
     summary = as.list(summary)
     summary$fold <- NULL
-    
+    # Return summary and raw results
     return (list(
       summary = summary,
       folds = results
@@ -60,7 +61,3 @@ Node <- function(){
    
    self
 }
-
-
-
-

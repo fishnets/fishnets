@@ -2,6 +2,8 @@ require(e1071)
 
 #' A network node that predicts based on a Support Vector Machine (SVM)
 #' 
+#' @author Nokome Bentley
+#' 
 #' @param formula The SVM formula
 #' @param transform A function to apply to predicted value e.g. if formula is log(k)~... use exp
 Svmer <- function(formula,transform=identity){
@@ -42,4 +44,3 @@ Svmer <- function(formula,transform=identity){
   
   self
 }
-

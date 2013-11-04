@@ -1,5 +1,7 @@
 #' A network node that predicts based a Generalised Linear Model (GLM)
 #' 
+#' @author Nokome Bentley
+#' 
 #' @param formula The GLM formula
 #' @param post A function to apply to predicted value after predict.glm. e.g. if formula is log(k)~... use exp
 #' @param numerics.min Minimum records for taxonomic imputation of numeric predictor variables

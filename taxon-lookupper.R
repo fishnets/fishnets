@@ -1,9 +1,16 @@
 require(plyr)
 
+#' A network node that looks up missing taxonomic levels
+#' 
 #' Taxon.lookuppers are network nodes that are able to impute
 #' missing taxonomic levels using simple table lookups. They are
-#' used in fishnets to save the user having to do that themselves.
+#' used in Fishnets to save the user having to do that themselves.
 #' e.g. the user can just enter a species name
+#' 
+#' @author Nokome Bentley
+#' 
+#' @param from Taxonomic level that is the key for lookup
+#' @param to Taxonomic level that is the lookup value
 Taxon.lookupper <- function(from,to){
   self <- extend(Node,'Taxon.lookupper')
   
@@ -35,4 +42,3 @@ Class.lookupper = function() extend(Taxon.lookupper,'Class.lookupper','order','c
 Order.lookupper = function() extend(Taxon.lookupper,'Order.lookupper','family','order')
 Family.lookupper = function() extend(Taxon.lookupper,'Family.lookupper','genus','family')
 Genus.lookupper = function() extend(Taxon.lookupper,'Genus.lookupper','species','genus')
-

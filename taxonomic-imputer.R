@@ -3,6 +3,8 @@
 #' values for the variable and then uses the median (for numeric variables) or mode (for factors etc)
 #' at that taxonomic level.
 #' 
+#' @author Nokome Bentley
+#' 
 #' @param predictand The name of the variable of being predicted
 #' @param transform A pair of from/to transformation functions e.g. c(log,exp)
 #' @param nmin Minimum sample size required for median/mode
