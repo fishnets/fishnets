@@ -4,6 +4,15 @@
 Node <- function(){
   self <- object('Node')
   
+  #' Tune parameters of the node
+  #' 
+  #' Each type of network node will normally have "hyper-parameters" that can be tuned. e.g. in a GLM
+  #' which predictor variables are included. This is a 'virtual' method for tuning and should be overidden by 
+  #' node implementations.
+  self$tune <- function(){
+    stop('Not implemented. The tune() method should be overridden by objects that extend Node.')
+  }
+  
   #' Cross validation of a node
   #' 
   #' @param data The data.frame to cross validate against
