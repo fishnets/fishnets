@@ -2,15 +2,14 @@
 #' 
 #' @author Nokome Bentley
 
+source('collate.R')
+
+# Other packages required
 require(ggplot2)
 require(reshape)
 
-# Load the fishbase data and do some variable renaming etc
-load("data/fishbase-2000/fishbase-2000.RData")
-names(fb) = tolower(names(fb))
-names(fb)[names(fb)=='lm'] = 'lmat'
-names(fb)[names(fb)=='loo'] = 'linf'
-fb$species = factor(with(fb,paste(genus,species)))
+# Load the fishbase data
+fb <- fishbase2000$read('data/fishbase-2000')
 
 # In these tests, examine out-of-sample predictive ability
 # for cod
