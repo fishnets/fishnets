@@ -19,7 +19,7 @@ Node <- function(){
   #' @param folds Number of folds (number of times that data is split into training and testing datasets)
   #' @param fit Function for fitting model. Should return an object with a "predict" method.
   #' @param ... Other arguments to fit function
-  self$cross <- function(folds,data){
+  self$cross <- function(data,folds=10){
     # Begin by removing all data rows with NAs for variable of interest
     data = data[!is.na(data[,self$predictand]),]
     # Randomly assign rows of data to a fold
@@ -32,7 +32,7 @@ Node <- function(){
     results = NULL
     # For each fold...
     for(fold in 1:folds){
-      cat("Fold",fold,":")
+      cat("Fold",fold,": ")
       # Define training a testing datasets
       train = data[folder!=fold,]
       test = data[folder==fold,]
@@ -43,10 +43,10 @@ Node <- function(){
       # Get the dependent variable
       tests = test[,self$predictand]
       # Calculate various prediction errors
-      me = mean(abs(tests-preds))
-      mse = mean((tests-preds)^2)
-      mpe = mean(abs((tests-preds)/tests))
-      r2 = cor(tests,preds)^2
+      me = mean(abs(tests-preds),na.rm=T)
+      mse = mean((tests-preds)^2,na.rm=T)
+      mpe = mean(abs((tests-preds)/tests),na.rm=T)
+      r2 = cor(tests,preds,use="pairwise.complete.obs")^2
       # Add to results
       results = rbind(results,data.frame(
         fold = fold,

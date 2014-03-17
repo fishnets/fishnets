@@ -58,7 +58,7 @@ cod <- data.frame(
 
 # Taxonomic imputer node
 ti <- Taxonomic.imputer('k',c(log,exp),10)
-#ti$cross(10,fb)
+#ti$cross(fb)
 ti$fit(fbnocod)
 ti$predict(cod)
 ksamples[['ti']] <- ti$sample(cod,1000)

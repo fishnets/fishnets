@@ -8,7 +8,7 @@
 #' @param predictand The name of the variable of being predicted
 #' @param transform A pair of from/to transformation functions e.g. c(log,exp)
 #' @param nmin Minimum sample size required for median/mode
-Taxonomic.imputer <- function(predictand,transform,nmin){
+Taxonomic.imputer <- function(predictand,transform=c(log,exp),nmin=1){
   self <- extend(Node,'Taxonomic.imputer')
   
   self$predictand <- predictand
@@ -60,16 +60,40 @@ Taxonomic.imputer <- function(predictand,transform,nmin){
         group <- as.character(data[row,level])
         defaults <- self$defaults[[c(level,group)]]
         if(!is.null(defaults)){
-          if(defaults$n>=self$nmin){
-            best <- defaults
-            break
+          if(!is.null(defaults$n)){
+            if(defaults$n>=self$nmin){
+              best <- defaults
+              break
+            }
           }
         }
       }
-      if(errors) return(best)
-      else preds = c(preds,self$transform[[2]](best$expect))
+      if(!is.null(best)){
+        if(errors) return(best)
+        else preds = c(preds,self$transform[[2]](best$expect))
+      } else {
+        if(errors) return(NA)
+        else preds = c(preds,NA)
+      }
     }
     preds
+  }
+  
+  #' Tune nmin through simple search over a range of values
+  self$tune <-function(data,trials=1:30){
+    results <- NULL
+    for(nmin in trials){
+      cat("nmin:",nmin,"\n")
+      self$nmin = nmin
+      results <- rbind(results,data.frame(
+        nmin = nmin,
+        self$cross(data)$summary
+      ))
+    }
+    list(
+      best = results$nmin(which.min(results$mpe)),
+      trials = results
+    )
   }
   
   self$sample <- function(data,samples=1){
