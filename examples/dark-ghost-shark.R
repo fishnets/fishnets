@@ -5,10 +5,10 @@
 #' assumes cerain parameter values rather than being fitted)
 
 # Run this from the fishnets main directory
-source('collate.R')
+source('../collate.R')
 
 # Load the Fishbase data
-fb <- fishbase2000$read('data/fishbase-2000')
+fb <- fishbase2000$read('../data/fishbase-2000')
 
 # Fit a GLM representing Charnov et al 2013 equation 3 but with coefficient on `k` allowed
 # to differ from 1
@@ -46,7 +46,7 @@ gsh <- data.frame(
   order='Chimaeriformes',
   class='Holocephali'
 )
-# Estimates from plenary report 2013
+# Estimates from plenary report May 2013
 # maturity (cms)
 lcrit.male   <- 52.5 
 lcrit.female <- 62.5
