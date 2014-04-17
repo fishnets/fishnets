@@ -1,0 +1,175 @@
+#' A script to format the `res` list created by `getFB.R` and
+#' transform it into a data.frame so it can be used for fitting
+#' Fishnets
+#' 
+#' The script does a minimum amound of normalisation, only what is necesary
+#' to merge the data into a data.frame. Anoter script does normalisation to
+#' prepare the data to be ready for analysis.
+require(plyr)
+
+# Load the downloade FishBase data
+load("FB.RData")
+
+# Some functions used below to convert factors to numerics and normalis sex codes etc
+char <- function(x) gsub("^\\s+|\\s+$", "", as.character(x))
+num <- function(x) as.numeric(char(x))
+sex <- function(x){
+  x = char(x)
+  x[x=='male'] = 'M'
+  x[x=='female'] = 'F'
+  x[x=='unsexed'] = 'U'
+  x[x=='mixed'] = 'U'
+  x[x=='juvenile'] = 'U'
+}
+
+# For each species in the `res` list create a data.frame
+item <- 0
+dflist <- lapply(res,function(data){
+  
+  # Useful information for debugging
+  item <<- item + 1
+  cat(item,data$info$name,"\n")
+  
+  # $info - taxomomic and swim mode information
+  # A few species don't have valid $ifo so catch that situation...
+  result = tryCatch(with(data$info,data.frame(
+    name = name,
+    species = Species,
+    genus = genus,
+    family = family,
+    order = order,
+    swimmode = swimMode
+  )),error=function(error)error)
+  if("error" %in% class(result)){
+    # Something wrong with basic information for this species (for some strange reason) so just return an empty data.frame
+    return(data.frame())
+  }
+  
+  # $growth
+  #   data.frame: Loo(cm), Length Type, K(1/y), to(years), Sex, M(1/y), Temp C, Lm, Ø', Country, Locality, Questionable, Captive, id
+  # The $growth table contains the 'primary' data for each species
+  # All other data for the species is replicated for each row in growth
+  
+  # First subset $growth so that it only includes useful rows
+  growth = subset(data$growth,Captive=="No" & Questionable=="No")
+  if(nrow(growth)>0){
+    # Put wanted values into a result data.frame
+    growth = data.frame(
+      sex = sex(growth[,'Sex']),
+      ltype = char(growth[,'Length Type']),
+      loo = num(growth[,'Loo(cm)']),
+      k = num(growth[,'K(1/y)']),
+      t0 = num(growth[,'to(years)']),
+      m = num(growth[,'M(1/y)']),
+      temp = num(growth[,7]),
+      lmax = num(growth[,'Lm']),
+      country = char(growth[,'Country'])
+    )
+    # Merge with info, keeping all growth estimates
+    result = merge(result,growth,all.y=T)
+  } else {
+    # No valid grwoth/,ortality daa for this species so return empty data.frame
+    return(data.frame())
+  }
+    
+  # $maturity
+  #   data.frame: Lm(cm), Length(cm)Low, Length(cm)Hig, Age(y)Low, Age(y)Hig, tm(y), Sex, Country, Locality, LengthType, id
+  maturity = data$maturity
+  if(is.data.frame(maturity)){
+    # Normalise sex
+    maturity$Sex = sex(maturity$Sex)
+    # Summarise by sex and country
+    maturity = ddply(maturity,.(Country,Sex),function(subset){
+      data.frame(
+        lmat = mean(subset[,'Lm(cm)'],na.rm=T),
+        lmatlo = mean(num(subset[,'Length(cm)Low']),na.rm=T),
+        lmathi = mean(num(subset[,'Length(cm)Hig']),na.rm=T),
+        amat = mean(num(subset[,'tm(y)']),na.rm=T),
+        amatlo = mean(num(subset[,'Age(y)Low']),na.rm=T),
+        amathi = mean(num(subset[,'Age(y)Hig']),na.rm=T)
+      )
+    })
+    names(maturity)[1:2] = c('country','sex')
+    result = merge(result,maturity,all.x=T,by=c('country','sex'))
+  }
+  
+  # $lw
+  #   data.frame:Score, a, b, Doubtful?, Sex, Length(cm), Length type, r2, SD, b, SD, log10, a, n, Country,Locality, id
+  lw = data$lw
+  if(is.data.frame(lw)){
+    # Use the "Doubtful?" column to restrict data
+    lw = lw[!grepl("Yes|yes",(lw[,4])),]
+    if(nrow(lw)>0){
+      # Normalise sex
+      lw$Sex = sex(lw$Sex)
+      # Summarise by sex and country
+      lw = ddply(lw,.(Country,Sex),function(subset){
+        data.frame(
+          a = mean(num(subset[,'a']),na.rm=T),
+          b = mean(num(subset[,'b']),na.rm=T)
+        )
+      })
+      names(lw)[1:2] = c('country','sex')
+      result = merge(result,lw,all.x=T,c('country','sex'))
+    }
+  }
+  
+  # $ecology
+  #   data.frame: tlevel, feedingHabit, feedingType, id
+  # This appear to have only one row, so merge that in
+  ecology = data$ecology
+  if(is.data.frame(ecology)){
+    if(nrow(ecology)>0){
+      result$trophic = ecology$tlevel[1]
+      result$feedtype = ecology$feedingType[1]
+      result$feedhabit = ecology$feedingHabit[1]
+    }
+  }
+  
+  # $habitat
+  #   data.frame: habitat, id
+  # This data.frame can have as few as 2 rows and as many as 5 (or more?) depending on
+  # what habitat information is available. Sometimes depth information is in the last rowm sometimes not.
+  # So, the approach taken here is to paste it all together and then grep it later
+  habitat = data$habitat
+  if(is.data.frame(habitat)){
+    if(nrow(habitat)>0){
+      result$habitat = paste(habitat[,1],collapse=",",sep="")
+    }
+  }
+  
+  # $reproduction
+  #   data.frame: mode, fertilization, frequency, batch
+  # This appear to have only one row, so merge that in
+  reproduction = data$reproduction
+  if(is.data.frame(reproduction)){
+    if(nrow(reproduction)>0){
+      result$repromode = reproduction$dioecism[1]
+      result$reprofertil = reproduction$fertilization[1]
+      result$reprofreq = reproduction$frequency[1]
+      result$reprobatch = reproduction$batch[1]
+    }
+  }
+  
+  # $fecundity
+  #   data.frame: country, location, AFmin, AFmax, RFmin, RFmean, RFmax, a, b
+  # AF = absolute fecundity
+  # RF = relative fecundity
+  # A very casula look at the data suggests that AF is more commonly available
+  # Here, rather than attempt to merge by country, just take means
+  fecundity = data$fecundity
+  if(is.data.frame(fecundity)){
+    if(nrow(fecundity)>0){
+      result$fecunditymin = mean(fecundity$AFmin,na.rm=T)
+      result$fecunditymax = mean(fecundity$AFmax,na.rm=T)
+    }
+  }
+  
+  result
+})
+
+# Row bind all the data.frames together
+fb <- do.call(rbind.fill,dflist)
+
+# Save
+save(fb,file="fishbase-web.RData")
