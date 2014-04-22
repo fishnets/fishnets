@@ -3,8 +3,8 @@
 #' It is needed for the network to produce a generic prior (i.e not specific to any species)
 #'
 #' @author Nokome Bentley
-Species.any <- function(){
-  self <- extend(Node,'Species.any')
+SpeciesRandom <- function(){
+  self <- extend(Node,'SpeciesRandom')
   
   self$predictors <- 'fish'
   self$predictand <- 'species'
