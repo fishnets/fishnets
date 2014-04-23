@@ -9,7 +9,7 @@ require(ggplot2)
 require(reshape)
 
 # Load the fishbase data
-fb <- fishbase2000$read('data/fishbase-2000')
+fb <- Fishbase2000$read('data/fishbase-2000')
 
 # In these tests, examine out-of-sample predictive ability
 # for cod

@@ -8,8 +8,8 @@
 #' @param predictand The name of the variable of being predicted
 #' @param transform A pair of from/to transformation functions e.g. c(log,exp)
 #' @param nmin Minimum sample size required for median/mode
-Taxonomic.imputer <- function(predictand,transform=c(log,exp),nmin=1){
-  self <- extend(Node,'Taxonomic.imputer')
+TaxonomicImputer <- function(predictand,transform=c(log,exp),nmin=1){
+  self <- extend(Node,'TaxonomicImputer')
   
   self$predictand <- predictand
   self$transform <- transform

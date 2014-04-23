@@ -1,9 +1,9 @@
-#' R script for processing Fishbase 2000 data
+#' R script for processing FishBase data from CD-ROM circa 2000
 
-fishbase2000 <- object('Fishbase2000')
+Fishbase2000 <- object('Fishbase2000')
 
 #' Create and write to disk a data.frame of Fishbase 2000 data
-fishbase2000$create <- function(directory){
+Fishbase2000$create <- function(directory){
   ## Read in the data
   for(name in c('ECOLOGY','FAMILIES','MORPHDAT','POPCHAR','POPGROWTH','POPLW','REPRODUC','SPAWNING','SPECIES','STOCKS')){
   	data = read.table(paste(name,'.txt',sep=''),header=T,colClasses="character",sep=",")
@@ -281,7 +281,7 @@ fishbase2000$create <- function(directory){
 }
 
 #' Load from disk and return the Fishbase 2000 data
-fishbase2000$read <- function(directory){
+Fishbase2000$read <- function(directory){
   load(file.path(directory,"fishbase-2000.RData"))  
   fb
 }
