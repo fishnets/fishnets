@@ -1,5 +1,6 @@
 #' R script for creatring and reading in FishbaseWeb data
 require(plyr)
+require(stringr)
 
 FishbaseWeb <- object('FishbaseWeb')
 
@@ -7,9 +8,6 @@ FishbaseWeb <- object('FishbaseWeb')
 #' transform it into a data.frame so it can be used for fitting
 #' Fishnets
 #' 
-#' The does a minimum amound of normalisation, only what is necesary
-#' to merge the data into a data.frame. Anoter script does normalisation to
-#' prepare the data to be ready for analysis.
 FishbaseWeb$format <- function(){
 
 	# Load the downloade FishBase data
@@ -44,7 +42,7 @@ FishbaseWeb$format <- function(){
 	    genus = genus,
 	    family = family,
 	    order = order,
-	    swimmode = swimMode
+	    swimmode = tolower(char(swimMode))
 	  )),error=function(error)error)
 	  if("error" %in% class(result)){
 	    # Something wrong with basic information for this species (for some strange reason) so just return an empty data.frame
@@ -70,6 +68,8 @@ FishbaseWeb$format <- function(){
 	      temp = num(growth[,7]),
 	      country = char(growth[,'Country'])
 	    )
+      # If t0 is missing assume 0
+	    growth$t0[is.na(growth$t0)] = 0
 	    # Merge with info, keeping all growth estimates
 	    result = merge(result,growth,all.y=T)
 	  } else {
@@ -87,11 +87,11 @@ FishbaseWeb$format <- function(){
 	    maturity = ddply(maturity,.(Country,Sex),function(subset){
 	      data.frame(
 	        lmat = median(subset[,'Lm(cm)'],na.rm=T),
-	        lmatlo = median(num(subset[,'Length(cm)Low']),na.rm=T),
-	        lmathi = median(num(subset[,'Length(cm)Hig']),na.rm=T),
+	        lmatmin = median(num(subset[,'Length(cm)Low']),na.rm=T),
+	        lmatmax = median(num(subset[,'Length(cm)Hig']),na.rm=T),
 	        amat = median(num(subset[,'tm(y)']),na.rm=T),
-	        amatlo = median(num(subset[,'Age(y)Low']),na.rm=T),
-	        amathi = median(num(subset[,'Age(y)Hig']),na.rm=T)
+	        amatmin = median(num(subset[,'Age(y)Low']),na.rm=T),
+	        amatmax = median(num(subset[,'Age(y)Hig']),na.rm=T)
 	      )
 	    })
 	    names(maturity)[1:2] = c('country','sex')
@@ -125,36 +125,52 @@ FishbaseWeb$format <- function(){
 	  ecology = data$ecology
 	  if(is.data.frame(ecology)){
 	    if(nrow(ecology)>0){
-	      result$trophic = ecology$tlevel[1]
-	      result$feedtype = ecology$feedingType[1]
-	      result$feedhabit = ecology$feedingHabit[1]
+	      result$trophic = num(ecology$tlevel[1])
+	      result$diet = char(ecology$feedingType[1])
+	      result$feeding = char(ecology$feedingHabit[1])
+	      result$feeding[result$feeding==""] <- NA
 	    }
 	  }
 	  
 	  # $habitat
 	  #   data.frame: habitat, id
 	  # This data.frame can have as few as 2 rows and as many as 5 (or more?) depending on
-	  # what habitat information is available. Sometimes depth information is in the last rowm sometimes not.
-	  # So, the approach taken here is to paste it all together and then grep it later
+	  # what habitat information is available.
 	  habitat = data$habitat
 	  if(is.data.frame(habitat)){
 	    if(nrow(habitat)>0){
-	      result$habitat = paste(habitat[,1],collapse=",",sep="")
+	      # First row is "habit" (e.g. benthopelagic)
+	      value <- data$habitat[1,1]
+	      result$habit <- if(is.null(value)) NA else char(value)
+        # Second row is "migration" (e.g. anadromous) but can have additional information
+        # on depth after the comma - discard the latter
+        value <- data$habitat[2,1]
+        result$migration <- if(is.null(value)) NA else strsplit(char(value),",")[[1]][1]
+        # The "domain" information can get mixed in here so remove it
+        result$migration[result$migation %in% c('marine','freshwater','brackish')] <- NA
+        # Depth information can be on any of the pther rows. So paste all the rows together and then
+        # grep it for depths
+        value <- paste(data$habitat[,1],collapse=",")
+        value <- str_match(value,"depth range (\\d+)*\\?* - (\\d+)*\\?* m")[1,2:3]
+        result$depthmin <- num(value[1])
+	      result$depthmax <- num(value[2])
 	    }
 	  }
 	  
 	  # $reproduction
 	  #   data.frame: mode, fertilization, frequency, batch
 	  # This appear to have only one row, so merge that in
-	  reproduction = data$reproduction
-	  if(is.data.frame(reproduction)){
-	    if(nrow(reproduction)>0){
-	      result$repromode = reproduction$dioecism[1]
-	      result$reprofertil = reproduction$fertilization[1]
-	      result$reprofreq = reproduction$frequency[1]
-	      result$reprobatch = reproduction$batch[1]
-	    }
-	  }
+    # This data appears to be incorrect see
+    # So don't do this...
+	  #reproduction = data$reproduction
+	  #if(is.data.frame(reproduction)){
+	  #   if(nrow(reproduction)>0){
+	  #    result$repro = reproduction$mode[1]
+	  #    result$fertil = reproduction$fertilization[1]
+	  #    result$spawnfreq = reproduction$frequency[1]
+	  #    result$spawnbatch = reproduction$batch[1]
+	  #  }
+	  #}
 	  
 	  # $fecundity
 	  #   data.frame: country, location, AFmin, AFmax, RFmin, RFmean, RFmax, a, b
@@ -165,8 +181,10 @@ FishbaseWeb$format <- function(){
 	  fecundity = data$fecundity
 	  if(is.data.frame(fecundity)){
 	    if(nrow(fecundity)>0){
-	      result$fecunditymin = median(fecundity$AFmin,na.rm=T)
-	      result$fecunditymax = median(fecundity$AFmax,na.rm=T)
+	      result$fecundmin = median(fecundity$AFmin,na.rm=T)
+	      result$fecundmax = median(fecundity$AFmax,na.rm=T)
+        # Sometimes AFMin>AFMax, sometimes both are 0, so create a new variable
+	      result$fecundity = max(1,fecundity$AFmin,fecundity$AFmax,na.rm=T)
 	    }
 	  }
 	  
@@ -195,6 +213,15 @@ FishbaseWeb$format <- function(){
 	#'		> write.table(data,file='data/fishbase-web/popchar.txt',row.names=F,quote=F,sep='\t')
 	fb <- merge(fb,read.table('popchar.txt',header=T,sep='\t'),all.x=T)
 
+  # Create factors
+  fb <- within(fb,{
+    swimmode <- factor(swimmode)
+    diet <- factor(diet)
+    feeding <- factor(feeding)
+    habit <- factor(habit)
+    migration <- factor(migration)
+  })
+  
 	# Save
 	save(fb,file="fishbase-web.RData")
 
@@ -205,3 +232,4 @@ FishbaseWeb$read <- function(directory='.'){
   load(file.path(directory,"fishbase-web.RData"))  
   fb
 }
+
