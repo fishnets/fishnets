@@ -6,17 +6,17 @@
 #' @param transform A function to apply to predicted value after predict.glm. e.g. if formula is log(k)~... use exp
 #' @param factors.min Minimum records for a level of factor predictor variables
 #' @param numerics.impute Logical flag indicating whether missing numeric predictans should be imputed
-Glmer <- function(formula,transform=identity,factors.min=5,numerics.impute=TRUE){
+Glmer <- function(formula,transform=identity,factors.min=5){
   self <- extend(Node,'Glmer')
   
   self$formula <- formula
   self$transform <- transform
   self$factors.min <- factors.min
   
-  self$fit <- function(data){
-    self$predictand <- all.vars(self$formula)[1]
-    self$predictors <- all.vars(self$formula)[-1]
-    
+  self$predictand <- all.vars(self$formula)[1]
+  self$predictors <- all.vars(self$formula)[-1]
+  
+  self$fit <- function(data){    
     # Restrict data to rows with variable of interest
     data <- data[!is.na(data[,self$predictand]),]
     # Prepare the data before fiting
@@ -34,15 +34,17 @@ Glmer <- function(formula,transform=identity,factors.min=5,numerics.impute=TRUE)
         values[!is.na(values) & !(values %in% levels$values)] <- '<other>'
         values[is.na(values)] <- '<unknown>'
         data[,name] <- factor(values,levels=unique(c(unique(values),'<other>','<unknown>')))
-      }
-      # Impute missing values of predictor using taxonomic imputer
-      else if(is.numeric(values) & numerics.impute){
-        imputer <- Taxonomic.imputer(name,c(identity,identity),1)
-        imputer$fit(data[!is.na(values),])
-        data[is.na(values),name] <- imputer$predict(data[is.na(values),])
+        # Can't fit model when there is less than 2 levels to a factor. In that case
+        # drop it from the term
+        uniques <- length(unique(data[,name]))
+        if(uniques<2){
+          self$formula <- update.formula(self$formula,paste(".~.-",name,sep=""))
+          warning("Glmer removed term '",name,"' from formula because it had too few levels: ",uniques,". New formula: ",deparse(self$formula))
+        }
       }
     }
-    # Impute missing values for numerics
+    # Recalculate predictors in case any were removed
+    self$predictors <- all.vars(self$formula)[-1]
     # Fit the GLM
     self$glm <- glm(self$formula,data=data)
   }
