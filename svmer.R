@@ -32,7 +32,8 @@ Svmer <- function(formula,transform=identity){
     for(name in self$predictors){
       if(is.factor(data[[name]]) | is.character(data[[name]])) data[[name]] <- factor(data[[name]],levels=self$levels[[name]])
     }
-    # Get da predictions
+    # Get da predictions. `newdata` must only have the columns that
+    # are in the formula, nothing else, not even the predictand
     preds <- predict(self$svm,newdata=data[,self$predictors])
     if(transform) return(self$transform(preds))
     else return(preds)
