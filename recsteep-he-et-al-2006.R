@@ -1,19 +1,19 @@
 #' A prior for steepness based on natural mortality and recruitment variability 
 #' [He et al 2006](http://fishbull.noaa.gov/1043/he.pdf)
 
-HeMangelMaccall2006 <- function(){
+RecsteepHeEtAl2006 <- function(){
 
-  self <- object('SteepnessHe2006')
+  self <- object('RecsteepHeEtAl2006')
 
   #' Parameters of the prior from Table 1 of He et al (2006).
   self$table <- data.frame(
-    # Create an iteration over M, parameter and sigmar representing order of values
+    # Create an iteration over `m`, parameter and `recsigma` representing order of values
     expand.grid(
       m = c(0.05,0.1,0.15,0.2,0.25,0.3,0.4,0.5,0.6,0.7),
       # Note that in the table caption the authors say that the parameters are in the order omega1,omega2,omega3
       # However, if one assumes this order you don't get sensible results. If one assumes the order omega1,omega3,omega2 do get sensible priors
       par = c('o1','o3','o2'),
-      sigmar = seq(0.2,1.6,0.2)
+      recsigma = seq(0.2,1.6,0.2)
     ),
     # Note that the value with "#Iterpolated" next to it was missing in the original table and is interpolated from the omega1 values 'above' and 'below' it in the table
     # Note that the triptych marked with "#As for <-" was marked as "not fitted" in the table and I used the values for Sigma=1.6, M=0.6
@@ -53,10 +53,11 @@ HeMangelMaccall2006 <- function(){
   self$table <- cast(self$table,sigmar+m~par)
   
   #' Get parameter values
-  self$parameters <- function(m,sigmar){
+  self$parameters <- function(m,recsigma){
+    # Find the closes matching `m` and `recsigma`
     m_ <- self$table$m[which.min(abs(self$table$m-m))]
-    sigmar_ <- self$table$sigmar[which.min(abs(self$table$sigmar-sigmar))]
-    subset(self$table,m==m_ & sigmar==sigmar_)
+    recsigma_ <- self$table$recsigma[which.min(abs(self$table$recsigma-recsigma))]
+    subset(self$table,m==m_ & recsigma==recsigma_)
   }  
   
   #' Get the *relative* probability of a given steepness, given the parameters of the prior
@@ -67,13 +68,10 @@ HeMangelMaccall2006 <- function(){
   }
   
   #' Get probability densities for a given m and sigmar
-  self$densities <- function(m,sigmar){
-    parameters <- self$parameters(m,sigmar)
+  self$densities <- function(m,recsigma){
+    parameters <- self$parameters(m,recsigma)
     relatives <- self$relative(seq(0.2,1,0.01),parameters)
     relatives/sum(relatives)
-  }
-  
-  self$sample <- random(m,sigmar) {
   }
 
   self
