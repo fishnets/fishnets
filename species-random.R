@@ -17,8 +17,8 @@ SpeciesRandom <- function(){
     sample(self$species,1)
   }
   
-  self$sample <- function(data,samples=1){
-    sample(self$species,samples)
+  self$sample <- function(data){
+    sample(self$species,nrow(data))
   }
   
   self

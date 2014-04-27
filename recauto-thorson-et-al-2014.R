@@ -21,10 +21,10 @@ Scorpaeniformes,    0.439,  0.264
   stringsAsFactors=F)
   
   self$lookup <- function(data){
-    # Look up row in table
-    order_ <- as.character(data$order)
-    if(order_ %in% self$table$order) subset(self$table,order==order_)
-    else subset(self$table,order=='<other>')
+    # Look up row in table (in a vectorised way!)
+    matches <- match(as.character(data$order),self$table$order)
+    matches[is.na(matches)] <- nrow(self$table)
+    self$table[matches,]
   }
   
   self$predict <- function(data){
@@ -35,9 +35,8 @@ Scorpaeniformes,    0.439,  0.264
   self$sample <- function(data,samples=1){
     # Lookup the mean and sd in the table
     # Convert these to the scale and shape parameters of a truncated normal distribution
-    with(self$lookup(data),{
-      rtruncnorm(samples,a=-0.99,b=0.99,mean=mean,sd=sd)
-    })
+    parameters <- self$lookup(data)
+    rtruncnorm(1,a=-0.99,b=0.99,mean=parameters$mean,sd=parameters$sd)
   }
   
   self$tests <- function(){

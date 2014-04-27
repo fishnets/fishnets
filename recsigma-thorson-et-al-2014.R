@@ -20,10 +20,10 @@ Scorpaeniformes,    0.778, 0.318
   stringsAsFactors=F)
   
   self$lookup <- function(data){
-    # Look up row in table
-    order_ <- as.character(data$order)
-    if(order_ %in% self$table$order) subset(self$table,order==order_)
-    else subset(self$table,order=='<other>')
+    # Look up row in table (in a vectorised way!)
+    matches <- match(as.character(data$order),self$table$order)
+    matches[is.na(matches)] <- nrow(self$table)
+    self$table[matches,]
   }
   
   self$predict <- function(data){
@@ -31,15 +31,14 @@ Scorpaeniformes,    0.778, 0.318
     self$lookup(data)$mean
   }
   
-  self$sample <- function(data,samples=1){
+  self$sample <- function(data){
     # Lookup the mean and sd in the table
     # Convert these to the scale and shape parameters of a Gamma distribution
     # Then sample from a Gamma
-    with(self$lookup(data),{
-      shape <- (mean/sd)^2
-      scale <- (sd^2)/mean
-      rgamma(samples,scale=scale,shape=shape)
-    })
+    parameters <- self$lookup(data)
+    shape <- with(parameters,(mean/sd)^2)
+    scale <- with(parameters,(sd^2)/mean)
+    rgamma(samples,scale=scale,shape=shape)
   }
   
   self$tests <- function(){

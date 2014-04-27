@@ -3,12 +3,11 @@
 #' @author Nokome Bentley
 #'
 #' @param nodes A list of network nodes
-Fishnet <- function(
-  nodes = list()
-){
+Fishnet <- function(...){
   self <- object('Fishnet')
   
-  self$nodes <- nodes
+  # Convert call arguments to a list of nodes
+  self$nodes <- list(...)
   
   #' Fit the network using data
   #'
@@ -18,7 +17,11 @@ Fishnet <- function(
     # Delete stored results since we are refitting network
     self$stored <- NULL
     # Fit all nodes
-    for(name in names(self$nodes)) self$nodes[[name]]$fit(data)
+    for(name in names(self$nodes)){
+      cat('Fitting',name)
+      self$nodes[[name]]$fit(data)
+      cat('.\n')
+    }
   }
   
   #' Predict values for variables from the network
@@ -26,42 +29,41 @@ Fishnet <- function(
   #' @name Fishnet$predict
   #' @param data A list of variable valuables
   self$predict <- function(data){
+    data <- as.data.frame(data)
     # Get nodes to predict values for their predictands
     for(name in names(self$nodes)){
       if(is.null(data[[name]])){
-        data[[name]] <- self$nodes[[name]]$predict(as.data.frame(data))
+        data[[name]] <- self$nodes[[name]]$predict(data)
       }
     }
     data
   }
   
-  #' Sample the network based on a list of variable values
+  #' Sample the network based on a list or data.frame of variable values
   #' 
-  #' @name Fishnet$sample.list
-  #' @param data A list of variable values
+  #' @name Fishnet$df
+  #' @param data A data.frame or list of variable values
   #' @param samples Number of samples to generate
-  self$sample.list <- function(data,samples=1){
-    # Get nodes to provide one sample and then pass this on to remaining
-    # nodes thus propogating prediction errors through the network
-    results <- NULL
-    for(sample in 1:samples){
-      sample_data <- as.data.frame(data)
-      for(name in names(self$nodes)){
-        if(is.null(sample_data[[name]])){
-          sample_data[[name]] <- self$nodes[[name]]$sample(sample_data,1)
-        }
+  self$sample_df <- function(data,samples=1){
+    data <- as.data.frame(data)
+    # Repeat the data.frame `samples` times so that the `sample` method
+    # of each node can operate in a vectorised way
+    results <- data[rep(1:nrow(data),samples),]
+    # Iterate over nodes filling in values as necessary
+    for(name in names(self$nodes)){
+      if(is.null(results[[name]])){
+        results[,name] <- self$nodes[[name]]$sample(results)
       }
-      results <- rbind(results,sample_data)
     }
     results
   }
   
   #' Sample the network based on a list of distributions
   #' 
-  #' @name Fishnet$sample.distributions
+  #' @name Fishnet$sample_distributions
   #' @param dists A list of Distributions
   #' @param samples Number of samples to generate
-  self$sample.distributions <- function(dists,samples=1){
+  self$sample_distributions <- function(dists,samples=1){
     results <- NULL
     for(sample in 1:samples){
       sample_data <- as.data.frame(lapply(dists,function(dist) dist$random()))
@@ -82,10 +84,10 @@ Fishnet <- function(
   #' @param samples Number of samples to generate
   self$sample <- function(from,samples=1){
     if(inherits(from,'Distributions')){
-      return (self$sample.distributions(from,samples))
+      return (self$sample_distributions(from,samples))
     }
-    if(inherits(from,'list')){
-      return (self$sample.list(from,samples))
+    if(inherits(from,'data.frame') | inherits(from,'list')){
+      return (self$sample_df(from,samples))
     }
     stop(paste('Unable to handle data of type:',paste(class(data),collapse=",")))
   }

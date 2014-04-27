@@ -30,9 +30,9 @@ TaxonLookupper <- function(from,to){
     self$table[which,self$predictand]
   }
   
-  self$sample <- function(data,samples=1){
+  self$sample <- function(data){
     # Samples direct from prediction i.e. 100% certainty
-    rep(self$predict(data),samples)
+    self$predict(data)
   }
   
   self

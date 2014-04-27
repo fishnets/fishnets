@@ -4,6 +4,14 @@
 Node <- function(){
   self <- object('Node')
   
+  #' Fit the node
+  #' 
+  #' This default is provided for nodes that do not need to do
+  #' any fitting (e.g. those that use pre-calculated lookup tables).
+  #' Other nodes will need to override this.
+  self$fit <- function(data){
+  }
+  
   #' Tune parameters of the node
   #' 
   #' Each type of network node will normally have "hyper-parameters" that can be tuned. e.g. in a GLM
