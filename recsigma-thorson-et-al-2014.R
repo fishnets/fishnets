@@ -26,10 +26,6 @@ Scorpaeniformes,    0.778, 0.318
     else subset(self$table,order=='<other>')
   }
   
-  self$fit <- function(data){
-    # Nothing to be done here
-  }
-  
   self$predict <- function(data){
     # Look up mean recsigma in the table
     self$lookup(data)$mean
@@ -38,6 +34,7 @@ Scorpaeniformes,    0.778, 0.318
   self$sample <- function(data,samples=1){
     # Lookup the mean and sd in the table
     # Convert these to the scale and shape parameters of a Gamma distribution
+    # Then sample from a Gamma
     with(self$lookup(data),{
       shape <- (mean/sd)^2
       scale <- (sd^2)/mean
@@ -46,7 +43,7 @@ Scorpaeniformes,    0.778, 0.318
   }
   
   self$tests <- function(){
-    # A few simnple tests
+    # A few simple tests
     self$predict(list(order='Gadiformes'))==0.748
     self$predict(list(order='some-unknown-order'))==0.737
     hist(self$sample(list(order='Perciformes'),1000),breaks=100)
