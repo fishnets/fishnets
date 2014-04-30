@@ -5,6 +5,7 @@ source('object.R')
 source('node.R')
 
 source('species-random.R')
+source('genus-parser.R')
 source('taxon-lookupper.R')
 
 source('taxonomic-imputer.R')
@@ -13,6 +14,8 @@ source('svmer.R')
 source('brter.R')
 
 source('recsteep-he-et-al-2006.R')
+source('recsigma-thorson-et-al-2014.R')
+source('recauto-thorson-et-al-2014.R')
 
 source('distributions.R')
 
