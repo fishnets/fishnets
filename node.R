@@ -75,6 +75,12 @@ Node <- function(){
       folds = results
     ))
   }
+  
+  self$expand <- function(data,samples=NULL){
+    data <- as.data.frame(data)
+    if(!is.null(samples)) return(data[rep(1:nrow(data),samples),])
+    else return(data)
+  }
    
-   self
+  self
 }

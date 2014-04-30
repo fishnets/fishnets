@@ -10,8 +10,8 @@ require(trapezoid)
 Distribution <- function(rfunc,...){
   self <- object('Dist')
 
-  self$random <- function(n=1){
-    rfunc(n,...)
+  self$random <- function(samples=1){
+    rfunc(samples,...)
   }
   
   self
@@ -20,8 +20,8 @@ Distribution <- function(rfunc,...){
 Fixed <- function(value){
   self <- extend(Distribution,'Fixed')
   
-  self$random <- function(){
-    value
+  self$random <- function(samples=1){
+    rep(value,samples)
   }
   
   self

@@ -22,6 +22,7 @@ Fishnet <- function(...){
       self$nodes[[name]]$fit(data)
       cat('.\n')
     }
+    self
   }
   
   #' Predict values for variables from the network
@@ -29,14 +30,14 @@ Fishnet <- function(...){
   #' @name Fishnet$predict
   #' @param data A list of variable valuables
   self$predict <- function(data){
-    data <- as.data.frame(data)
+    results <- as.data.frame(data)
     # Get nodes to predict values for their predictands
     for(name in names(self$nodes)){
-      if(is.null(data[[name]])){
-        data[[name]] <- self$nodes[[name]]$predict(data)
+      if(is.null(results[[name]])){
+        results[,name] <- self$nodes[[name]]$predict(results)
       }
     }
-    data
+    results
   }
   
   #' Sample the network based on a list or data.frame of variable values
@@ -46,15 +47,20 @@ Fishnet <- function(...){
   #' @param samples Number of samples to generate
   self$sample_df <- function(data,samples=1){
     data <- as.data.frame(data)
+    # Problems occur if there is only one column in the df
+    # so add a dummy one that gets taken out later
+    data$dummy <- NA
     # Repeat the data.frame `samples` times so that the `sample` method
     # of each node can operate in a vectorised way
     results <- data[rep(1:nrow(data),samples),]
     # Iterate over nodes filling in values as necessary
     for(name in names(self$nodes)){
-      if(is.null(results[[name]])){
+      if(!(name %in% names(results))){
         results[,name] <- self$nodes[[name]]$sample(results)
       }
     }
+    # Reove that dumny column
+    results$dummy <- NULL
     results
   }
   
@@ -64,15 +70,16 @@ Fishnet <- function(...){
   #' @param dists A list of Distributions
   #' @param samples Number of samples to generate
   self$sample_distributions <- function(dists,samples=1){
-    results <- NULL
-    for(sample in 1:samples){
-      sample_data <- as.data.frame(lapply(dists,function(dist) dist$random()))
-      for(name in names(self$nodes)){
-        if(is.null(sample_data[[name]])){
-          sample_data[[name]] <- self$nodes[[name]]$sample(sample_data,1)
-        }
+    # Create a data frame with the right number of rows
+    results <- data.frame(dummy=rep(NA,samples))
+    # Add random samples from each distribution
+    for(name in names(dists)) results[,name] <- dists[[name]]$random(nrow(results))
+    results$dummy <- NULL
+    # Iterate over nodes filling in values as necessary
+    for(name in names(self$nodes)){
+      if(!(name %in% names(results))){
+        results[,name] <- self$nodes[[name]]$sample(results)
       }
-      results <- rbind(results,sample_data)
     }
     results
   }  
