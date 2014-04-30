@@ -50,27 +50,33 @@ Brter <- function(formula,transform=identity,ntrees=2000){
   self$summary <- function(){
     print(summary(self$brt))
     #gbm.plot(self$brt)
-    gbm.plot.fits(self$brt)
+    #gbm.plot.fits(self$brt)
   }
   
   self$predict <- function(data,transform=T){
     data <- as.data.frame(data)
     # Create a model frame using the formula. This creates a
     # matrix that can be used for fitting the trees
+    # When creating a model frame from a formula you need to have
+    # all the variable presents, so add it first (it can't be NA otherwise all rows get omitted)
+    data[,self$predictand] <- 1
     frame <- model.frame(self$formula,data)
     # Generate predictions
     preds <- predict.gbm(
       self$brt,
-      frame,
+      newdata = frame,
       n.trees = self$brt$gbm.call$best.trees,
       type = "response"
     )
+    # Record s.d. of residuals for $sample()
+    self$error <- sd(self$brt$residuals)
+    
     if(transform) return(self$transform(preds))
     else return(preds)
   }
   
-  self$sample <- function(data,samples=1){
-    #self$transform(rnorm(samples,self$predict(data,transform=F),self$error))
+  self$sample <- function(data){
+    self$transform(rnorm(nrow(data),mean=self$predict(data,transform=F),sd=self$error))
   }
   
   self
