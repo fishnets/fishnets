@@ -39,8 +39,8 @@ Svmer <- function(formula,transform=identity){
     else return(preds)
   }
   
-  self$sample <- function(data,samples=1){
-    self$transform(rnorm(samples,self$predict(data,transform=F),self$error))
+  self$sample <- function(data){
+    self$transform(rnorm(nrow(data),mean=self$predict(data,transform=F),sd=self$error))
   }
   
   self

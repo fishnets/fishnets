@@ -49,7 +49,7 @@ Glmer <- function(formula,transform=identity,factors.min=5){
     self$glm <- glm(self$formula,data=data)
   }
   
-  self$predict <- function(data,errors=F){
+  self$predict <- function(data,errors=F,transform=T){
     data <- as.data.frame(data)
     # Collapse factors down to the same levels as in the fitted GLM
     for(name in self$predictors){
@@ -67,9 +67,9 @@ Glmer <- function(formula,transform=identity,factors.min=5){
       }
     }
     predictions <- predict.glm(self$glm,newdata=data,type='response',se.fit=errors)
-    # When called with errors=T do not apply self$post transformation
     if(errors) return(as.data.frame(predictions))
-    else return(self$transform(predictions))
+    if(transform) self$transform(predictions)
+    else predictions
   }
   
   #' Tune model formulas simple search over a range of values
@@ -89,13 +89,13 @@ Glmer <- function(formula,transform=identity,factors.min=5){
     )
   }
   
-  self$sample <- function(data,samples=1){
-    # Get predictions with errors
-    predictions <- self$predict(data,errors=T)
+  self$sample <- function(data){
+    # Get predictions with errors and no transformation
+    predictions <- self$predict(data,errors=T,transform=F)
     # Calculate a standard deviation that combines se.fit and residual s.d.
     sigma <- sqrt(predictions$se.fit^2 + predictions$residual.scale^2)
     # Sample from normal distribution with that sigma
-    preds <- rnorm(samples,predictions$fit,sigma)
+    preds <- rnorm(nrow(predictions),mean=predictions$fit,sigma)
     # Apply post transformation
     self$transform(preds)
   }

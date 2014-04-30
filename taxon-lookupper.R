@@ -26,7 +26,6 @@ TaxonLookupper <- function(from,to){
   
   self$predict <- function(data){
     which <- match(data[[self$predictors]],self$table[,self$predictors])
-    if(!sum(!is.na(which))==1) stop(paste("Key value is absent:",data[[self$predictors]]))
     self$table[which,self$predictand]
   }
   

@@ -8,7 +8,7 @@
 #' @param predictand The name of the variable of being predicted
 #' @param transform A pair of from/to transformation functions e.g. c(log,exp)
 #' @param nmin Minimum sample size required for median/mode
-TaxonomicImputer <- function(predictand,transform=c(log,exp),nmin=1){
+TaxonomicImputer <- function(predictand,transform=c(identity,identity),nmin=1){
   self <- extend(Node,'TaxonomicImputer')
   
   self$predictand <- predictand
@@ -96,13 +96,14 @@ TaxonomicImputer <- function(predictand,transform=c(log,exp),nmin=1){
     )
   }
   
-  self$sample <- function(data,samples=1){
-    # Currently, only provides sampling for numeric predictands
-    if(!is.numeric(self$type())) stop('Sorry, sampling of non-numeric predictands is not implemented yet')
+  self$sample <- function(data){
+    # Currently, only provides sampling for numeric predictands,
+    # for factors just return the prediction
+    if(!is.numeric(self$type())) return(self$predict(data))
     # Get prediction
     pred <- self$predict(data,errors=T)
     # Randomly sample and inverse transform
-    self$transform[[2]](rnorm(samples,pred$expect,pred$sd))
+    self$transform[[2]](rnorm(nrow(data),mean=pred$expect,sd=pred$sd))
   }
   
   self
