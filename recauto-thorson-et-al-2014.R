@@ -36,7 +36,7 @@ Scorpaeniformes,    0.439,  0.264
     # Lookup the mean and sd in the table
     # Convert these to the scale and shape parameters of a truncated normal distribution
     parameters <- self$lookup(data)
-    rtruncnorm(1,a=-0.99,b=0.99,mean=parameters$mean,sd=parameters$sd)
+    rtruncnorm(nrow(parameters),a=-0.99,b=0.99,mean=parameters$mean,sd=parameters$sd)
   }
   
   self$tests <- function(){

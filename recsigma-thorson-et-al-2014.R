@@ -1,12 +1,13 @@
+
 #' A `Node` for recruitment variability (`recsigma`) based on
 #' [Thorson et al 2014](http://www.nrcresearchpress.com/doi/abs/10.1139/cjfas-2013-0645)
-
 RecsigmaThorsonEtAl2014 <- function(){
   self <- extend(Node,'RecsigmaThorsonEtAl2014')
   
-  self$predictand = 'recsigma'
   self$predictors = 'order'
+  self$predictand = 'recsigma'
   
+  # Table 2 of Thorson et al 2014
   self$table <- read.csv(text="
 order,               mean,  sd
 Aulopiformes,       0.670, 0.298
@@ -32,13 +33,13 @@ Scorpaeniformes,    0.778, 0.318
   }
   
   self$sample <- function(data){
-    # Lookup the mean and sd in the table
-    # Convert these to the scale and shape parameters of a Gamma distribution
-    # Then sample from a Gamma
+    # Lookup the mean and sd in the table and 
+    # then convert to the scale and shape parameters
+    # of a Gamma distribution
     parameters <- self$lookup(data)
     shape <- with(parameters,(mean/sd)^2)
     scale <- with(parameters,(sd^2)/mean)
-    rgamma(samples,scale=scale,shape=shape)
+    rgamma(nrow(parameters),scale=scale,shape=shape)
   }
   
   self$tests <- function(){
