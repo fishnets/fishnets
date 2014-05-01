@@ -1,9 +1,9 @@
 #' A prior for steepness based on natural mortality and recruitment variability 
 #' [He et al 2006](http://fishbull.noaa.gov/1043/he.pdf)
+require(reshape)
 
 RecsteepHeEtAl2006 <- function(){
-
-  self <- object('RecsteepHeEtAl2006')
+  self <- extend(Node,'RecsteepHeEtAl2006')
 
   #' Parameters of the prior from Table 1 of He et al (2006).
   self$table <- data.frame(
@@ -50,11 +50,12 @@ RecsteepHeEtAl2006 <- function(){
     3.90900e+1,2.50300e+1,1.72200e+1,1.32200e+1,1.10800e+1,1.02500e+1,1.07500e+1,1.29000e+1,1.68500e+1,1.68500e+1,#As for <-
     3.00100e-2,8.90000e-3,4.92300e-3,3.34000e-3,1.97100e-3,8.68600e-4,5.31500e-5,7.90000e-7,1.00000e-8,1.00000e-8 #As for <-
   ))
-  self$table <- cast(self$table,sigmar+m~par)
+  self$table <- cast(self$table,recsigma+m~par)
   
-  #' Get parameter values
-  self$parameters <- function(m,recsigma){
-    # Find the closes matching `m` and `recsigma`
+  #' Lookup parameter values from table
+  #' Mainyl used internally
+  self$lookup <- function(m,recsigma){
+    # Find the closest matching `m` and `recsigma`
     m_ <- self$table$m[which.min(abs(self$table$m-m))]
     recsigma_ <- self$table$recsigma[which.min(abs(self$table$recsigma-recsigma))]
     subset(self$table,m==m_ & recsigma==recsigma_)
@@ -67,11 +68,20 @@ RecsteepHeEtAl2006 <- function(){
     })
   }
   
-  #' Get probability densities for a given m and sigmar
+  #' Get probability densities for a given `m` and `recsigma`
   self$densities <- function(m,recsigma){
-    parameters <- self$parameters(m,recsigma)
-    relatives <- self$relative(seq(0.2,1,0.01),parameters)
-    relatives/sum(relatives)
+    parameters <- self$lookup(m,recsigma)
+    recsteep <- seq(0.2,1,0.01)
+    relatives <- self$relative(recsteep,parameters)
+    densities <- relatives/sum(relatives)
+    data.frame(
+      recsteep = recsteep,
+      density = densities
+    )
+  }
+  
+  self$tests <- function(){
+    self
   }
 
   self
