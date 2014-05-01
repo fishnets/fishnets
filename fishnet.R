@@ -89,7 +89,7 @@ Fishnet <- function(...){
   #' @name Fishnet$sample
   #' @param from A list of values or a list of Distributions to sample from
   #' @param samples Number of samples to generate
-  self$sample <- function(from,samples=1){
+  self$sample <- function(from,samples=10000){
     if(inherits(from,'Distributions')){
       return (self$sample_distributions(from,samples))
     }
