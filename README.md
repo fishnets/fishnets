@@ -7,4 +7,4 @@ code interface stabilizes we hope to publish it on CRAN.
 
 ### Acknowledgements
 
-This project has been supported by the [European Commision's Joint Research Centre](https://fishreg.jrc.ec.europa.eu/) and [Trident Ssystems](http://tridentsystems.co.nz/)
+This project has been supported by the [European Commision's Joint Research Centre](https://fishreg.jrc.ec.europa.eu/) and [Trident Systems](http://tridentsystems.co.nz/)
