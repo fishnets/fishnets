@@ -1,8 +1,33 @@
-#' R script for creatring and reading in FishbaseWeb data
+#' R script for creating and reading FishbaseWeb data
 require(plyr)
 require(stringr)
+require(rfishbase)
+require(XML)
+require(RCurl)
 
 FishbaseWeb <- object('FishbaseWeb')
+
+#' Get a table from a Fishbase URL
+#' 
+#' @param url URL for the page
+#' @param which Which table (defaults to the first)
+FishbaseWeb$get_table <- function(url,which=1){
+  while(T){
+    table <- try(readHTMLTable(addr))
+    if(length(table) != 0) break
+  }
+  if(is(table, "try-error")) return(NULL)
+  else table[[which]]
+}
+
+#' Get "List of Population Characteristics records"
+#' 
+#' @param id Species id
+FishbaseWeb$get_popcharlist <- function(id){
+  data <- FishbaseWeb$get_table(
+    paste0("http://www.fishbase.org/PopDyn/PopCharList.php?ID=",id)
+  )
+}
 
 #' A function to format the `res` list created by `getFB.R` and
 #' transform it into a data.frame so it can be used for fitting
