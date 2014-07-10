@@ -19,7 +19,7 @@ See [issues](https://github.com/fishnets/fishnets/issues) for suggestions for mo
 
 ### Acknowledgements
 
-This project has been supported by the [European Commision's Joint Research Centre](https://fishreg.jrc.ec.europa.eu/) and [Trident Systems](http://tridentsystems.co.nz/). Many thanks to the editors and contributors of [FishBase](www.fishbase.org)(Froese & Pauly 2011) for providing a valuable source of information on population dynamics parameters
+This project has been supported by the [European Commision's Joint Research Centre](https://fishreg.jrc.ec.europa.eu/) and [Trident Systems](http://tridentsystems.co.nz/). Many thanks to the editors and contributors of [FishBase](http://www.fishbase.org) (Froese & Pauly 2011) for providing a valuable source of information on population dynamics parameters
 
 ### References
 
