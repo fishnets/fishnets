@@ -13,15 +13,34 @@ Fishnet <- function(...){
   #'
   #' @name Fishnet$fit
   #' @param data Data to be fitted to
-  self$fit <- function(data){
+  self$fit <- function(data,impute = FALSE){
+    #warn that imputation is taking place
+    if (impute) cat('NOTE: Imputing data values successively in the order of the specified nodes','\n')
     # Delete stored results since we are refitting network
     self$stored <- NULL
     # Fit all nodes
     for(name in names(self$nodes)){
       cat('Fitting',name)
       self$nodes[[name]]$fit(data)
+      
+      if (impute){
+        # missing data to impute
+        mdata <- which(is.na(data[name]))
+        if (!is.null(self$nodes[[name]]$formula)){
+          mdata <- model.frame(paste(self$nodes[[name]]$formula[-2],'+id'),data[mdata,])$id
+        }
+        # impute if missing data
+        if (length(mdata)>0){
+          pred <- self$nodes[[name]]$predict(data[mdata,])
+          pred_ix <- names(pred)
+          if (length(pred_ix)>0){
+            data[pred_ix,name] <- pred
+          }
+        }
+      }
       cat('.\n')
     }
+    self$data <- data
     self
   }
   
@@ -108,7 +127,7 @@ Fishnet <- function(...){
     # Create the folder and DOT file
     dir.create(folder,showWarnings=F,recursive=T)
     dotname <- file.path(folder,"graph.dot")
-
+    
     out <- file(dotname,open='w')
     write <- function(...) cat(...,file=out)
     write('
