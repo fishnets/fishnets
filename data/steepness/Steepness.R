@@ -23,15 +23,14 @@ Steepness$create <- function(directory = "."){
 
 Steepness$merge <- function(steep,lh_data,merge_by='species'){
   
-  matches <- match(as.character(fb$species),steep$species)
-  lh_matches <- lh_data[!is.na(matches),]
+  # matches <- match(as.character(fb$species),steep$species)
+  # lh_matches <- lh_data[!is.na(matches),]
   
-  steep_merged <- merge(steep,lh_matches,by.x='species',by.y=merge_by)
+  steep_merged <- merge(steep,lh_data,by.x='species',by.y=merge_by,all.y=T)
   steep_merged
   
 }
 
-steppa <- Steepness$create('./data/steepness')
-steppa_merged <- Steepness$merge(steppa,fb)
+
 
 
