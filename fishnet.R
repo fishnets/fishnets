@@ -27,14 +27,16 @@ Fishnet <- function(...){
         # missing data to impute
         mdata <- which(is.na(data[name]))
         if (!is.null(self$nodes[[name]]$formula)){
-          mdata <- model.frame(paste(self$nodes[[name]]$formula[-2],'+id'),data[mdata,])$id
+          mdata <- model.frame(paste(paste(deparse(self$nodes[[name]]$formula),collapse=''),'+id'),data)
         }
         # impute if missing data
         if (length(mdata)>0){
           pred <- self$nodes[[name]]$predict(data[mdata,])
           pred_ix <- names(pred)
-          if (length(pred_ix)>0){
+          if (!is.null(pred_ix)){
             data[pred_ix,name] <- pred
+          } else if (length(pred)>0){
+            data[mdata,name] <- pred
           }
         }
       }

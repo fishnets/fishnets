@@ -14,8 +14,8 @@ fb$id <- 1:nrow(fb)
 fb$dummy <- 1.0
 
 
-steppa <- Steepness$create('./data/steepness')
-steppa_merged <- Steepness$merge(steppa,fb)
+steep <- Steepness$create('./data/steepness')
+steep_merged <- Steepness$merge(steep,fb)
 
 # Create test net for steepness
 steep_net <- Fishnet(
@@ -26,11 +26,11 @@ steep_net <- Fishnet(
   class     = ClassLookupper(),
   
   habit     = TaxonomicImputer('habit'),
-  depthmax  = TaxonomicImputer('depthmax',c(log,exp),2),
-  trophic   = TaxonomicImputer('trophic',c(log,exp),2),
-  lmax      = TaxonomicImputer('lmax',c(log,exp),2),
-  amax      = TaxonomicImputer('amax',c(log,exp),2),
-  fecundity = TaxonomicImputer('fecundity',c(log,exp),2),
+  depthmax  = TaxonomicImputer('depthmax',c(log,exp)),
+  trophic   = TaxonomicImputer('trophic',c(log,exp)),
+  lmax      = TaxonomicImputer('lmax',c(log,exp)),
+  amax      = TaxonomicImputer('amax',c(log,exp)),
+  fecundity = TaxonomicImputer('fecundity',c(log,exp)),
   
   linf      = Glmer(log(linf)~class+order+family+log(lmax),exp),
   k         = Brter(log(k)~class+order+family+log(linf)+habit+log(depthmax)+trophic,exp),
@@ -38,18 +38,19 @@ steep_net <- Fishnet(
   lmat      = Glmer(log(lmat)~class+order+family+log(linf),exp),
   #mean_R_z  = Brter(log(mean_R_z-0.2)~log(linf)+m+fecundity+trophic+log(lmat)+log(k),transform = function(x){exp(x)+0.2},bag.fraction = 0.5,ntrees=0)
   #mean_R_z  = Svmer(log(mean_R_z-0.2)~log(linf)+m+fecundity+trophic+log(lmat)+log(k),transform = function(x){exp(x)+0.2})
-  mean_R_z  = Svmer(log(mean_R_z-0.2)~log(linf)+m+fecundity+trophic+log(lmat)+log(k)+log(amax),transform = function(x){exp(x)+0.2})
+  mean_R_z  = Svmer(log(mean_R_z-0.2)~log(linf)+log(m)+log(fecundity)+trophic+log(lmat)+log(k)+log(amax),transform = function(x){exp(x)+0.2})
   #recsigma  = RecsigmaThorsonEtAl2014(),
-  #recauto   = RecautoThorsonEtAl2014()
   #recsteep  = RecsteepHeEtAl2006()
+  #recauto   = RecautoThorsonEtAl2014()
 )
 # Fit to Fishbase data
-steep_net$fit(steppa_merged,impute = T)
+steep_net$fit(steep_merged,impute = T)
 
-#steep_net$nodes$mean_R_z$fit(steppa_merged)
+#steep_net$nodes$mean_R_z$fit(steep_merged)
 summary(steep_net$nodes$mean_R_z$glm)
 summary(steep_net$nodes$mean_R_z$brt)
 summary(steep_net$nodes$mean_R_z$svm)
+
 # check it ------
 
 canary <- steep_net$sample(list(
@@ -113,7 +114,7 @@ bwa <- steep_net$sample(list(
 
 ggplot(bwa) + 
   geom_bar(aes(x=mean_R_z,y=..density..),fill='grey40') + 
-  scale_x_continuous() + 
+  scale_x_continuous(limits=c(0,4)) + 
   labs(x='Steepness (z)',y='Density')
 
 ggplot(bwa) + 
@@ -124,18 +125,48 @@ ggplot(bwa) +
 
 ########################################
 
-########################################
+cross_val_net <- function(fishnet = NULL, data = NULL, folds = 10, layer = 'species', nodes = 'all', impute = T){
+  
+  if (nodes == 'all') nodes <- names(fishnet$nodes)
+  # cross validate each node
+  pred <- vector("list", length(nodes))
+  names(pred) <- nodes
+  for(name in nodes){
+    cat('Cross-validating',name,'\n')    
+    # subset data to relevant data
+    if (!is.null(fishnet$nodes[[name]]$formula)){
+      mdata <- subset(data, id %in% model.frame(paste(paste(deparse(fishnet$nodes[[name]]$formula),collapse=''),'+id'),data)$id)
+    } else {mdata <- data}
+      
+    # random subsets
+    spp <- unique(mdata[[layer]])
+    cv_group <- sample(1:folds, length(spp), replace = T)
+  
+    # temp fishnet; don't want to over-write fitting from full net
+    temp_net <- fishnet
+      
+    for (f in 1:folds){
+      cat('CV fold',f,'\n')    
+      # take out layer data from fold f
+      sub_data <- subset(mdata,!mdata[[layer]] %in% spp[cv_group==f])
+      temp_net$fit(sub_data, impute = impute)
+      rmv <- which(colnames(mdata) == name)
+      test_data <- mdata[mdata[[layer]] %in% spp[cv_group==f],-rmv]
+      pred[[name]][[f]] <- data.frame(org = mdata[mdata[[layer]] %in% spp[cv_group==f],rmv],pred = temp_net$nodes[[name]]$predict(test_data))
+    }
+    cat('done','\n') 
+  }
+}
 
-s_sub <- steppa_merged %.% filter(!is.na(mean_R_z)) %.% group_by(species) %.% summarise(z = unique(mean_R_z)) %.% filter(!is.na(z))
+cross_val_net(fishnet = steep_net, data = steep_net$data, folds = 10, layer = 'species', nodes = 'mean_R_z')
 
-su_sub <- steppa_merged %.% filter(!is.na(mean_R_z)) %.% group_by(species) %.% summarise(z = unique(mean_R_z)) %.% filter(!is.na(z))
+s_sub <- steep_merged %.% filter(!is.na(mean_R_z)) %.% group_by(species) %.% summarise(z = unique(mean_R_z)) %.% filter(!is.na(z))
 
-# fb_full = subset(steppa_merged,id %in% model.frame(
-#  log(k) ~ id + class + order + family + genus + species + 
+su_sub <- steep_merged %.% filter(!is.na(mean_R_z)) %.% group_by(species) %.% summarise(z = unique(mean_R_z)) %.% filter(!is.na(z))
 
-#    swimmode + habit + feeding + diet + trophic + log(depthmax) + temp + 
-#    fecundity + mean_R_z + log(lmax)
-#  ,fb)$id)
+fb_full = subset(steep_net$data,id %in% model.frame(
+  log(mean_R_z-0.2)~id+log(linf)+log(m)+log(fecundity)+trophic+log(lmat)+log(k)+log(amax),steep_net$data)$id)
+
 nrow(fb_full)
 length(unique(fb_full$species))
 fb_full$species = factor(fb_full$species)
@@ -194,11 +225,13 @@ ggplot(cmp) + geom_point(aes(x=preds,y=obs),size=3,alpha=0.3) +
   scale_y_log10("Observed k",breaks=c(0.1,0.2,0.5,1.0,2.0),limits=c(0.05,2))
 
 ###########################################
-# Comparison of 
+# Comparison of estiamted vs 'data'
+
+steep_net_test <- steep_net
 
 #' Plot density histograms
 plot_samples <- function(samples,species_,pars=c('linf','k','m','mean_R_z')){
-  data = subset(steppa_merged,species==species_)
+  data = subset(steep_merged,species==species_)
   
   melted <- melt(samples[,pars])
   data_melted <- melt(data[,pars])
@@ -210,9 +243,9 @@ plot_samples <- function(samples,species_,pars=c('linf','k','m','mean_R_z')){
     theme(strip.text.x=element_text(size=10))
 }
 
-steep_net$fit(subset(steppa_merged,species!='Gadus morhua'))
+steep_net_test$fit(subset(steep_merged,species!='Gadus morhua'),impute = T)
 
-preds <- steep_net$sample(list(
+preds <- steep_net_test$sample(list(
     species = 'Gadus morhua'
   ))
 
@@ -220,7 +253,7 @@ plot_samples(preds,'Gadus morhua')
 
 plot_samples(
   
-  steep_net$sample(list(
+  steep_net_test$sample(list(
     species = 'Gadus morhua',
     swimmode = 'subcarangiform',
     habit = 'benthopelagic',
@@ -232,7 +265,7 @@ plot_samples(
   'Gadus morhua'
 )
 
-preds <- steep_net$sample(dists(
+preds <- steep_net_test$sample(dists(
   species =  Fixed('Gadus morhua'),
   swimmode = Fixed('subcarangiform'),
   habit = Fixed('benthopelagic'),
@@ -242,13 +275,32 @@ preds <- steep_net$sample(dists(
   linf = Normal(110,20),
   k = Triangle(0.07,0.13,0.35),
   amax=Fixed(20)
-))
+),10000)
 
 plot_samples(preds,'Gadus morhua')
 
+# without imputation
+
+steep_net_noImputation <- steep_net_test
+steep_net_noImputation$fit(subset(steep_merged,species!='Gadus morhua'), impute = F)
+
+preds_noImputation <- steep_net_noImputation$sample(dists(
+  species =  Fixed('Gadus morhua'),
+  swimmode = Fixed('subcarangiform'),
+  habit = Fixed('benthopelagic'),
+  depthmax = Fixed(600),
+  temp = Trapezoid(2,3,6,7),
+  lmax = Fixed(132),
+  linf = Normal(110,20),
+  k = Triangle(0.07,0.13,0.35),
+  amax=Fixed(20)
+),10000)
+
+plot_samples(preds_noImputation,'Gadus morhua')
+
 ###############################
 
-steep_net$fit(subset(steppa_merged,species!='Katsuwonus pelamis'))
+steep_net$fit(subset(steep_merged,species!='Katsuwonus pelamis'))
 
 plot_samples(
   
