@@ -1,6 +1,6 @@
 # steepness tests;
 
-# Source in the package
+# Source in the package ----
 source('collate.R')
 
 # Load the Fishbase data
@@ -17,7 +17,8 @@ fb$dummy <- 1.0
 steep <- Steepness$create('./data/steepness')
 steep_merged <- Steepness$merge(steep,fb)
 
-# Create test net for steepness
+# Create test net for steepness -----
+
 steep_net <- Fishnet(
   species   = SpeciesRandom(),
   genus     = GenusParser(),
@@ -36,14 +37,14 @@ steep_net <- Fishnet(
   k         = Brter(log(k)~class+order+family+log(linf)+habit+log(depthmax)+trophic,exp),
   m         = Svmer(log(m)~class+order+family+log(k)+log(amax),exp),
   lmat      = Glmer(log(lmat)~class+order+family+log(linf),exp),
-  #mean_R_z  = Brter(log(mean_R_z-0.2)~log(linf)+m+fecundity+trophic+log(lmat)+log(k),transform = function(x){exp(x)+0.2},bag.fraction = 0.5,ntrees=0)
-  #mean_R_z  = Svmer(log(mean_R_z-0.2)~log(linf)+m+fecundity+trophic+log(lmat)+log(k),transform = function(x){exp(x)+0.2})
-  mean_R_z  = Svmer(log(mean_R_z-0.2)~log(linf)+log(m)+log(fecundity)+trophic+log(lmat)+log(k)+log(amax),transform = function(x){exp(x)+0.2})
+  mean_R_z  = Brter(log(mean_R_z-0.2)~log(linf)+log(m)+log(fecundity)+trophic+log(lmat)+log(k)+log(amax),transform = function(x){exp(x)+0.2},bag.fraction = 0.5,ntrees=0)
+  #mean_R_z  = Glmer(log(mean_R_z-0.2)~log(linf)+log(m)+log(fecundity)+trophic+log(lmat)+log(k)+log(amax),transform = function(x){exp(x)+0.2})
+  #mean_R_z  = Svmer(log(mean_R_z-0.2)~log(linf)+log(m)+log(fecundity)+trophic+log(lmat)+log(k)+log(amax),transform = function(x){exp(x)+0.2})
   #recsigma  = RecsigmaThorsonEtAl2014(),
   #recsteep  = RecsteepHeEtAl2006()
   #recauto   = RecautoThorsonEtAl2014()
 )
-# Fit to Fishbase data
+# Fit to Fishbase data -----
 steep_net$fit(steep_merged,impute = T)
 
 #steep_net$nodes$mean_R_z$fit(steep_merged)
@@ -96,7 +97,7 @@ ggplot(Cod) +
   scale_x_continuous() + 
   labs(x='Natural mortality (m)',y='Density')
 
-########################################
+####### Bluenose --------
 
 bwa <- steep_net$sample(list(
   species = 'Hyperoglyphe antarctica',
@@ -123,7 +124,7 @@ ggplot(bwa) +
   scale_y_log10(breaks=seq(0.1,1.1,0.2)) + 
   labs(x='Natural mortality rate (M)',y='Steepness')
 
-########################################
+#### Cross validation -------
 
 cross_val_net <- function(fishnet = NULL, data = NULL, folds = 10, layer = 'species', nodes = 'all', impute = T){
   
@@ -160,72 +161,13 @@ cross_val_net <- function(fishnet = NULL, data = NULL, folds = 10, layer = 'spec
 
 cross_val_net(fishnet = steep_net, data = steep_net$data, folds = 10, layer = 'species', nodes = 'mean_R_z')
 
-s_sub <- steep_merged %.% filter(!is.na(mean_R_z)) %.% group_by(species) %.% summarise(z = unique(mean_R_z)) %.% filter(!is.na(z))
-
-su_sub <- steep_merged %.% filter(!is.na(mean_R_z)) %.% group_by(species) %.% summarise(z = unique(mean_R_z)) %.% filter(!is.na(z))
-
-fb_full = subset(steep_net$data,id %in% model.frame(
-  log(mean_R_z-0.2)~id+log(linf)+log(m)+log(fecundity)+trophic+log(lmat)+log(k)+log(amax),steep_net$data)$id)
-
-nrow(fb_full)
-length(unique(fb_full$species))
-fb_full$species = factor(fb_full$species)
-spp <- unique(fb_full$species)
-spp_group <- sample(1:2,length(spp),replace=T)
-sp1 <- subset(fb_full,species %in% spp[spp_group==1])
-sp2 <- subset(fb_full,species %in% spp[spp_group==2])
-
-steep_net$fit(fb_full)
-
-cmp <- data.frame(
-  preds = steep_net$nodes$mean_R_z$predict(s_sub),
-  obs = s_sub$mean_R_z
-)
-
 ggplot(cmp) + geom_point(aes(x=preds,y=obs),size=3,alpha=0.3) +
   geom_abline(a=0,b=1) +
   scale_x_log10("Predicted k",breaks=c(0.1,0.2,0.5,1.0,2.0),limits=c(0.05,2)) + 
   scale_y_log10("Observed k",breaks=c(0.1,0.2,0.5,1.0,2.0),limits=c(0.05,2))
 
 
-par(las=1,mar=c(4,7,1,1))
-summary(brt$brt)
-
-brt$fit(sp1)
-cmp <- data.frame(
-  preds = brt$predict(sp2),
-  obs = sp2$k
-)
-ggplot(cmp) + geom_point(aes(x=preds,y=obs),size=3,alpha=0.3) +
-  geom_abline(a=0,b=1) +
-  scale_x_log10("Predicted k",breaks=c(0.1,0.2,0.5,1.0,2.0),limits=c(0.05,2)) + 
-  scale_y_log10("Observed k",breaks=c(0.1,0.2,0.5,1.0,2.0),limits=c(0.05,2))
-
-brt <- 
-  
-  Brter(
-    log(k) ~ class + order + 
-      swimmode + habit + feeding + diet + trophic + log(depthmax) + temp + 
-      fecundity + log(lmax),
-    exp,ntrees=2000)
-
-
-brt$fit(fb_full)
-par(las=1,mar=c(4,7,1,1))
-summary(brt$brt)
-
-brt$fit(sp1)
-cmp <- data.frame(
-  preds = brt$predict(sp2),
-  obs = sp2$k
-)
-ggplot(cmp) + geom_point(aes(x=preds,y=obs),size=3,alpha=0.3) +
-  geom_abline(a=0,b=1) +
-  scale_x_log10("Predicted k",breaks=c(0.1,0.2,0.5,1.0,2.0),limits=c(0.05,2)) + 
-  scale_y_log10("Observed k",breaks=c(0.1,0.2,0.5,1.0,2.0),limits=c(0.05,2))
-
-###########################################
-# Comparison of estiamted vs 'data'
+# Comparison of estiamted vs 'data' -----
 
 steep_net_test <- steep_net
 
@@ -298,7 +240,7 @@ preds_noImputation <- steep_net_noImputation$sample(dists(
 
 plot_samples(preds_noImputation,'Gadus morhua')
 
-###############################
+###### Skipjack ------
 
 steep_net$fit(subset(steep_merged,species!='Katsuwonus pelamis'))
 
