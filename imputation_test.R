@@ -13,9 +13,9 @@ fb$id <- 1:nrow(fb)
 fb$dummy <- 1.0
 
 # delete some k and linf values for testing purposes
-
-fb$linf[sample(x = nrow(fb),size = 2000)] <- NA
-fb$k[sample(x = nrow(fb),size = 2000)] <- NA
+fb_test1 <- fb
+fb_test1$linf[sample(x = nrow(fb),size = 2000)] <- NA
+fb_test1$k[sample(x = nrow(fb),size = 2000)] <- NA
 
 # Create test net for imputation absed on Bea14-----
 
@@ -42,15 +42,67 @@ impute_net <- Fishnet(
 
 no_impute_net <- impute_net
 # with imputation
-impute_net$fit(fb,impute = T)
+impute_net$fit(fb_test1,impute = T)
 # without imputation
-no_impute_net$fit(fb)
+no_impute_net$fit(fb_test1)
 
 # Cross validation; doesn't seem to matter much?
 
-cv_impute <- impute_net$nodes$m$cross(fb,20)
+cv_impute <- impute_net$nodes$m$cross(fb_test1,20)
 cv_impute2 <- impute_net$nodes$m$cross(impute_net$nodes$m$fit_data,20)  
 
-cv_no_impute <- no_impute_net$nodes$m$cross(fb,20)
+cv_no_impute <- no_impute_net$nodes$m$cross(fb_test1,20)
+
+# more systematic; reduce dataset to reduce pseudo-replication at species level ----
+require(dplyr)
+gmean <- function(x) exp(mean(log(x),na.rm=T))
+
+fb_red <- steep_merged %.% 
+  select(species, genus, family, class, order, mean_R_z, linf, m, fecundity, trophic, lmat, lmax , k, amax, habit, trophic, depthmax) %.% 
+  group_by(order,class,genus,family,species) %.% 
+  summarise(mean_R_z = unique(mean_R_z),
+            habit = unique(habit),
+            trophic = gmean(trophic), 
+            linf = gmean(linf), 
+            m = gmean(m), 
+            depthmax = gmean(depthmax),
+            fecundity = gmean(fecundity), 
+            trophic = gmean(trophic), 
+            lmax = gmean(lmax), 
+            lmat = gmean(lmat), 
+            k = gmean(k), 
+            amax = gmean(amax))
+
+
+no_impute_net <- impute_net
+# with imputation
+impute_net$fit(fb_red,impute = T)
+# without imputation
+no_impute_net$fit(fb_red)
+
+# Cross validation; 
+
+cv_impute <- impute_net$nodes$m$cross(fb_red,20)
+cv_impute2 <- impute_net$nodes$m$cross(impute_net$nodes$m$fit_data,20)  
+
+cv_no_impute <- no_impute_net$nodes$m$cross(fb_red,20)
+
+### testset on reduced fb set ----
+
+# delete some k and linf values for testing purposes
+fb_test2 <- fb_red
+fb_test2$linf[sample(x = nrow(fb_red),size = 400)] <- NA
+fb_test2$k[sample(x = nrow(fb_red),size = 400)] <- NA
+# with imputation
+impute_net$fit(fb_test2,impute = T)
+# without imputation
+no_impute_net$fit(fb_test2)
+
+# Cross validation; 
+
+cv_impute <- impute_net$nodes$m$cross(fb_test2,20)
+cv_impute2 <- impute_net$nodes$m$cross(impute_net$nodes$m$fit_data,20)  
+
+cv_no_impute <- no_impute_net$nodes$m$cross(fb_test2,20)
 
 
