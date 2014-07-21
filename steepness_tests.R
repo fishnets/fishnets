@@ -63,7 +63,7 @@ steep_net <- Fishnet(
   m         = Bayser(log(m) ~ f(family,model="iid")+f(class,model="iid")+log(k)+log(linf)+f(habit,model="iid")+log(depthmax)+trophic,exp),
   lmat      = Bayser(log(lmat) ~ f(family,model="iid")+log(k)+log(linf)+f(habit,model="iid")+log(depthmax),exp),
   recsigma  = RecsigmaThorsonEtAl2014(),
-  mean_R_z  = Brter(log(mean_R_z-0.2) ~  habit + log(linf) + log(k) + log(m)+ log(fecundity) +recsigma + trophic+log(depthmax),transform = function(x){exp(x)+0.2},ntrees =15000)
+  mean_R_z  = Brter(log(mean_R_z-0.2) ~  habit + log(linf) + log(k) + log(m)+ log(fecundity) +recsigma + trophic+log(depthmax),transform = function(x){exp(x)+0.2},ntrees =0,bag.fraction=0.9)
   
 )
 
@@ -73,17 +73,18 @@ steep_net$fit(steep_red,impute = T)
 # imputed data for all nodes, with only original steepness values
 testset <- cbind(subset(steep_net$data,select = -mean_R_z),steep_red['mean_R_z'])
 
-# data with only imputed steepness values, no originals
-trainset <- steep_net$data
-trainset$mean_R_z[!is.na(steep_red$mean_R_z)] <- NA
+# # data with only imputed steepness values, no originals
+# trainset <- steep_net$data
+# trainset$mean_R_z[!is.na(steep_red$mean_R_z)] <- NA
 
-#steep_net$nodes$mean_R_z = Bayser(log(mean_R_z-0.2)~log(linf)+log(m)+log(fecundity)+trophic+log(k)+log(depthmax),transform = function(x){exp(x)+0.2})
-#steep_net$nodes$mean_R_z$fit(testset)
+steep_net$nodes$mean_R_z  = Brter(log(mean_R_z-0.2) ~  habit + log(linf) + log(k) + log(m)+ log(fecundity) +recsigma + trophic+log(depthmax),transform = function(x){exp(x)+0.2},ntrees =2500,bag.fraction=0.5)
+
+steep_net$nodes$mean_R_z$fit(testset)
 
 plot(steep_net$nodes$mean_R_z$brt)
 summary(steep_net$nodes$mean_R_z$brt)
 
-Predicted <- steep_net$nodes$mean_R_z$predict(trainset)[!is.na(steep_red$mean_R_z)]
+Predicted <- steep_net$nodes$mean_R_z$predict(testset)[!is.na(steep_red$mean_R_z)]
 Observed <- steep_red$mean_R_z[!is.na(steep_red$mean_R_z)]
 
 self_pred <- lm(Observed~Predicted)
@@ -122,6 +123,18 @@ plot(steep_cv,pch=16)
 abline(lm_pred_steep$coeff[1],lm_pred_steep$coeff[2],col=2,lwd=2)
 abline(0,1,lwd=2)
 
+steep_net$nodes$mean_R_z  = Bayser(log(mean_R_z-0.2) ~  f(habit,model="iid") + log(linf) + log(k) + log(m)+ log(fecundity) +log(recsigma) + log(trophic) + log(depthmax),transform = function(x){exp(x)+0.2})
+
+steep_net$nodes$mean_R_z$fit(testset)
+
+steep_cv_bayes <- jacknife_cv(testset,steep_net,'mean_R_z')
+
+lm_pred_steep <- lm(Observed~Predicted,data=steep_cv_bayes)
+summary(lm_pred_steep)
+
+plot(steep_cv_bayes,pch=16)
+abline(lm_pred_steep$coeff[1],lm_pred_steep$coeff[2],col=2,lwd=2)
+abline(0,1,lwd=2)
 
 
 # check it ------
@@ -177,7 +190,7 @@ bwa <- steep_net$sample(list(
   linf = 92.5,
   k = 0.071,
   amax = 71  
-),samples = 10000)
+),samples = 1000)
 
 ggplot(bwa) + 
   geom_bar(aes(x=mean_R_z,y=..density..),fill='grey40') + 
@@ -185,58 +198,10 @@ ggplot(bwa) +
   labs(x='Steepness (z)',y='Density')
 
 ggplot(bwa) + 
-  geom_point(aes(x=m,y=mean_R_z),alpha=0.4) + 
+  geom_point(aes(x=trophic,y=mean_R_z),alpha=0.4) + 
   scale_x_log10(breaks=seq(0.1,1.1,0.2)) + 
   scale_y_log10(breaks=seq(0.1,1.1,0.2)) + 
-  labs(x='Natural mortality rate (M)',y='Steepness')
-
-#### Cross validation-------
-
-sub_data <- subset(mdata,!mdata[[layer]] %in% spp[cv_group==f])
-
-
-temp_net$fit(sub_data, impute = impute)
-
-cross_val_net <- function(fishnet = NULL, data = NULL, folds = 10, layer = 'species', nodes = 'all', impute = T){
-  
-  if (nodes == 'all') nodes <- names(fishnet$nodes)
-  # cross validate each node
-  pred <- vector("list", length(nodes))
-  names(pred) <- nodes
-  for(name in nodes){
-    cat('Cross-validating',name,'\n')    
-    # subset data to relevant data
-    if (!is.null(fishnet$nodes[[name]]$formula)){
-      mdata <- subset(data, id %in% model.frame(paste(paste(deparse(fishnet$nodes[[name]]$formula),collapse=''),'+id'),data)$id)
-    } else {mdata <- data}
-      
-    # random subsets
-    spp <- unique(mdata[[layer]])
-    cv_group <- sample(1:folds, length(spp), replace = T)
-  
-    # temp fishnet; don't want to over-write fitting from full net
-    temp_net <- fishnet
-      
-    for (f in 1:folds){
-      cat('CV fold',f,'\n')    
-      # take out layer data from fold f
-      sub_data <- subset(mdata,!mdata[[layer]] %in% spp[cv_group==f])
-      temp_net$fit(sub_data, impute = impute)
-      rmv <- which(colnames(mdata) == name)
-      test_data <- mdata[mdata[[layer]] %in% spp[cv_group==f],-rmv]
-      pred[[name]][[f]] <- data.frame(org = mdata[mdata[[layer]] %in% spp[cv_group==f],rmv],pred = temp_net$nodes[[name]]$predict(test_data))
-    }
-    cat('done','\n') 
-  }
-}
-
-cross_val_net(fishnet = steep_net, data = steep_net$data, folds = 10, layer = 'species', nodes = 'mean_R_z')
-
-ggplot(cmp) + geom_point(aes(x=preds,y=obs),size=3,alpha=0.3) +
-  geom_abline(a=0,b=1) +
-  scale_x_log10("Predicted k",breaks=c(0.1,0.2,0.5,1.0,2.0),limits=c(0.05,2)) + 
-  scale_y_log10("Observed k",breaks=c(0.1,0.2,0.5,1.0,2.0),limits=c(0.05,2))
-
+  labs(x='Trophic level',y='Steepness')
 
 # Comparison of estiamted vs 'data' -----
 
