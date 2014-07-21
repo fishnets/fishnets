@@ -57,7 +57,7 @@ cv_no_impute <- no_impute_net$nodes$m$cross(fb_test1,20)
 require(dplyr)
 gmean <- function(x) exp(mean(log(x),na.rm=T))
 
-fb_red <- steep_merged %.% 
+fb_red <- fb %.% 
   select(species, genus, family, class, order, mean_R_z, linf, m, fecundity, trophic, lmat, lmax , k, amax, habit, trophic, depthmax) %.% 
   group_by(order,class,genus,family,species) %.% 
   summarise(mean_R_z = unique(mean_R_z),

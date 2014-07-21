@@ -53,8 +53,17 @@ Bayser <- function(formula,transform=identity,factors.min=5){
   }
   
   self$predict <- function(data,errors=F,transform=T){
-    pdata <- nrow(data)
-    data <- as.data.frame(rbind(data,self$fit_data))
+    
+    data[,self$predictand] <- 1
+    
+    # subset the fit data to only model components; necessary to concatenate with prediction data
+    fdata <- model.frame(paste(self$predictand,'~',paste(self$predictors,collapse='+')),self$fit_data)
+    pdata <- model.frame(paste(self$predictand,'~',paste(self$predictors,collapse='+')),data)
+    
+    pdata[,self$predictand] <- NA
+    
+    ld <- nrow(pdata)
+    data <- as.data.frame(rbind(pdata,fdata))
     for(name in self$predictors){
       values <- data[,name]
       if(is.factor(values) | is.character(values)){
@@ -70,13 +79,12 @@ Bayser <- function(formula,transform=identity,factors.min=5){
         warning("Bayser removed term '",name,"' from formula because it had too few levels: ",uniques,". New formula: ",deparse(self$formula))
       }
     }
-    predictions <- inla(self$formula,data=data,control.predictor=list(compute=T))$summary.linear.predictor[1:pdata,1:2]
+    predictions <- inla(self$formula,data=data,control.predictor=list(compute=T))$summary.linear.predictor[1:ld,1:2]
     if(errors) return(as.data.frame(predictions))
     if(transform) self$transform(predictions$mean)
     else predictions$mean
   }
   
-   
   self$sample <- function(data){
     # Get predictions with errors and no transformation
     predictions <- self$predict(data,errors=T,transform=F)  
