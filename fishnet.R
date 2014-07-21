@@ -24,19 +24,21 @@ Fishnet <- function(...){
       self$nodes[[name]]$fit(data)
       
       if (impute){
+        # if no id field, append one
+        if (!any(colnames(data) == 'id')) data$id <- 1:nrow(data)
         # missing data to impute
         mdata <- which(is.na(data[name]))
         if (!is.null(self$nodes[[name]]$formula)){
-          mdata <- model.frame(paste(paste(deparse(self$nodes[[name]]$formula),collapse=''),'+id'),data)
+          mdata <- model.frame(paste(paste('~',self$nodes[[name]]$predictors,collapse='+'),'+id'),data[mdata,])$id
         }
         # impute if missing data
         if (length(mdata)>0){
-          pred <- self$nodes[[name]]$predict(data[mdata,])
+          pred <- self$nodes[[name]]$predict(data[match(mdata,data$id),])
           pred_ix <- names(pred)
           if (!is.null(pred_ix)){
             data[pred_ix,name] <- pred
           } else if (length(pred)>0){
-            data[mdata,name] <- pred
+            data[match(mdata,data$id),name] <- pred
           }
         }
       }

@@ -17,6 +17,10 @@ fb$dummy <- 1.0
 steep <- Steepness$create('./data/steepness')
 steep_merged <- Steepness$merge(steep,fb)
 
+# groom
+# fecundity of 1 is absurd unless boolean
+steep_merged$fecundity[steep_merged$fecundity==1] <- NA
+
 # Create test net for steepness -----
 
 steep_net <- Fishnet(
@@ -37,8 +41,8 @@ steep_net <- Fishnet(
   k         = Brter(log(k)~class+order+family+log(linf)+habit+log(depthmax)+trophic,exp),
   m         = Svmer(log(m)~class+order+family+log(k)+log(amax),exp),
   lmat      = Glmer(log(lmat)~class+order+family+log(linf),exp),
-  mean_R_z  = Brter(log(mean_R_z-0.2)~log(linf)+log(m)+log(fecundity)+trophic+log(lmat)+log(k)+log(amax),transform = function(x){exp(x)+0.2},bag.fraction = 0.5,ntrees=0)
-  #mean_R_z  = Glmer(log(mean_R_z-0.2)~log(linf)+log(m)+log(fecundity)+trophic+log(lmat)+log(k)+log(amax),transform = function(x){exp(x)+0.2})
+  #mean_R_z  = Brter(log(mean_R_z-0.2)~log(linf)+log(m)+log(fecundity)+trophic+log(lmat)+log(k)+log(amax),transform = function(x){exp(x)+0.2},bag.fraction = 0.2,ntrees=0)
+  mean_R_z  = Glmer(log(mean_R_z-0.2)~log(linf)+log(m)+log(fecundity)+trophic+log(lmat)+log(k)+log(amax),transform = function(x){exp(x)+0.2})
   #mean_R_z  = Svmer(log(mean_R_z-0.2)~log(linf)+log(m)+log(fecundity)+trophic+log(lmat)+log(k)+log(amax),transform = function(x){exp(x)+0.2})
   #recsigma  = RecsigmaThorsonEtAl2014(),
   #recsteep  = RecsteepHeEtAl2006()
@@ -46,11 +50,130 @@ steep_net <- Fishnet(
 )
 # Fit to Fishbase data -----
 steep_net$fit(steep_merged,impute = T)
+#steep_net$nodes$mean_R_z$fit(steep_net$data)
+#summary(steep_net$nodes$mean_R_z$glm)
+summary(steep_net$nodes$linf$glm)
+summary(steep_net$nodes$mean_R_z$glm)
+
+testset <- cbind(subset(steep_net$data,select = -mean_R_z),steep_merged['mean_R_z'])
+trainset <- steep_net$data
+
+trainset$mean_R_z[!is.na(steep_merged$mean_R_z)] <- NA
+
+
+steep_net$nodes$mean_R_z = Brter(log(mean_R_z-0.2)~ species+log(linf)+log(m)+log(fecundity)+trophic+log(lmat)+log(k)+log(amax),transform = function(x){exp(x)+0.2},ntrees=5000)
+
+steep_net$nodes$mean_R_z = Glmer(log(mean_R_z-0.2)~log(linf)+log(m)+log(fecundity)+trophic+log(lmat)+log(k)+log(amax),transform = function(x){exp(x)+0.2})
+
+steep_net$nodes$mean_R_z$fit(testset)
+plot(steep_net$nodes$mean_R_z$glm)
+summary(steep_net$nodes$mean_R_z$glm)
+
+# predict back from imputated data to data
+steep_net$nodes$mean_R_z$fit(trainset)
+pred <- steep_net$nodes$mean_R_z$predict(trainset)[!is.na(steep_merged$mean_R_z)]
+org <- steep_merged$mean_R_z[!is.na(steep_merged$mean_R_z)]
+
+plot(pred,org)
+abline(lm(org~pred)$coeff[1],lm(org~pred)$coeff[2],col=2,lwd=2)
+summary(lm(org~pred))
+abline(a=0,b=1,lwd=2)
+
+# how good is imputation?
+steep_net$nodes$mean_R_z$fit(steep_merged)
+plot(steep_net$nodes$mean_R_z$glm)
+summary(steep_net$nodes$mean_R_z$glm)
+
+
+#summary(steep_net$nodes$mean_R_z$svm)
+
+steep_net_noImpute <- steep_net
+steep_net_noImpute$fit(steep_merged,impute = F)
+summary(steep_net_noImpute$nodes$linf$glm)
 
 #steep_net$nodes$mean_R_z$fit(steep_merged)
-summary(steep_net$nodes$mean_R_z$glm)
+summary(steep_net_noImpute$nodes$mean_R_z$glm)
+summary(steep_net_noImpute$nodes$mean_R_z$brt)
+summary(steep_net_noImpute$nodes$mean_R_z$svm)
+
+gmean <- function(x) exp(mean(log(x)))
+
+steep_red <- steep_merged %.% 
+  select(species, genus, family, class, order, mean_R_z, linf, m, fecundity, trophic, lmat, lmax , k, amax, habit, trophic, depthmax) %.% 
+  group_by(order,class,genus,family,species) %.% 
+  summarise(mean_R_z = unique(mean_R_z),
+            habit = unique(habit),
+            trophic = gmean(trophic), 
+            linf = gmean(linf), 
+            m = gmean(m), 
+            depthmax = gmean(depthmax),
+            fecundity = gmean(fecundity), 
+            trophic = gmean(trophic), 
+            lmax = gmean(lmax), 
+            lmat = gmean(lmat), 
+            k = gmean(k), 
+            amax = gmean(amax))
+
+steep_net$fit(steep_red,impute = T)
+
+testset <- cbind(subset(steep_net$data,select = -mean_R_z),steep_red['mean_R_z'])
+trainset <- steep_net$data
+
+trainset$mean_R_z[!is.na(steep_red$mean_R_z)] <- NA
+
+steep_net$nodes$mean_R_z = Brter(log(mean_R_z-0.2)~ order+log(linf)+log(m)+log(fecundity)+trophic+log(lmat)+log(k)+log(amax),transform = function(x){exp(x)+0.2},ntrees=5000,bag.fraction=0.8)
+
+steep_net$nodes$mean_R_z = Glmer(log(mean_R_z-0.2)~order+class+log(linf)+log(m)+log(fecundity)+trophic+log(lmat)+log(k)+log(amax),transform = function(x){exp(x)+0.2})
+
+steep_net$nodes$mean_R_z$fit(testset)
+plot(steep_net$nodes$mean_R_z$brt,)
 summary(steep_net$nodes$mean_R_z$brt)
-summary(steep_net$nodes$mean_R_z$svm)
+
+# predict back from imputated data to data
+steep_net$nodes$mean_R_z$fit(trainset)
+pred <- steep_net$nodes$mean_R_z$predict(trainset)[!is.na(steep_red$mean_R_z)]
+org <- steep_red$mean_R_z[!is.na(steep_red$mean_R_z)]
+
+plot(pred,org)
+abline(lm(org~pred)$coeff[1],lm(org~pred)$coeff[2],col=2,lwd=2)
+summary(lm(org~pred))
+abline(a=0,b=1,lwd=2)
+
+### try a different net
+
+steep_alt <- Fishnet(
+  species   = SpeciesRandom(),
+  genus     = GenusParser(),
+  family    = FamilyLookupper(),
+  order     = OrderLookupper(),
+  class     = ClassLookupper(),
+  
+  habit     = TaxonomicImputer('habit'),
+  depthmax  = TaxonomicImputer('depthmax',c(log,exp)),
+  trophic   = TaxonomicImputer('trophic',c(log,exp)),
+  lmax      = TaxonomicImputer('lmax',c(log,exp)),
+  amax      = TaxonomicImputer('amax',c(log,exp)),
+  
+  linf      = Bayser(log(linf) ~ f(family,model="iid")+f(class,model="iid")+log(lmax),exp),
+  fecundity = Bayser(log(fecundity) ~ f(family,model="iid")+f(class,model="iid") + log(linf) + log(depthmax),exp),
+  k         = Bayser(log(k) ~ f(family,model="iid") + log(linf) + f(habit,model="iid") + log(depthmax),exp),
+  m         = Bayser(log(m) ~ f(family,model="iid")+f(class,model="iid")+log(k)+log(linf)+f(habit,model="iid")+log(depthmax)+trophic,exp),
+  lmat      = Bayser(log(lmat) ~ f(family,model="iid")+log(k)+log(linf)+f(habit,model="iid")+log(depthmax),exp),
+  mean_R_z  = Brter(log(mean_R_z-0.2) ~  habit + log(linf) + log(k) + log(m)+ log(fecundity)  + trophic+log(depthmax),transform = function(x){exp(x)+0.2},ntrees =15000)
+  
+)
+
+steep_alt$fit(steep_red,impute=T)
+
+pred = steep_alt$nodes$m$predict(steep_red)
+plot(log(pred),log(steep_red$m))
+abline(0,1)
+
+testset <- cbind(subset(steep_alt$data,select = -mean_R_z),steep_red['mean_R_z'])
+
+pred = steep_alt$nodes$mean_R_z$predict(steep_alt$data[!is.na(steep_red$mean_R_z),])
+plot((pred),steep_red$mean_R_z[!is.na(steep_red$mean_R_z)],pch = as.numeric(steep_red$order[!is.na(steep_red$mean_R_z)]))
+abline(0,1)
 
 # check it ------
 
@@ -124,7 +247,12 @@ ggplot(bwa) +
   scale_y_log10(breaks=seq(0.1,1.1,0.2)) + 
   labs(x='Natural mortality rate (M)',y='Steepness')
 
-#### Cross validation -------
+#### Cross validation-------
+
+sub_data <- subset(mdata,!mdata[[layer]] %in% spp[cv_group==f])
+
+
+temp_net$fit(sub_data, impute = impute)
 
 cross_val_net <- function(fishnet = NULL, data = NULL, folds = 10, layer = 'species', nodes = 'all', impute = T){
   
