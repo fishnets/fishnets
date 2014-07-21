@@ -1,3 +1,5 @@
+require(INLA)
+
 #' A network node that predicts based a bayesian model estiamted using Laplace approximation (INLA)
 #' 
 #' @author Philipp Neubauer
