@@ -9,6 +9,7 @@ source('collate.R')
 
 # Load the Fishbase data
 fb <- FishbaseWeb$read('data/fishbase-web')
+<<<<<<< Updated upstream
 # Load Gislason data
 gs <- GislasonEtAl2010Data$read('data/gislason-et-al-2010')
 
@@ -30,6 +31,9 @@ imputer <- Fishnet(
 imputer$fit(fb)
 gs <- imputer$predict(gs)
 
+=======
+gs <- GislasonEtAl2010Data$read('data/gislason-et-al-2010')
+>>>>>>> Stashed changes
 
 # Source in m related nodes (they might nt be in collate.R yet)
 # charnov 2013
@@ -44,6 +48,7 @@ cea13fit$fit(fb)
 
 cea13$cross(fb)
 cea13fit$cross(fb)
+<<<<<<< Updated upstream
 
 with(gs,plot(log(m/k)~log(l/linf)))
 gs$lmat = gs$l
@@ -83,3 +88,8 @@ hist(brt.full$sample(brt.full$expand(data.frame(k=.3,amax=5),1000)))
 summary(brt.full$brt)
 nrow(fb.full)
 
+=======
+
+brt1 <- Brter(log(m)~log(amax),exp)
+brt1$fit(fb)
+>>>>>>> Stashed changes
