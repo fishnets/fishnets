@@ -1,10 +1,10 @@
 #' A `Node` for matural mortality based on
-#' [Charnov et al 2013]() Equation 3
-MCharnovEtAl2013 <- function(){
-  self <- extend(Node,'MCharnovEtAl2013')
+#' [Then et al 2014]() 
+MThenEtAl2014 <- function(){
+  self <- extend(Node,'MThenEtAl2014')
 
   self$predictand <- 'm'
-  self$predictors <- c('linf','lmat','k')
+  self$predictors <- c('amax')
   
   self$fit <- function(data){
     predicted <- log(self$predict(data))
@@ -13,7 +13,7 @@ MCharnovEtAl2013 <- function(){
   }
   
   self$predict <- function(data){
-    with(data,((lmat/linf)^-1.5)*k)
+    rep(1,nrow(data))
   }
   
   self$sample <- function(data){
