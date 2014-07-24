@@ -4,13 +4,11 @@ MCharnovEtAl2013Fitted <- function(){
   self <- extend(MCharnovEtAl2013,'MCharnovEtAl2013Fitted')
 
   self$fit <- function(data){
-    predicted <- log(self$predict(data))
-    observed <- log(data$m)
-    self$error <- sd(predicted-observed,na.rm=T)
+    self$glm <- glm(log(m)~log(lmat/linf)+log(k),data)
   }
   
   self$predict <- function(data){
-    with(data,((lmat/linf)^-1.5)*k)
+    predict.glm(self$glm,newdata=data,type='response',se.fit=TRUE)
   }
   
   self
