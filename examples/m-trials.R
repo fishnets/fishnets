@@ -1,3 +1,4 @@
+
 rm(list=ls())
 
 require(ggplot2)
@@ -46,8 +47,8 @@ hist(brt.min$sample(brt.min$expand(data.frame(k=.3,amax=5),1000)))
 summary(brt.min$brt)
 nrow(fb.min)
 
-brt.full <- Brter(log(m)~class+order+family+log(k)+log(amax),exp)
-fb.full <- subset(fb,!is.na(class) & !is.na(order)) & !is.na(family) & !is.na(k) & !is.na(amax))
+brt.full <- Brter(log(m)~class+order+family+log(linf)+log(temp)+log(k)+log(amax),exp)
+fb.full <- subset(fb,!is.na(class) & !is.na(order) & !is.na(family) & !is.na(linf) & !is.na(temp) & temp>0 & !is.na(k) & !is.na(amax))
 brt.full$fit(fb.full)
 brt.full$cross(fb.full)
 hist(brt.full$sample(brt.full$expand(data.frame(k=.3,amax=5),1000)))
