@@ -1,15 +1,14 @@
 #' A `Node` for matural mortality based on
-#' [Charnov et al 2013]() Equation 3
-MCharnovEtAl2013Fitted <- function(){
-  self <- extend(MCharnovEtAl2013,'MCharnovEtAl2013Fitted')
+#' [Then et al 2014]() 
+MThenEtAl2014Fitted <- function(){
+  self <- extend(MThenEtAl2014,'MThenEtAl2014Fitted')
 
   self$fit <- function(data){
-    self$glm <- glm(log(m/k)~ -1 + log(lmat/linf),data=data)
+    
   }
   
   self$predict <- function(data){
-    m_k <- predict.glm(self$glm,newdata=data,type='response')
-    exp(m_k)*data$k
+    
   }
   
   self$sample <- function(data){
@@ -20,7 +19,7 @@ MCharnovEtAl2013Fitted <- function(){
     # Sample from normal distribution with that sigma
     preds <- rnorm(nrow(predictions),mean=predictions$fit,sigma)
     # Apply post transformation
-    exp(preds)*data$k
+    # ...
   }
   
   self
