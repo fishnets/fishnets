@@ -23,3 +23,4 @@ source('fishnet.R')
 
 source('data/fishbase-2000/fishbase-2000.R')
 source('data/fishbase-web/fishbase-web.R')
+source('data/gislason-et-al-2010/gislason-et-al-2010.R')
