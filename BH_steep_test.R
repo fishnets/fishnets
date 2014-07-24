@@ -23,12 +23,13 @@ steep_merged$fecundity[steep_merged$fecundity==1] <- NA
 
 # geometric mean
 gmean <- function(x) exp(mean(log(x),na.rm=T))
+require(dplyr)
 
 # reduce dataset; gometric means for paramters by species
 steep_red <- steep_merged %.% 
-  select(species, genus, family, class, order, mean_R_z, linf, m, fecundity, trophic, lmat, lmax , k, amax, habit, trophic, depthmax) %.% 
+  select(species, genus, family, class, order, mean_BH_z, linf, m, fecundity, trophic, lmat, lmax , k, amax, habit, trophic, depthmax) %.% 
   group_by(order,class,genus,family,species) %.% 
-  summarise(mean_R_z = unique(mean_R_z),
+  summarise(mean_BH_z = unique(mean_BH_z),
             habit = unique(habit),
             trophic = gmean(trophic), 
             linf = gmean(linf), 
@@ -39,12 +40,20 @@ steep_red <- steep_merged %.%
             lmax = gmean(lmax), 
             lmat = gmean(lmat), 
             k = gmean(k), 
-            amax = gmean(amax))
+            amax = gmean(amax),
+            recsigma = NA)
 
 
 # build a net for steepnes. Use Bayesian nodes in an attempt to not overfit (i.e., to egt better predictive power)
 
-steep_net <- Fishnet(
+logit <- function(x) log(x/(1-x))
+logit_inv <- function(xt) 1/(1 + exp(-xt))
+BH_tr <- function(h) h/0.8-0.25
+BH_tr_inv <- function(ht) (ht+0.25)*0.8
+logit_BH <- function(h) logit(BH_tr(h))
+logit_BH_inv <- function(ht) BH_tr_inv(logit_inv(ht))
+
+BH_net <- Fishnet(
   species   = SpeciesRandom(),
   genus     = GenusParser(),
   family    = FamilyLookupper(),
@@ -63,29 +72,45 @@ steep_net <- Fishnet(
   m         = Bayser(log(m) ~ f(family,model="iid")+f(class,model="iid")+log(k)+log(linf)+f(habit,model="iid")+log(depthmax)+trophic,exp),
   lmat      = Bayser(log(lmat) ~ f(family,model="iid")+log(k)+log(linf)+f(habit,model="iid")+log(depthmax),exp),
   recsigma  = RecsigmaThorsonEtAl2014(),
-  mean_R_z  = Brter(log(mean_R_z-0.2) ~  habit + log(linf) + log(k) + log(m)+ log(fecundity) +recsigma + trophic+log(depthmax),transform = function(x){exp(x)+0.2},ntrees =0,bag.fraction=0.9)
+  mean_BH_z  = Brter(logit_BH(mean_BH_z) ~  habit + log(linf) + log(k) + log(m)+ log(fecundity) +recsigma + trophic+log(depthmax),transform = logit_BH_inv,ntrees =0,bag.fraction=0.9)
   
 )
 
+# fit the BH_et to the summarised fishbase data
+BH_net$fit(steep_red,impute = T)
 
-steep_net$fit(steep_red,impute = T)
+# function to make testset for cross validation
+make_testset <- function(net,data,name){
+  testset <- data.frame(net$data[,-which(colnames(net$data) == name)], name = data[name])
+  testset
+}
 
-# imputed data for all nodes, with only original steepness values
-testset <- cbind(subset(steep_net$data,select = -mean_R_z),steep_red['mean_R_z'])
+testset <- make_testset(BH_net,steep_red,'mean_BH_z')
+
+# CV meta function
+crossval <- function(net,data,name){
+  net$nodes[[name]]$cross(make_testset(net,data,name))
+}
+
+# do CV on nodes other than steepness
+crossval(BH_net,steep_red,'linf')
+crossval(BH_net,steep_red,'lmat')
+
 
 # # data with only imputed steepness values, no originals
-# trainset <- steep_net$data
-# trainset$mean_R_z[!is.na(steep_red$mean_R_z)] <- NA
+# trainset <- BH_net$data
+# trainset$mean_BH_z[!is.na(steep_red$mean_BH_z)] <- NA
 
-steep_net$nodes$mean_R_z  = Brter(log(mean_R_z-0.2) ~  habit + log(linf) + log(k) + log(m)+ log(fecundity) +recsigma + trophic+log(depthmax),transform = function(x){exp(x)+0.2},ntrees =2500,bag.fraction=0.5)
+BH_net$nodes$mean_BH_z  = Brter(logit_BH(mean_BH_z) ~  habit + log(linf) + log(k) + log(m)+ log(fecundity) +recsigma + trophic+log(depthmax),transform = logit_BH_inv,ntrees =3500,bag.fraction=0.9)
 
-steep_net$nodes$mean_R_z$fit(testset)
 
-plot(steep_net$nodes$mean_R_z$brt)
-summary(steep_net$nodes$mean_R_z$brt)
+BH_net$nodes$mean_BH_z$fit(testset)
 
-Predicted <- steep_net$nodes$mean_R_z$predict(testset)[!is.na(steep_red$mean_R_z)]
-Observed <- steep_red$mean_R_z[!is.na(steep_red$mean_R_z)]
+plot(BH_net$nodes$mean_BH_z$brt)
+summary(BH_net$nodes$mean_BH_z$brt)
+
+Predicted <- BH_net$nodes$mean_BH_z$predict(testset)[!is.na(steep_red$mean_BH_z)]
+Observed <- steep_red$mean_BH_z[!is.na(steep_red$mean_BH_z)]
 
 self_pred <- lm(Observed~Predicted)
 summary(self_pred)
@@ -109,12 +134,12 @@ jacknife_cv <- function(data,net,node){
     test[[node]] <- NA
     testnet$nodes[[node]]$fit(train)
     pred[i] <- testnet$nodes[[node]]$predict(test)
-      
+    
   }
   data.frame(Predicted = pred,Observed = data[[node]])
 }
 
-steep_cv <- jacknife_cv(testset,steep_net,'mean_R_z')
+steep_cv <- jacknife_cv(testset,BH_net,'mean_BH_z')
 
 lm_pred_steep <- lm(Observed~Predicted,data=steep_cv)
 summary(lm_pred_steep)
@@ -123,11 +148,11 @@ plot(steep_cv,pch=16)
 abline(lm_pred_steep$coeff[1],lm_pred_steep$coeff[2],col=2,lwd=2)
 abline(0,1,lwd=2)
 
-steep_net$nodes$mean_R_z  = Bayser(log(mean_R_z-0.2) ~ f(family,model="iid") + f(habit,model="iid") + log(linf) + log(k) + log(m)+ log(fecundity) +log(recsigma) + log(trophic) + log(depthmax),transform = function(x){exp(x)+0.2})
+BH_net$nodes$mean_BH_z  = Bayser(log(mean_BH_z-0.2) ~ log(linf) + log(k) + log(m)+ log(fecundity) +log(recsigma)+log(m)*log(recsigma) + log(trophic) + log(depthmax),transform = function(x){exp(x)+0.2})
 
-steep_net$nodes$mean_R_z$fit(testset)
+BH_net$nodes$mean_BH_z$fit(testset)
 
-steep_cv_bayes <- jacknife_cv(testset,steep_net,'mean_R_z')
+steep_cv_bayes <- jacknife_cv(testset,BH_net,'mean_BH_z')
 
 lm_pred_steep <- lm(Observed~Predicted,data=steep_cv_bayes)
 summary(lm_pred_steep)
@@ -137,48 +162,9 @@ abline(lm_pred_steep$coeff[1],lm_pred_steep$coeff[2],col=2,lwd=2)
 abline(0,1,lwd=2)
 
 
-# check it ------
-
-canary <- steep_net$sample(list(
-  species = 'Sebastes pinniger'
-),samples = 1000)
-
-ggplot(canary) + 
-  geom_bar(aes(x=mean_R_z,y=..density..),fill='grey40') + 
-  scale_x_continuous(limits=c(0,6)) + 
-  labs(x='Steepness (z)',y='Density')
-
-salmo <- steep_net$sample(list(
-  species = 'Salmo salar'
-),samples = 1000)
-
-ggplot(salmo) + 
-  geom_bar(aes(x=mean_R_z,y=..density..),fill='grey40') + 
-  scale_x_continuous(limits=c(0,6)) + 
-  labs(x='Steepness (z)',y='Density')
-
-Cod <- steep_net$sample(list(
-  species = 'Gadus morhua'
-),samples = 1000)
-
-ggplot(Cod) + 
-  geom_bar(aes(x=mean_R_z,y=..density..),fill='grey40') + 
-  scale_x_continuous(limits=c(0,5)) + 
-  labs(x='Steepness (z)',y='Density')
-
-
-Herring <- steep_net$sample(list(
-  species = 'Clupea Harengus'
-),samples = 1000)
-
-ggplot(Herring) + 
-  geom_bar(aes(x=mean_R_z,y=..density..),fill='grey40') + 
-  scale_x_continuous(limits=c(0,6)) + 
-  labs(x='Steepness (z)',y='Density')
-
 ####### Bluenose --------
 
-bwa <- steep_net$sample(list(
+bwa <- BH_net$sample(list(
   species = 'Hyperoglyphe antarctica',
   # Maximum length, temperature and 
   # maximum depth from Fishbase
@@ -190,60 +176,74 @@ bwa <- steep_net$sample(list(
   linf = 92.5,
   k = 0.071,
   amax = 71  
-),samples = 1000)
+),samples = 10000)
 
 ggplot(bwa) + 
-  geom_bar(aes(x=mean_R_z,y=..density..),fill='grey40') + 
-  scale_x_continuous(limits=c(0,4)) + 
+  geom_bar(aes(x=mean_BH_z,y=..density..),fill='grey40') + 
+  scale_x_continuous(limits=c(0.2,1)) + 
   labs(x='Steepness (z)',y='Density')
 
 ggplot(bwa) + 
-  geom_point(aes(x=trophic,y=mean_R_z),alpha=0.4) + 
+  geom_point(aes(x=m,y=mean_BH_z),alpha=0.4) + 
   scale_x_log10(breaks=seq(0.1,1.1,0.2)) + 
   scale_y_log10(breaks=seq(0.1,1.1,0.2)) + 
-  labs(x='Trophic level',y='Steepness')
+  labs(x='Natural mortality',y='Steepness')
+
+# how much information is gained from life-history
+
+bwa.org <- BH_net$sample(list(
+  species = 'Hyperoglyphe antarctica'),samples = 10000)
+
+ggplot(bwa.org) + 
+  geom_bar(aes(x=mean_BH_z,y=..density..),fill='grey40') + 
+  scale_x_continuous(limits=c(0.2,1)) + 
+  labs(x='Steepness (z)',y='Density')
+
 
 # Comparison of estiamted vs 'data' -----
 
-steep_net_test <- steep_net
+BH_net_test <- BH_net
 
 #' Plot density histograms
-plot_samples <- function(samples,species_,pars=c('linf','k','m','mean_R_z')){
-  data = subset(steep_merged,species==species_)
+plot_samples <- function(samples,inp_data,species_,pars=c('linf','k','m','mean_BH_z')){
+  datas = subset(inp_data,species==species_)
   
   melted <- melt(samples[,pars])
-  data_melted <- melt(data[,pars])
+  data_melted <- melt(datas[,pars])
   ggplot(melted,aes(x=value)) +
-    geom_bar(data=data_melted,aes(y = ..density..)) +
+    geom_bar(data=data_melted,aes(y = 1)) +
     geom_density(fill=hsv(0,0.7,0.7),alpha=0.5) +
     facet_wrap(~variable,scales='free') + 
     labs(x='',y='Density') + 
     theme(strip.text.x=element_text(size=10))
 }
 
-steep_net_test$fit(subset(steep_merged,species!='Gadus morhua'),impute = T)
 
-preds <- steep_net_test$sample(list(
-    species = 'Gadus morhua'
-  ))
+# fit test net
+BH_net_test$fit(subset(steep_red,species!='Gadus morhua'),impute = T)
 
-plot_samples(preds,'Gadus morhua')
+# predictions
 
-plot_samples(
-  
-  steep_net_test$sample(list(
-    species = 'Gadus morhua',
-    swimmode = 'subcarangiform',
-    habit = 'benthopelagic',
-    depthmax = 600,
-    temp = 5,
-    lmax = 132
-  )),
-  
+preds.nlh <- BH_net_test$sample(list(
+  species = 'Gadus morhua'
+),samples=1000)
+
+plot_samples(preds.nlh,steep_merged,'Gadus morhua')
+
+preds.slh <- BH_net_test$sample(list(
+  species = 'Gadus morhua',
+  swimmode = 'subcarangiform',
+  habit = 'benthopelagic',
+  depthmax = 600,
+  temp = 5,
+  lmax = 132
+),samples = 1000)
+
+plot_samples(preds.slh,steep_merged,
   'Gadus morhua'
 )
 
-preds <- steep_net$sample(dists(
+preds.lh <- BH_net$sample(dists(
   species =  Fixed('Gadus morhua'),
   swimmode = Fixed('subcarangiform'),
   habit = Fixed('benthopelagic'),
@@ -256,14 +256,14 @@ preds <- steep_net$sample(dists(
 ),1000)
 
 
-plot_samples(preds,'Gadus morhua')
+plot_samples(preds.lh,steep_merged,'Gadus morhua')
 
 # without imputation
 
-steep_net_noImputation <- steep_net_test
-steep_net_noImputation$fit(subset(steep_merged,species!='Gadus morhua'), impute = F)
+BH_net_noImputation <- BH_net_test
+BH_net_noImputation$fit(subset(steep_merged,species!='Gadus morhua'), impute = F)
 
-preds_noImputation <- steep_net_noImputation$sample(dists(
+preds_noImputation <- BH_net_noImputation$sample(dists(
   species =  Fixed('Gadus morhua'),
   swimmode = Fixed('subcarangiform'),
   habit = Fixed('benthopelagic'),
@@ -273,17 +273,17 @@ preds_noImputation <- steep_net_noImputation$sample(dists(
   linf = Normal(110,20),
   k = Triangle(0.07,0.13,0.35),
   amax=Fixed(20)
-),10000)
+),1000)
 
 plot_samples(preds_noImputation,'Gadus morhua')
 
 ###### Skipjack ------
 
-steep_net$fit(subset(steep_merged,species!='Katsuwonus pelamis'))
+BH_net_test$fit(subset(steep_merged,species!='Katsuwonus pelamis'))
 
 plot_samples(
   
-  steep_net$sample(list(
+  BH_net$sample(list(
     species = 'Katsuwonus pelamis',
     family = 'Scombridae'
   )),
@@ -293,7 +293,7 @@ plot_samples(
 
 plot_samples(
   
-  steep_net$sample(dists(
+  BH_net$sample(dists(
     species = Fixed('Katsuwonus pelamis'),
     family = Fixed('Scombridae'),
     depthmax = Fixed(260),
@@ -306,7 +306,7 @@ plot_samples(
 
 plot_samples(
   
-  steep_net$sample(dists(
+  BH_net$sample(dists(
     species = Fixed('Katsuwonus pelamis'),
     family = Fixed('Scombridae'),
     depthmax = Fixed(260),

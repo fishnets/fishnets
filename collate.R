@@ -12,6 +12,7 @@ source('taxonomic-imputer.R')
 source('glmer.R')
 source('svmer.R')
 source('brter.R')
+source('bayser.R')
 
 source('recsteep-he-et-al-2006.R')
 source('recsigma-thorson-et-al-2014.R')
