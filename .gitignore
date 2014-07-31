@@ -4,3 +4,5 @@
 
 # Ignore R command history
 .Rhistory
+.Rproj.user
+*.Rproj

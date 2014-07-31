@@ -8,7 +8,8 @@ require(dismo)
 #' @param formula A formula for the terms to be included in the BRT
 #' @param transform A function to apply to predicted value e.g. if formula is log(k)~... use exp
 #' @param autotrees Should the number of trees be optimised usind gbm.step?
-Brter <- function(formula,transform=identity,ntrees=2000){
+Brter <- function(formula,transform=identity,ntrees=2000,
+                  bag.fraction = 0.5){
   self <- extend(Node,'Brter')
   
   self$formula <- formula
@@ -30,7 +31,7 @@ Brter <- function(formula,transform=identity,ntrees=2000){
         family = "gaussian",
         tree.complexity = 10,
         learning.rate = 0.001,
-        bag.fraction = 0.5,
+        bag.fraction = bag.fraction,
         n.trees = self$ntrees
       )
     } else {
@@ -41,7 +42,7 @@ Brter <- function(formula,transform=identity,ntrees=2000){
         family = "gaussian",
         tree.complexity = 10,
         learning.rate = 0.001,
-        bag.fraction = 0.5,
+        bag.fraction = bag.fraction,
         max.trees = 5000
       )
     }
