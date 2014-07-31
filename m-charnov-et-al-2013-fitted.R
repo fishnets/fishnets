@@ -4,12 +4,16 @@ MCharnovEtAl2013Fitted <- function(){
   self <- extend(MCharnovEtAl2013,'MCharnovEtAl2013Fitted')
 
   self$fit <- function(data){
-    self$glm <- glm(log(m/k)~ -1 + log(lmat/linf),data=data)
+    self$glm <- glm(log(m/k) ~ -1 + log(lmat/linf),data=data)
   }
   
   self$predict <- function(data){
-    m_k <- predict.glm(self$glm,newdata=data,type='response')
-    exp(m_k)*data$k
+    logmk <- predict.glm(self$glm,newdata=data,type='response')
+    exp(logmk)*data$k
+  }
+  
+  self$n <- function(data) {
+    # number of data points used for fitting
   }
   
   self$sample <- function(data){
