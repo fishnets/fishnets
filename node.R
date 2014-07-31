@@ -29,7 +29,8 @@ Node <- function(){
   #' @param ... Other arguments to fit function
   self$cross <- function(data,folds=10){
     # Begin by removing all data rows with NAs for variable of interest
-    data = data[!is.na(data[,self$predictand]),]
+    data <- model.frame(paste(self$predictand,'~',paste(self$predictors,collapse='+')),data)
+    # data = data[!is.na(data[,self$predictand]),]
     # Randomly assign rows of data to a fold
     # Do this in a way that divides the data as evenly as possible..
     # Systematically assign folder number to give very close to even numbers in each fold...

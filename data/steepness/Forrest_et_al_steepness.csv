@@ -1,0 +1,10 @@
+species,mean_BH_z,sd_BH_z,mean_R_z,sd_R_z
+Sebastes goodei,0.6,0.18,0.56,0.22
+Sebastes paucispinus,0.5,0.15,0.45,0.14
+Sebastes entomelas,0.6,0.17,0.3,0.05
+Sebastes pinneger,0.76,0.05,1.22,0.14
+Sebastes melanops,0.72,0.14,0.89,0.24
+Sebastes flavidus,0.72,0.12,0.83,0.17
+Sebastes polyspinis,0.7,0.13,0.84,0.32
+Sebastes variabilis,0.75,0.1,0.96,0.24
+Sebastes aleutianus,0.75,0.11,0.99,0.34
