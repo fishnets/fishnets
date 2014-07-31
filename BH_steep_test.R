@@ -236,12 +236,16 @@ preds.slh <- BH_net_test$sample(list(
   habit = 'benthopelagic',
   depthmax = 600,
   temp = 5,
-  lmax = 132
+  lmax = 132,
 ),samples = 1000)
 
 plot_samples(preds.slh,steep_merged,
   'Gadus morhua'
 )
+
+m.k <- mean(as.numeric(subset(steep_merged,subset = species == 'Gadus morhua',select = 'k')$k))
+
+sd.k <- sqrt(var(as.numeric(subset(steep_merged,subset = species == 'Gadus morhua',select = 'k')$k)))
 
 preds.lh <- BH_net$sample(dists(
   species =  Fixed('Gadus morhua'),
@@ -258,62 +262,43 @@ preds.lh <- BH_net$sample(dists(
 
 plot_samples(preds.lh,steep_merged,'Gadus morhua')
 
-# without imputation
-
-BH_net_noImputation <- BH_net_test
-BH_net_noImputation$fit(subset(steep_merged,species!='Gadus morhua'), impute = F)
-
-preds_noImputation <- BH_net_noImputation$sample(dists(
-  species =  Fixed('Gadus morhua'),
-  swimmode = Fixed('subcarangiform'),
-  habit = Fixed('benthopelagic'),
-  depthmax = Fixed(600),
-  temp = Trapezoid(2,3,6,7),
-  lmax = Fixed(132),
-  linf = Normal(110,20),
-  k = Triangle(0.07,0.13,0.35),
-  amax=Fixed(20)
-),1000)
-
-plot_samples(preds_noImputation,'Gadus morhua')
-
 ###### Skipjack ------
 
-BH_net_test$fit(subset(steep_merged,species!='Katsuwonus pelamis'))
+BH_net_test$fit(subset(steep_red,species!='Katsuwonus pelamis'),impute=T)
 
-plot_samples(
-  
-  BH_net$sample(list(
-    species = 'Katsuwonus pelamis',
-    family = 'Scombridae'
-  )),
-  
+Kp_pred <- BH_net_test$sample(list(
+  species = 'Katsuwonus pelamis',
+  family = 'Scombridae'
+), samples=1000)
+
+plot_samples(Kp_pred,steep_merged,
   'Katsuwonus pelamis'
 )
 
-plot_samples(
-  
-  BH_net$sample(dists(
-    species = Fixed('Katsuwonus pelamis'),
-    family = Fixed('Scombridae'),
-    depthmax = Fixed(260),
-    lmax = Fixed(90.5)
-  )),
-  
+Kp_pred.slh <- BH_net$sample(dists(
+  species = Fixed('Katsuwonus pelamis'),
+  family = Fixed('Scombridae'),
+  depthmax = Fixed(260),
+  lmax = Fixed(90.5)
+),1000)
+
+plot_samples(Kp_pred.slh,steep_merged,
   'Katsuwonus pelamis'
 )
 
+m.k <- mean(as.numeric(subset(steep_merged,subset = species == 'Katsuwonus pelamis',select = 'k')$k))
 
-plot_samples(
-  
-  BH_net$sample(dists(
-    species = Fixed('Katsuwonus pelamis'),
-    family = Fixed('Scombridae'),
-    depthmax = Fixed(260),
-    lmax = Fixed(90.5),
-    linf = Normal(80,10),
-    k = Normal(0.6,0.1)
-  )),
-  
+sd.k <- sqrt(var(as.numeric(subset(steep_merged,subset = species == 'Katsuwonus pelamis',select = 'k')$k)))
+
+Kp_pred.lh <- BH_net$sample(dists(
+  species = Fixed('Katsuwonus pelamis'),
+  family = Fixed('Scombridae'),
+  depthmax = Fixed(260),
+  lmax = Fixed(90.5),
+  linf = Normal(80,10),
+  k = Normal(m.k ,sd.k)
+),1000)
+
+plot_samples(  Kp_pred.lh,steep_merged,
   'Katsuwonus pelamis'
 )
