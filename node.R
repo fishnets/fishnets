@@ -55,13 +55,15 @@ Node <- function(){
       mse = mean((tests-preds)^2,na.rm=T)
       mpe = mean(abs((tests-preds)/tests),na.rm=T)
       r2 = cor(tests,preds,use="pairwise.complete.obs")^2
+      dev = mean((tests - preds) * (tests - preds),na.rm=T)
       # Add to results
       results = rbind(results,data.frame(
         fold = fold,
         me = me,
         mse = mse,
         mpe = mpe,
-        r2 = r2
+        r2 = r2,
+        dev = dev
       ))
       cat(mpe,r2,"\n")
     }
