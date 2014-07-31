@@ -47,7 +47,7 @@ Bea14$fit(fb)
 
 bwa <- Bea14$sample(list(
   species = 'Hyperoglyphe antarctica'
-),samples = 1000)
+),samples = 10000)
 
 ggplot(bwa) + 
   geom_bar(aes(x=m,y=..density..),fill='grey40') + 
@@ -130,13 +130,13 @@ Bea14$graph()
 
 # Example of TaxonomicImputer
 rs <- Fishnet(
-  linf = TaxonomicImputer('linf',c(log,exp),10)
+  k = TaxonomicImputer('k',c(log,exp),10)
 )$fit(fb)$sample(list(
-  order = 'Perciformes'
+  species = 
 ),samples = 10000)
 
 ggplot(rs) + 
-  geom_density(aes(x=linf,colour=order)) + 
+  geom_density(aes(x=recsigma,colour=order)) + 
   labs(x='Stock-recruitment variability (recsigma)',y='Density',colour="") + 
   theme(legend.position='top')
 
