@@ -57,6 +57,9 @@ Node <- function(){
       mpe = mean(abs((tests-preds)/tests),na.rm=T)
       r2 = cor(tests,preds,use="pairwise.complete.obs")^2
       dev = mean((tests - preds) * (tests - preds),na.rm=T)
+      # stats for comparison with gbm output
+      gbm.cor = cor(tests,preds)
+      gbm.dev = calc.deviance(tests,preds,family="gaussian")
       # Add to results
       results = rbind(results,data.frame(
         fold = fold,
@@ -64,7 +67,8 @@ Node <- function(){
         mse = mse,
         mpe = mpe,
         r2 = r2,
-        dev = dev
+        dev = gbm.dev,
+        cor = gbm.cor
       ))
       cat(mpe,r2,"\n")
     }
