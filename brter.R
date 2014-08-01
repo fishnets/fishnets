@@ -8,43 +8,44 @@ require(dismo)
 #' @param formula A formula for the terms to be included in the BRT
 #' @param transform A function to apply to predicted value e.g. if formula is log(k)~... use exp
 #' @param autotrees Should the number of trees be optimised usind gbm.step?
-Brter <- function(formula,transform=identity,ntrees=2000,
-                  bag.fraction = 0.5){
+Brter <- function(formula,transform=identity,ntrees=2000,tree.complexity=10,learning.rate=0.001,
+                  bag.fraction = 0.5,max.trees=5000){
   self <- extend(Node,'Brter')
   
   self$formula <- formula
   self$transform <- transform
   self$predictand <- all.vars(formula)[1]
   self$predictors <- all.vars(formula)[-1]
-  self$ntrees <- ntrees
     
   self$fit <- function(data){
     # Create a model frame using the formula. This creates a
     # matrix that can be used for fitting the trees
     frame <- model.frame(self$formula,data)
     
-    if(self$ntrees>0){
+    if(ntrees>0){
       self$brt <- gbm.fixed(
         data = frame,
         gbm.y = 1,
         gbm.x = 2:ncol(frame), 
         family = "gaussian",
-        tree.complexity = 10,
-        learning.rate = 0.001,
+        tree.complexity = tree.complexity,
+        learning.rate = learning.rate,
         bag.fraction = bag.fraction,
-        n.trees = self$ntrees
+        n.trees = ntrees
       )
+      self$ntrees <- ntrees
     } else {
       self$brt <- gbm.step(
         data = frame,
         gbm.y = 1,
         gbm.x = 2:ncol(frame), 
         family = "gaussian",
-        tree.complexity = 10,
-        learning.rate = 0.001,
+        tree.complexity = tree.complexity,
+        learning.rate = learning.rate,
         bag.fraction = bag.fraction,
-        max.trees = 5000
+        max.trees = max.trees
       )
+      self$ntrees <- length(self$brt$trees)
     }
   }
   
