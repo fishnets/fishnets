@@ -25,3 +25,13 @@ source('fishnet.R')
 source('data/fishbase-2000/fishbase-2000.R')
 source('data/fishbase-web/fishbase-web.R')
 source('data/gislason-et-al-2010/gislason-et-al-2010.R')
+
+source('m-charnov-et-al-2013.R')
+source('m-charnov-et-al-2013-fitted.R')
+source('m-hoenig-1983.R')
+source('m-hoenig-1983-fitted.R')
+source('m-then-et-al-2014.R')
+source('m-then-et-al-2014-fitted.R')
+source('m-pauly-1980.R')
+source('m-pauly-1980-fitted.R')
+

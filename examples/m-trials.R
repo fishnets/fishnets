@@ -36,8 +36,6 @@ gs <- imputer$predict(gs)
 ################
 # Charnov 2013 #
 ################
-source('m-charnov-et-al-2013.R')
-source('m-charnov-et-al-2013-fitted.R')
 
 # fishbase
 cea13fb <- MCharnovEtAl2013()
@@ -82,8 +80,6 @@ cv.cea13 <- rbind(
 ###############
 # Hoenig 1983 #
 ###############
-source('m-hoenig-1983.R')
-source('m-hoenig-1983-fitted.R')
 
 # fishbase
 h83fb <- MHoenig1983()
@@ -127,9 +123,6 @@ cv.h83 <- rbind(
 # Then 2014 #
 #############
 
-source('m-then-et-al-2014.R')
-source('m-then-et-al-2014-fitted.R')
-
 # fishbase
 tea14fb <- MThenEtAl2014()
 fb.tea14fb <- data.frame(fb,m.predict=tea14fb$predict(fb))
@@ -145,10 +138,10 @@ cv.tea14fbfit <- tea14fbfit$cross(fb)
 
 # gislasson
 
-tea14gs <- MHoenig1983()
+tea14gs <- MThenEtAl2014()
 gs.tea14gs <- data.frame(gs,m.predict=tea14gs$predict(gs))
 
-tea14gsfit <- MHoenig1983Fitted()
+tea14gsfit <- MThenEtAl2014Fitted()
 tea14gsfit$fit(gs)
 gs.tea14gsfit <- data.frame(gs,m.predict=tea14gsfit$predict(gs))
 
@@ -167,8 +160,6 @@ cv.tea14 <- rbind(
 ##############
 # Pauly 1980 #
 ##############
-source('m-pauly-1980.R')
-source('m-pauly-1980-fitted.R')
 
 # fishbase
 p80fb <- MPauly1980()
@@ -208,8 +199,6 @@ cv.p80 <- rbind(
   data.frame(source='p80',method='GLM',fitted='Y',db='gs',mpe=round(cv.p80gsfit$summary$mpe,2),r2=round(cv.p80gsfit$summary$r2,2))
 )
 
-
-
 ###########
 # SUMMARY #
 ###########
@@ -217,19 +206,35 @@ cv.p80 <- rbind(
 cv.sum <- rbind(cv.cea13,cv.h83,cv.tea14,cv.p80)
 
 
-# boosted regression trees
-brt.min <- Brter(log(m)~log(k)+log(amax),exp)
-fb.min <- subset(fb,!is.na(k) & !is.na(amax))
-brt.min$fit(fb.min)
-brt.min$cross(fb.min)
-hist(brt.min$sample(brt.min$expand(data.frame(k=.3,amax=5),1000)))
-summary(brt.min$brt)
-nrow(fb.min)
+############################
+# boosted regression trees #
+############################
 
-brt.full <- Brter(log(m)~class+order+family+log(linf)+log(temp)+log(k)+log(amax),exp)
-fb.full <- subset(fb,!is.na(class) & !is.na(order) & !is.na(family) & !is.na(linf) & !is.na(temp) & temp>0 & !is.na(k) & !is.na(amax))
-brt.full$fit(fb.full)
-brt.full$cross(fb.full)
-hist(brt.full$sample(brt.full$expand(data.frame(k=.3,amax=5),1000)))
-summary(brt.full$brt)
-nrow(fb.full)
+# fb
+frame <- model.frame(log(m)~class+order+family+log(linf)+log(lmat)+log(temp)+log(k)+log(amax),fb)
+names(frame) <- c("log.m","class","order","family","log.linf","log.lmat","log.temp","log.k","log.amax")
+brtfb <- gbm.step(data = frame,
+                  gbm.y = 1,
+                  gbm.x = 2:ncol(frame), 
+                  family = "gaussian",
+                  tree.complexity = 10,
+                  learning.rate = 0.002,
+                  bag.fraction = 0.5,
+                  max.trees = 5000)
+
+summary(brtfb)
+
+brtfb.simplify <- gbm.simplify(brtfb)
+
+# drop the 3 least informative predictors
+brtfb.simple <- gbm.step(data = frame,
+                  gbm.y = 1,
+                  gbm.x = brtfb.simplify$pred.list[[4]], 
+                  family = "gaussian",
+                  tree.complexity = 10,
+                  learning.rate = 0.002,
+                  bag.fraction = 0.5,
+                  max.trees = 5000)
+
+summary(brtfb.simple)
+
