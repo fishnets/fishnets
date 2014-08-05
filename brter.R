@@ -16,17 +16,33 @@ Brter <- function(formula,transform=identity,ntrees=2000,tree.complexity=10,lear
   self$transform <- transform
   self$predictand <- all.vars(formula)[1]
   self$predictors <- all.vars(formula)[-1]
+  
+  if(length(self$predictors)<2) 
+    stop('Formula must contain at least 2 predictors\n')
+      
+  self$fit <- function(data,pars){
     
-  self$fit <- function(data){
     # Create a model frame using the formula. This creates a
     # matrix that can be used for fitting the trees
-    frame <- model.frame(self$formula,data)
+    frame <- model.frame(self$formula,as.data.frame(data))
+    
+    # the 'pars' argument allows further control of which
+    # covariates should be included from the formula. It defaults
+    # to 'all covariates' and can be specified as either a character 
+    # vector or numeric reference to particular columns
+    if(missing(pars)) { pars <- 2:ncol(frame)
+    } else {
+      if(is.character(pars)) pars <- match(pars,names(frame))
+    }
+    
+    if(length(pars)<2) 
+      stop('Formula must contain at least 2 predictors\n')
     
     if(ntrees>0){
       self$brt <- gbm.fixed(
         data = frame,
         gbm.y = 1,
-        gbm.x = 2:ncol(frame), 
+        gbm.x = pars, 
         family = "gaussian",
         tree.complexity = tree.complexity,
         learning.rate = learning.rate,
@@ -38,7 +54,7 @@ Brter <- function(formula,transform=identity,ntrees=2000,tree.complexity=10,lear
       self$brt <- gbm.step(
         data = frame,
         gbm.y = 1,
-        gbm.x = 2:ncol(frame), 
+        gbm.x = pars, 
         family = "gaussian",
         tree.complexity = tree.complexity,
         learning.rate = learning.rate,
@@ -47,6 +63,7 @@ Brter <- function(formula,transform=identity,ntrees=2000,tree.complexity=10,lear
       )
       self$ntrees <- length(self$brt$trees)
     }
+    cat('predictors:',self$brt$gbm.call$predictor.names,'\n')
   }
   
   self$summary <- function(){
@@ -56,14 +73,13 @@ Brter <- function(formula,transform=identity,ntrees=2000,tree.complexity=10,lear
   }
   
   self$predict <- function(data,transform=T){
-    data <- as.data.frame(data)
     # Create a model frame using the formula. This creates a
     # matrix that can be used for fitting the trees
-    # When creating a model frame from a formula you need to have
-    # all the variable presents, so add it first (it can't be NA otherwise all rows get omitted)
-    data[,self$predictand] <- 1
-    frame <- model.frame(self$formula,data)
-    # Generate predictions
+    frame <- model.frame(self$formula,as.data.frame(data))
+    # Generate predictions from frame
+    # using predictors recorded in gbm.object (which
+    # may be a subset of the data columns if 'pars' 
+    # argument was included during fitting)
     preds <- predict.gbm(
       self$brt,
       newdata = frame,
