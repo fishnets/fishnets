@@ -1,8 +1,6 @@
 
 rm(list=ls())
 
-require(ggplot2)
-
 # Currently, this script must be run in the Fishnets top level directory
 # Source in the package
 source('collate.R')
@@ -70,10 +68,10 @@ cv.cea13gs <- cea13gs$cross(gs)
 cv.cea13gsfit <- cea13gsfit$cross(gs)
 
 cv.cea13 <- rbind(
-  data.frame(source='cea13',method='GLM',fitted='N',db='fb',mpe=round(cv.cea13fb$summary$mpe   ,2),r2=round(cv.cea13fb$summary$r2,2)),
-  data.frame(source='cea13',method='GLM',fitted='Y',db='fb',mpe=round(cv.cea13fbfit$summary$mpe,2),r2=round(cv.cea13fbfit$summary$r2,2)),
-  data.frame(source='cea13',method='GLM',fitted='N',db='gs',mpe=round(cv.cea13gs$summary$mpe   ,2),r2=round(cv.cea13gs$summary$r2,2)),
-  data.frame(source='cea13',method='GLM',fitted='Y',db='gs',mpe=round(cv.cea13gsfit$summary$mpe,2),r2=round(cv.cea13gsfit$summary$r2,2))
+  data.frame(source='cea13',method='GLM',fitted=FALSE,db='fb',mpe=round(cv.cea13fb$summary['mpe',1]   ,2),dev=round(cv.cea13fb$summary['dev',1],2)),
+  data.frame(source='cea13',method='GLM',fitted=TRUE,db='fb',mpe=round(cv.cea13fbfit$summary['mpe',1],2),dev=round(cv.cea13fbfit$summary['dev',1],2)),
+  data.frame(source='cea13',method='GLM',fitted=FALSE,db='gs',mpe=round(cv.cea13gs$summary['mpe',1]   ,2),dev=round(cv.cea13gs$summary['dev',1],2)),
+  data.frame(source='cea13',method='GLM',fitted=TRUE,db='gs',mpe=round(cv.cea13gsfit$summary['mpe',1],2),dev=round(cv.cea13gsfit$summary['dev',1],2))
 )
 
 
@@ -113,10 +111,10 @@ cv.h83gs <- h83gs$cross(gs)
 cv.h83gsfit <- h83gsfit$cross(gs)
 
 cv.h83 <- rbind(
-  data.frame(source='h83',method='GLM',fitted='N',db='fb',mpe=round(cv.h83fb$summary$mpe   ,2),r2=round(cv.h83fb$summary$r2,2)),
-  data.frame(source='h83',method='GLM',fitted='Y',db='fb',mpe=round(cv.h83fbfit$summary$mpe,2),r2=round(cv.h83fbfit$summary$r2,2)),
-  data.frame(source='h83',method='GLM',fitted='N',db='gs',mpe=round(cv.h83gs$summary$mpe   ,2),r2=round(cv.h83gs$summary$r2,2)),
-  data.frame(source='h83',method='GLM',fitted='Y',db='gs',mpe=round(cv.h83gsfit$summary$mpe,2),r2=round(cv.h83gsfit$summary$r2,2))
+  data.frame(source='h83',method='GLM',fitted=FALSE,db='fb',mpe=round(cv.h83fb$summary['mpe',1]   ,2),dev=round(cv.h83fb$summary['dev',1],2)),
+  data.frame(source='h83',method='GLM',fitted=TRUE,db='fb',mpe=round(cv.h83fbfit$summary['mpe',1],2),dev=round(cv.h83fbfit$summary['dev',1],2)),
+  data.frame(source='h83',method='GLM',fitted=FALSE,db='gs',mpe=round(cv.h83gs$summary['mpe',1]   ,2),dev=round(cv.h83gs$summary['dev',1],2)),
+  data.frame(source='h83',method='GLM',fitted=TRUE,db='gs',mpe=round(cv.h83gsfit$summary['mpe',1],2),dev=round(cv.h83gsfit$summary['dev',1],2))
 )
 
 #############
@@ -151,10 +149,10 @@ points(log(m.predict)~log(amax),data=gs.tea14gsfit,col=4)
 cv.tea14gsfit <- tea14gsfit$cross(gs)
 
 cv.tea14 <- rbind(
-  data.frame(source='tea14',method='GLM',fitted='N',db='fb',mpe=NA                                ,r2=NA),
-  data.frame(source='tea14',method='GLM',fitted='Y',db='fb',mpe=round(cv.tea14fbfit$summary$mpe,2),r2=round(cv.tea14fbfit$summary$r2,2)),
-  data.frame(source='tea14',method='GLM',fitted='N',db='gs',mpe=NA                                ,r2=NA),
-  data.frame(source='tea14',method='GLM',fitted='Y',db='gs',mpe=round(cv.tea14gsfit$summary$mpe,2),r2=round(cv.tea14gsfit$summary$r2,2))
+  data.frame(source='tea14',method='GLM',fitted=FALSE,db='fb',mpe=NA                                ,dev=NA),
+  data.frame(source='tea14',method='GLM',fitted=TRUE,db='fb',mpe=round(cv.tea14fbfit$summary['mpe',1],2),dev=round(cv.tea14fbfit$summary['dev',1],2)),
+  data.frame(source='tea14',method='GLM',fitted=FALSE,db='gs',mpe=NA                                ,dev=NA),
+  data.frame(source='tea14',method='GLM',fitted=TRUE,db='gs',mpe=round(cv.tea14gsfit$summary['mpe',1],2),dev=round(cv.tea14gsfit$summary['dev',1],2))
 )
 
 ##############
@@ -193,10 +191,10 @@ cv.p80gs <- p80gs$cross(gs)
 cv.p80gsfit <- p80gsfit$cross(gs)
 
 cv.p80 <- rbind(
-  data.frame(source='p80',method='GLM',fitted='N',db='fb',mpe=round(cv.p80fb$summary$mpe   ,2),r2=round(cv.p80fb$summary$r2,2)),
-  data.frame(source='p80',method='GLM',fitted='Y',db='fb',mpe=round(cv.p80fbfit$summary$mpe,2),r2=round(cv.p80fbfit$summary$r2,2)),
-  data.frame(source='p80',method='GLM',fitted='N',db='gs',mpe=round(cv.p80gs$summary$mpe   ,2),r2=round(cv.p80gs$summary$r2,2)),
-  data.frame(source='p80',method='GLM',fitted='Y',db='gs',mpe=round(cv.p80gsfit$summary$mpe,2),r2=round(cv.p80gsfit$summary$r2,2))
+  data.frame(source='p80',method='GLM',fitted=FALSE,db='fb',mpe=round(cv.p80fb$summary['mpe',1]   ,2),dev=round(cv.p80fb$summary['dev',1],2)),
+  data.frame(source='p80',method='GLM',fitted=TRUE,db='fb',mpe=round(cv.p80fbfit$summary['mpe',1],2),dev=round(cv.p80fbfit$summary['dev',1],2)),
+  data.frame(source='p80',method='GLM',fitted=FALSE,db='gs',mpe=round(cv.p80gs$summary['mpe',1]   ,2),dev=round(cv.p80gs$summary['dev',1],2)),
+  data.frame(source='p80',method='GLM',fitted=TRUE,db='gs',mpe=round(cv.p80gsfit$summary['mpe',1],2),dev=round(cv.p80gsfit$summary['dev',1],2))
 )
 
 ###########
@@ -204,6 +202,7 @@ cv.p80 <- rbind(
 ###########
 
 cv.sum <- rbind(cv.cea13,cv.h83,cv.tea14,cv.p80)
+subset(cv.sum,fitted=='Y')
 
 
 ############################
@@ -211,6 +210,8 @@ cv.sum <- rbind(cv.cea13,cv.h83,cv.tea14,cv.p80)
 ############################
 
 # fb
+
+# model selection using gbm.simplify()
 frame <- model.frame(log(m)~class+order+family+log(linf)+log(lmat)+log(temp)+log(k)+log(amax),fb)
 names(frame) <- c("log.m","class","order","family","log.linf","log.lmat","log.temp","log.k","log.amax")
 brtfb <- gbm.step(data = frame,
@@ -224,17 +225,84 @@ brtfb <- gbm.step(data = frame,
 
 summary(brtfb)
 
-brtfb.simplify <- gbm.simplify(brtfb)
+brtfb.simplify <- gbm.simplify(brtfb,n.drops=length(brtfb$gbm.call$gbm.x)-2)
 
-# drop the 3 least informative predictors
-brtfb.simple <- gbm.step(data = frame,
-                  gbm.y = 1,
-                  gbm.x = brtfb.simplify$pred.list[[4]], 
-                  family = "gaussian",
-                  tree.complexity = 10,
-                  learning.rate = 0.002,
-                  bag.fraction = 0.5,
-                  max.trees = 5000)
+brtfb.simplify$final.drops
 
-summary(brtfb.simple)
+# let's try within fishnets
+
+brtfb <- Brter(formula=log(m)~class+order+family+log(linf)+log(lmat)+log(temp)+log(k)+log(amax),transform = exp,ntrees=0,learning.rate=0.002,max.trees=10000)
+
+brtfb$fit(fb)
+pars <- brtfb$brt$gbm.call$gbm.x
+
+res <- list()
+pars.update <- pars
+
+for(i in 1:(length(pars)-1)) {
+  
+ brtfb$fit(fb,pars.update)
+ cat('predictors:',brtfb$brt$gbm.call$predictor.names,'\n')
+ 
+ rinfl <- relative.influence(brtfb$brt,n.trees = brtfb$brt$gbm.call$best.trees)
+ 
+ res[[i]] <- list()
+ res[[i]][['summary']]   <- brtfb$cross(fb,pars=pars.update)$summary 
+ res[[i]][['influence']] <- data.frame(predictor=brtfb$brt$gbm.call$predictor.names,influence=as.numeric(rinfl/sum(rinfl)))
+ res[[i]][['drop']]      <- brtfb$brt$gbm.call$predictor.names[which.min(rinfl)]
+ 
+ 
+ pars.update <- pars.update[-which.min(rinfl)]
+ 
+}
+
+# results are consistent with gbm.simplify()
+unlist(lapply(res,function(x) x$drop)
+
+# ok now manually... we need to do this to use all the data with each drop (sigh!)
+
+# full
+brtfb <- Brter(formula=log(m)~class+order+family+log(linf)+log(lmat)+log(temp)+log(k)+log(amax),transform = exp,ntrees=0,learning.rate=0.002,max.trees=10000)
+res[[1]][['summary2']]   <- brtfb$cross(fb)$summary 
+# drop class
+brtfb <- Brter(formula=log(m)~order+family+log(linf)+log(lmat)+log(temp)+log(k)+log(amax),transform = exp,ntrees=0,learning.rate=0.002,max.trees=10000)
+res[[2]][['summary2']]   <- brtfb$cross(fb)$summary 
+# drop log(temp)
+brtfb <- Brter(formula=log(m)~order+family+log(linf)+log(lmat)+log(k)+log(amax),transform = exp,ntrees=0,learning.rate=0.002,max.trees=10000)
+res[[3]][['summary2']]   <- brtfb$cross(fb)$summary 
+# drop order
+brtfb <- Brter(formula=log(m)~family+log(linf)+log(lmat)+log(k)+log(amax),transform = exp,ntrees=0,learning.rate=0.002,max.trees=10000)
+res[[4]][['summary2']]   <- brtfb$cross(fb)$summary 
+# drop log(lmat)
+brtfb <- Brter(formula=log(m)~family+log(linf)+log(k)+log(amax),transform = exp,ntrees=0,learning.rate=0.002,max.trees=10000)
+res[[5]][['summary2']]   <- brtfb$cross(fb)$summary 
+# drop log(linf)
+brtfb <- Brter(formula=log(m)~family+log(k)+log(amax),transform = exp,ntrees=0,learning.rate=0.002,max.trees=10000)
+res[[6]][['summary2']]   <- brtfb$cross(fb)$summary 
+# drop log(k)
+brtfb <- Brter(formula=log(m)~family+log(amax),transform = exp,ntrees=0,learning.rate=0.002,max.trees=10000)
+res[[7]][['summary2']]   <- brtfb$cross(fb)$summary 
+
+dev <- unlist(lapply(res,function(x) x$summary2['dev','mean']))
+dev.se <- unlist(lapply(res,function(x) x$summary2['dev','se']))
+
+plot(1:length(predictor),dev,type='l',xaxt='n',ylim=range(dev-1.1*dev.se,dev+1.1*dev.se),xlab='Predictor removed',ylab='Deviance')
+lines(1:length(predictor),dev+dev.se,lty=2)
+lines(1:length(predictor),dev-dev.se,lty=2)
+abline(h=res[[1]]$summary2['dev','mean'],lty=2,col=2)
+axis(1,at=1:length(predictor),labels=c('none',predictor[-length(predictor)]))
+
+# FINAL MODEL
+brtfb <- Brter(formula=log(m)~family+log(linf)+log(lmat)+log(k)+log(amax),transform = exp,ntrees=0,learning.rate=0.002,max.trees=10000)
+
+
+
+
+
+
+
+
+
+
+
 
