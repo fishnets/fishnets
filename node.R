@@ -27,7 +27,7 @@ Node <- function(){
   #' @param folds Number of folds (number of times that data is split into training and testing datasets)
   #' @param fit Function for fitting model. Should return an object with a "predict" method.
   #' @param ... Other arguments to fit function
-  self$cross <- function(data,folds=10){
+  self$cross <- function(data,folds=10, ...){
     # Begin by removing all data rows with NAs for variable of interest
     data <- model.frame(paste(self$predictand,'~',paste(self$predictors,collapse='+')),data)
     # data = data[!is.na(data[,self$predictand]),]
@@ -41,12 +41,13 @@ Node <- function(){
     results = NULL
     # For each fold...
     for(fold in 1:folds){
-      cat("Fold",fold,": ")
+      #cat("Fold",fold,": ")
       # Define training a testing datasets
       train = data[folder!=fold,]
       test = data[folder==fold,]
       # Fit model to training data
-      self$fit(train)
+      self$fit(train, ...)
+      #cat(self$brt$gbm.call$predictor.names,'\n')
       # Get predictions for testing data
       preds = self$predict(test)
       # Get the dependent variable
@@ -70,12 +71,10 @@ Node <- function(){
         dev = gbm.dev,
         cor = gbm.cor
       ))
-      cat(mpe,r2,"\n")
+      #cat(mpe,r2,"\n")
     }
     # Summarise results
-    summary = colMeans(results)
-    summary = as.list(summary)
-    summary$fold <- NULL
+    summary <- data.frame(mean=apply(results[,-1],2,mean,na.rm=T),se=apply(results[,-1],2,function(x) {y <- x[!is.na(x)]; sd(y)/sqrt(length(y))}))
     # Return summary and raw results
     return (list(
       summary = summary,
