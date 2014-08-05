@@ -27,9 +27,9 @@ Node <- function(){
   #' @param folds Number of folds (number of times that data is split into training and testing datasets)
   #' @param fit Function for fitting model. Should return an object with a "predict" method.
   #' @param ... Other arguments to fit function
-  self$cross <- function(data,folds=10, ...){
+  self$cross <- function(data,folds=10,pars){
     # Begin by removing all data rows with NAs for variable of interest
-    data <- model.frame(paste(self$predictand,'~',paste(self$predictors,collapse='+')),data)
+    data <- model.frame(paste(self$predictand,'~',paste(self$predictors,collapse='+')),data) # when u start dropping data using pars then this needs to be updated too else some folds have no data in them
     # data = data[!is.na(data[,self$predictand]),]
     # Randomly assign rows of data to a fold
     # Do this in a way that divides the data as evenly as possible..
@@ -46,7 +46,7 @@ Node <- function(){
       train = data[folder!=fold,]
       test = data[folder==fold,]
       # Fit model to training data
-      self$fit(train, ...)
+      self$fit(train,pars)
       #cat(self$brt$gbm.call$predictor.names,'\n')
       # Get predictions for testing data
       preds = self$predict(test)
@@ -58,9 +58,6 @@ Node <- function(){
       mpe = mean(abs((tests-preds)/tests),na.rm=T)
       r2 = cor(tests,preds,use="pairwise.complete.obs")^2
       dev = mean((tests - preds) * (tests - preds),na.rm=T)
-      # stats for comparison with gbm output
-      gbm.cor = cor(tests,preds)
-      gbm.dev = calc.deviance(tests,preds,family="gaussian")
       # Add to results
       results = rbind(results,data.frame(
         fold = fold,
@@ -68,8 +65,7 @@ Node <- function(){
         mse = mse,
         mpe = mpe,
         r2 = r2,
-        dev = gbm.dev,
-        cor = gbm.cor
+        dev = dev
       ))
       #cat(mpe,r2,"\n")
     }
