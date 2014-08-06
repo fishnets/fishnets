@@ -27,10 +27,15 @@ Node <- function(){
   #' @param folds Number of folds (number of times that data is split into training and testing datasets)
   #' @param fit Function for fitting model. Should return an object with a "predict" method.
   #' @param ... Other arguments to fit function
-  self$cross <- function(data,folds=10,pars){
+  self$cross <- function(data,folds,pars,jacknife=FALSE){
     # Begin by removing all data rows with NAs for variable of interest
-    data <- model.frame(paste(self$predictand,'~',paste(self$predictors,collapse='+')),data) # when u start dropping data using pars then this needs to be updated too else some folds have no data in them
+    data <- model.frame(paste(self$predictand,'~',paste(self$predictors,collapse='+')),data) 
     # data = data[!is.na(data[,self$predictand]),]
+    # if we want a jacknife then folds should be equal to number of data rows
+    if(missing(folds)) {
+      if(jacknife) folds <- nrow(data) else folds <- 10
+      cat('folds:',folds,'\n')
+    }
     # Randomly assign rows of data to a fold
     # Do this in a way that divides the data as evenly as possible..
     # Systematically assign folder number to give very close to even numbers in each fold...
@@ -61,6 +66,8 @@ Node <- function(){
       # Add to results
       results = rbind(results,data.frame(
         fold = fold,
+        obs = mean(tests,na.rm=T),
+        hat = mean(preds,na.rm=T),
         me = me,
         mse = mse,
         mpe = mpe,
@@ -70,7 +77,7 @@ Node <- function(){
       #cat(mpe,r2,"\n")
     }
     # Summarise results
-    summary <- data.frame(mean=apply(results[,-1],2,mean,na.rm=T),se=apply(results[,-1],2,function(x) {y <- x[!is.na(x)]; sd(y)/sqrt(length(y))}))
+    summary <- data.frame(mean=apply(results[,4:8],2,mean,na.rm=T),se=apply(results[,4:8],2,function(x) {y <- x[!is.na(x)]; sd(y)/sqrt(length(y))}))
     # Return summary and raw results
     return (list(
       summary = summary,
