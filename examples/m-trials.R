@@ -273,6 +273,23 @@ brtfb$fit(fb)
 save(brtfb.final=brtfb,res,file='examples/m-trials-cvresults.Rdata')
 
 
+# explore brt for k
+frame <- model.frame(log(k)~class+order+family+habit+trophic+log(linf)+log(lmat)+log(depthmax)+log(temp)+log(amax),fb)
+names(frame) <- c("log.k","class","order","family","habit","trophic","log.linf","log.lmat","log.depthmax","log.temp","log.amax")
+brtfb <- gbm.step(data = frame,
+                  gbm.y = 1,
+                  gbm.x = 2:ncol(frame), 
+                  family = "gaussian",
+                  tree.complexity = 10,
+                  learning.rate = 0.002,
+                  bag.fraction = 0.5,
+                  max.trees = 5000)
+
+summary(brtfb)
+
+brtfb.simplify <- gbm.simplify(brtfb,n.drops=length(brtfb$gbm.call$gbm.x)-2)
+
+brtfb.simplify$final.drops
 
 
 
