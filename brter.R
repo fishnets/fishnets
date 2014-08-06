@@ -81,8 +81,13 @@ Brter <- function(formula,transform=identity,ntrees=2000,tree.complexity=10,lear
   }
   
   self$predict <- function(data,transform=T){
-    # Create a model frame using the formula
-    frame <- suppressWarnings(model.frame(self$formula,as.data.frame(data)))
+    data <- as.data.frame(data)
+    # Create a model frame using the formula. This creates a
+    # matrix that can be used for fitting the trees
+    # When creating a model frame from a formula you need to have
+    # all the variable presents, so add it first (it can't be NA otherwise all rows get omitted)
+    data[,self$predictand] <- 1
+    frame <- model.frame(self$formula,data)
     # Generate predictions from frame
     # using predictors recorded in gbm.object (which
     # may be a subset of the data columns if 'pars' 
