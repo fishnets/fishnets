@@ -26,6 +26,11 @@ Brter <- function(formula,transform=identity,ntrees=2000,tree.complexity=10,lear
     # matrix that can be used for fitting the trees
     frame <- suppressWarnings(model.frame(self$formula,as.data.frame(data)))
     
+    # make sure character vectors are factors
+    for(par in names(frame)) 
+      if(is.character(frame[,par]))
+        frame[,par] <- as.factor(frame[,par])
+    
     # the 'pars' argument allows further control of which
     # covariates should be included from the formula. It defaults
     # to 'all covariates' and can be specified as either a character 
@@ -77,7 +82,7 @@ Brter <- function(formula,transform=identity,ntrees=2000,tree.complexity=10,lear
   
   self$predict <- function(data,transform=T){
     # Create a model frame using the formula
-    frame <- model.frame(self$formula,as.data.frame(data))
+    frame <- suppressWarnings(model.frame(self$formula,as.data.frame(data)))
     # Generate predictions from frame
     # using predictors recorded in gbm.object (which
     # may be a subset of the data columns if 'pars' 
