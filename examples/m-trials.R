@@ -4,32 +4,7 @@ rm(list=ls())
 # Currently, this script must be run in the Fishnets top level directory
 # Source in the package
 source('collate.R')
-
-# Load the Fishbase data
-fb <- FishbaseWeb$read('data/fishbase-web')
-# Load Gislason data
-gs <- GislasonEtAl2010Data$read('data/gislason-et-al-2010')
-
-# Create a fishnet that can be used to impute columns that 
-# are missing in the Gislason data. This fishnet is intended to be 
-# simple and mostly uses TaxonomicImputer
-imputer <- Fishnet(
-  species   = SpeciesRandom(),
-  genus     = GenusParser(),
-  family    = FamilyLookupper(),
-  order     = OrderLookupper(),
-  class     = ClassLookupper(),
-  
-  habit     = TaxonomicImputer('habit'),
-  depthmax  = TaxonomicImputer('depthmax',c(log,exp)),
-  temp      = TaxonomicImputer('temp'),
-  trophic   = TaxonomicImputer('trophic',c(log,exp)),
-  lmax      = TaxonomicImputer('lmax',c(log,exp)),
-  amax      = TaxonomicImputer('amax',c(log,exp))
-)
-# Do imputation base on Fishbase data
-imputer$fit(fb)
-gs <- imputer$predict(gs)
+source('load_data.R')
 
 ################
 # Charnov 2013 #
@@ -294,8 +269,8 @@ axis(1,at=1:length(predictor),labels=c('none',predictor[-length(predictor)]))
 
 # FINAL MODEL
 brtfb <- Brter(formula=log(m)~family+log(linf)+log(lmat)+log(k)+log(amax),transform = exp,ntrees=0,learning.rate=0.002,max.trees=10000)
-
-
+brtfb$fit(fb)
+save(brtfb.final=brtfb,res,file='examples/m-trials-cvresults.Rdata')
 
 
 
