@@ -12,8 +12,8 @@ Brter <- function(formula,transform=identity,ntrees=2000,tree.complexity=10,lear
                   bag.fraction = 0.5,max.trees=5000){
   self <- extend(Node,'Brter')
   
-  self$formula <- formula
-  self$transform <- transform
+  self$formula    <- formula
+  self$transform  <- transform
   self$predictand <- all.vars(formula)[1]
   self$predictors <- all.vars(formula)[-1]
   
@@ -26,7 +26,7 @@ Brter <- function(formula,transform=identity,ntrees=2000,tree.complexity=10,lear
     # matrix that can be used for fitting the trees
     frame <- suppressWarnings(model.frame(self$formula,as.data.frame(data)))
     
-    # make sure character vectors are factors
+    # make sure character vectors in frame are factors
     for(par in names(frame)) 
       if(is.character(frame[,par]))
         frame[,par] <- as.factor(frame[,par])

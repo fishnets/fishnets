@@ -34,7 +34,12 @@ Node <- function(){
     # if we want a jacknife then folds should be equal to number of data rows
     if(missing(folds)) {
       if(jacknife) folds <- nrow(data) else folds <- 10
-      cat('folds:',folds,'\n')
+      message('folds:',folds,'\n')
+    } else { 
+      if(folds>nrow(data)) {
+        folds <- nrow(data)
+        message('folds:',folds,'\n')
+      }
     }
     # Randomly assign rows of data to a fold
     # Do this in a way that divides the data as evenly as possible..
