@@ -1,4 +1,9 @@
 
+#######################################
+# DETERMINISTIC RELATIONSHIPS BETWEEN #
+# M AND OTHER LH PARMETERS            #
+#######################################
+
 rm(list=ls())
 
 # Currently, this script must be run in the Fishnets top level directory
