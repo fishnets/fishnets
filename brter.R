@@ -55,6 +55,52 @@ Brter <- function(formula,transform=identity,ntrees=2000,tree.complexity=10,lear
     #gbm.plot.fits(self$brt)
   }
   
+  # 'safe' predict function that only predicts
+  # if predictand value is absent
+  self$predict.safe <- function(data,transform=T,na.strict=T,na.keep=F) {
+    data <- as.data.frame(data)
+    
+    # include predictand in data if it is missing
+    if(!(self$predictand %in% names(data)))
+      data[,self$predictand] <- NA
+    
+    # record locations that should not be
+    # overwritten
+    safe.loc <- !is.na(data[,self$predictand])
+    
+    # create a model frame using the formula
+    # and keeping all NA values
+    frame <- model.frame(self$formula,data,na.action=na.pass)
+    
+    # Generate predictions of length equal
+    # to nrows(data)
+    preds <- frame[,1]
+    preds[!safe.loc] <- predict.gbm(
+      self$brt,
+      newdata = frame,
+      n.trees = self$brt$gbm.call$best.trees,
+      type = "response"
+    )[!safe.loc]
+    
+    # Record s.d. of residuals for $sample()
+    self$error <- sd(self$brt$residuals,na.rm=T)
+    
+    # if na.strict we suppose that we are not justified in predicting
+    # predictand if any of the covariates are missing
+    if(na.strict) {
+      na.loc <- apply(frame,1,function(x) any(is.na(x[-1])))
+      preds[!safe.loc &na.loc] <- NA
+    }
+    
+    # if !na.keep remove all NA's from prediction vector
+    if(!na.keep) preds <- preds[!is.na(preds)]
+    
+    # return with or without back-transformation
+    # of predicted values
+    if(transform) return(self$transform(preds))
+    else return(preds)
+  }
+  
   self$predict <- function(data,transform=T,na.strict=T,na.keep=F){
     data <- as.data.frame(data)
      
