@@ -13,6 +13,13 @@ saver <- function(x, ..., name, path='C:/PROJECTS/FISHNETS/res/') {
   save(x, ..., file=paste(path,name,'.Rdata',sep=''))
 }
 
+pdfr <- function(x, ..., name, path='C:/PROJECTS/FISHNETS/res/') {
+  pdf(..., file=paste(path,name,'.pdf',sep=''))
+  print(x)
+  dev.off()
+}
+
+
 # according to life history theory, primary correlates
 # with m are: k and amax; via the BH invariants
 # m/k and m*amax. Therefore need to optimise estimation
@@ -29,6 +36,7 @@ fb[which(fb$m>2),'m']        <- NA
 # amax                     #
 ############################
 
+# PRELIMS
 formula <- log(amax)~class+order+family+sex+trophic+habit+log(temp)+log(lmax)
 vars    <- all.vars(formula)
 frame   <- model.frame(formula,fb)
@@ -66,6 +74,78 @@ ggplot(dfr) +
 
 saver(brt.amax,brt.amax.formula,brt.amax.predictors,brt.amax.cv,name='brt_amax')
 
+# FULL EVALUATION
+par.names <- c("class","order","family","sex","trophic","habit","log(temp)","log(lmax)")
+pars.update <- 1:length(par.names)
+
+nfolds <- 10
+
+brt.amax.res <- list()
+
+# loop through parameters updating formula
+# to drop least influential
+for(i in 1:(length(par.names)-1)) {
+  
+  formula.update <- as.formula(paste('log(amax)~',paste(par.names[pars.update],collapse='+'),sep=''))
+  
+  brt.update <- Brter(formula.update,exp,ntrees=5000,learning.rate=0.001)
+  
+  brt.update$fit(fb)
+  
+  rinfl <- relative.influence(brt.update$brt,n.trees = brt.update$brt$gbm.call$best.trees)
+  cross <- brt.update$cross(fb,folds=nfolds) 
+  
+  brt.amax.res[[i]] <- list()
+  brt.amax.res[[i]][['formula']]    <- formula.update
+  brt.amax.res[[i]][['summary']]    <- cross$summary 
+  brt.amax.res[[i]][['folds']]      <- cross$folds
+  brt.amax.res[[i]][['influence']]  <- data.frame(predictor=brt.update$brt$gbm.call$predictor.names,influence=as.numeric(rinfl/sum(rinfl)))
+  brt.amax.res[[i]][['drop']]       <- brt.update$brt$gbm.call$predictor.names[which.min(rinfl)]
+  
+  pars.update <- pars.update[-which.min(rinfl)]
+  
+}
+
+saver(brt.amax.res,name='brt_amax_res')
+
+# FIGURES
+par.drop <- unlist(lapply(brt.amax.res,function(x) x$drop))
+par.remove <- c('none',par.drop[-length(par.drop)])
+
+dfr <- data.frame()
+for(i in 1:(length(par.names)-1)) {
+  
+  dfr1 <- data.frame(id=1,order=i,fold=1:nfolds,predictor.removed=par.remove[i],value=brt.amax.res[[i]]$folds[,'mpe'],label='Mean prediction error')
+  dfr2 <- data.frame(id=1,order=i,fold=1:nfolds,predictor.removed=par.remove[i],value=brt.amax.res[[i]]$folds[,'dev'],label='Mean prediction deviance')
+  dfr  <- rbind(dfr,dfr1,dfr2)
+}
+
+fig <- ggplot(dfr,aes(x=order,y=value,group=id)) +
+  stat_summary(fun.ymin=function(x) mean(x) - sd(x)/sqrt(nfolds),fun.ymax=function(x) mean(x) + sd(x)/sqrt(nfolds),geom='ribbon',alpha=0.2) +
+  stat_summary(fun.y=function(x) mean(x),geom='line',lwd=1.5) +
+  scale_x_discrete(labels=par.remove) + 
+  facet_wrap(~label,ncol=1,scale='free_y') +
+  labs(x='Predictor removed',y='') +
+  theme_bw(base_size=20)
+
+pdfr(fig,width=12,name='brt_amax_res1')
+
+dfr <- data.frame()
+for(i in 1:(length(par.names)-1)) {
+  
+  dfr  <- rbind(dfr,data.frame(id=1,order=i,fold=1:nfolds,predictor.removed=paste('drop ',i-1,': ',par.remove[i],sep=''),obs=brt.amax.res[[i]]$folds[,'obs'],hat=brt.amax.res[[i]]$folds[,'hat']))
+}
+
+fig <- ggplot(dfr,aes(x=obs,y=hat)) +
+  geom_point(size=3,alpha=0.3) + 
+  geom_abline(a=0,b=1) + 
+  facet_wrap(~predictor.removed) + 
+  theme_bw(base_size=20) +
+  labs(x='Observed value',y='Prediction')
+
+pdfr(fig,name='brt_amax_res2')
+
+
 ############################
 # k                        #
 ############################
@@ -74,6 +154,7 @@ saver(brt.amax,brt.amax.formula,brt.amax.predictors,brt.amax.cv,name='brt_amax')
 # but looking at lmax and linf they are very closely related and better
 # to use a variable that is measured directly rather than estimated
 
+# PRELIMS
 formula <- log(k)~class+order+family+sex+trophic+habit+log(temp)+log(lmax)+log(amax)
 vars    <- all.vars(formula)
 frame   <- model.frame(formula,fb)
@@ -110,6 +191,154 @@ ggplot(dfr) +
   labs(x='Observed',y='Predicted')
 
 saver(brt.k,brt.k.formula,brt.k.predictors,brt.k.cv,name='brt_k')
+
+# FULL EVALUATION
+par.names <- c("class","order","family","sex","trophic","habit","log(temp)","log(lmax)","log(amax)")
+pars.update <- 1:length(par.names)
+
+nfolds <- 10
+
+brt.k.res <- list()
+
+# loop through parameters updating formula
+# to drop least influential
+for(i in 1:(length(par.names)-1)) {
+  
+  formula.update <- as.formula(paste('log(k)~',paste(par.names[pars.update],collapse='+'),sep=''))
+  
+  brt.update <- Brter(formula.update,exp,ntrees=5000,learning.rate=0.001)
+  
+  brt.update$fit(fb)
+  
+  rinfl <- relative.influence(brt.update$brt,n.trees = brt.update$brt$gbm.call$best.trees)
+  cross <- brt.update$cross(fb,folds=nfolds) 
+  
+  brt.k.res[[i]] <- list()
+  brt.k.res[[i]][['formula']]    <- formula.update
+  brt.k.res[[i]][['summary']]    <- cross$summary 
+  brt.k.res[[i]][['folds']]      <- cross$folds
+  brt.k.res[[i]][['influence']]  <- data.frame(predictor=brt.update$brt$gbm.call$predictor.names,influence=as.numeric(rinfl/sum(rinfl)))
+  brt.k.res[[i]][['drop']]       <- brt.update$brt$gbm.call$predictor.names[which.min(rinfl)]
+  
+  pars.update <- pars.update[-which.min(rinfl)]
+  
+}
+
+saver(brt.k.res,name='brt_k_res')
+
+# FIGURES
+par.drop <- unlist(lapply(brt.k.res,function(x) x$drop))
+par.remove <- c('none',par.drop[-length(par.drop)])
+
+dfr <- data.frame()
+for(i in 1:(length(par.names)-1)) {
+  
+  dfr1 <- data.frame(id=1,order=i,fold=1:nfolds,predictor.removed=par.remove[i],value=brt.k.res[[i]]$folds[,'mpe'],label='Mean prediction error')
+  dfr2 <- data.frame(id=1,order=i,fold=1:nfolds,predictor.removed=par.remove[i],value=brt.k.res[[i]]$folds[,'dev'],label='Mean prediction deviance')
+  dfr  <- rbind(dfr,dfr1,dfr2)
+}
+
+fig <- ggplot(dfr,aes(x=order,y=value,group=id)) +
+  stat_summary(fun.ymin=function(x) mean(x) - sd(x)/sqrt(nfolds),fun.ymax=function(x) mean(x) + sd(x)/sqrt(nfolds),geom='ribbon',alpha=0.2) +
+  stat_summary(fun.y=function(x) mean(x),geom='line',lwd=1.5) +
+  scale_x_discrete(labels=par.remove) + 
+  facet_wrap(~label,ncol=1,scale='free_y') +
+  labs(x='Predictor removed',y='') +
+  theme_bw(base_size=20)
+
+pdfr(fig,width=12,name='brt_k_res1')
+
+dfr <- data.frame()
+for(i in 1:(length(par.names)-1)) {
+  
+  dfr  <- rbind(dfr,data.frame(id=1,order=i,fold=1:nfolds,predictor.removed=paste('drop ',i-1,': ',par.remove[i],sep=''),obs=brt.k.res[[i]]$folds[,'obs'],hat=brt.k.res[[i]]$folds[,'hat']))
+}
+
+
+fig <- ggplot(dfr,aes(x=obs,y=hat)) +
+  geom_point(size=3,alpha=0.3) + 
+  geom_abline(a=0,b=1) + 
+  facet_wrap(~predictor.removed) + 
+  theme_bw(base_size=20) +
+  labs(x='Observed value',y='Prediction')
+
+pdfr(fig,name='brt_k_res2')
+
+############################
+# linf                     #
+############################
+
+# FULL EVALUATION
+par.names <- c("class","order","family","sex","trophic","habit","log(temp)","log(lmax)","log(amax)")
+pars.update <- 1:length(par.names)
+
+nfolds <- 100
+
+brt.linf.res <- list()
+
+# loop through parameters updating formula
+# to drop least influential
+for(i in 1:(length(par.names)-1)) {
+  
+  formula.update <- as.formula(paste('log(linf)~',paste(par.names[pars.update],collapse='+'),sep=''))
+  
+  brt.update <- Brter(formula.update,exp,ntrees=5000,learning.rate=0.001)
+  
+  brt.update$fit(fb)
+  
+  rinfl <- relative.influence(brt.update$brt,n.trees = brt.update$brt$gbm.call$best.trees)
+  cross <- brt.update$cross(fb,folds=nfolds) 
+  
+  brt.linf.res[[i]] <- list()
+  brt.linf.res[[i]][['formula']]    <- formula.update
+  brt.linf.res[[i]][['summary']]    <- cross$summary 
+  brt.linf.res[[i]][['folds']]      <- cross$folds
+  brt.linf.res[[i]][['influence']]  <- data.frame(predictor=brt.update$brt$gbm.call$predictor.names,influence=as.numeric(rinfl/sum(rinfl)))
+  brt.linf.res[[i]][['drop']]       <- brt.update$brt$gbm.call$predictor.names[which.min(rinfl)]
+  
+  pars.update <- pars.update[-which.min(rinfl)]
+  
+}
+
+saver(brt.linf.res,name='brt_linf_res')
+
+# FIGURES
+par.drop <- unlist(lapply(brt.linf.res,function(x) x$drop))
+par.remove <- c('none',par.drop[-length(par.drop)])
+
+dfr <- data.frame()
+for(i in 1:(length(par.names)-1)) {
+  
+  dfr1 <- data.frame(id=1,order=i,fold=1:nfolds,predictor.removed=par.remove[i],value=brt.linf.res[[i]]$folds[,'mpe'],label='Mean prediction error')
+  dfr2 <- data.frame(id=1,order=i,fold=1:nfolds,predictor.removed=par.remove[i],value=brt.linf.res[[i]]$folds[,'dev'],label='Mean prediction deviance')
+  dfr  <- rbind(dfr,dfr1,dfr2)
+}
+
+fig <- ggplot(dfr,aes(x=order,y=value,group=id)) +
+  stat_summary(fun.ymin=function(x) mean(x) - sd(x)/sqrt(nfolds),fun.ymax=function(x) mean(x) + sd(x)/sqrt(nfolds),geom='ribbon',alpha=0.2) +
+  stat_summary(fun.y=function(x) mean(x),geom='line',lwd=1.5) +
+  scale_x_discrete(labels=par.remove) + 
+  facet_wrap(~label,ncol=1,scale='free_y') +
+  labs(x='Predictor removed',y='') +
+  theme_bw(base_size=20)
+
+pdfr(fig,width=12,name='brt_linf_res1')
+
+dfr <- data.frame()
+for(i in 1:(length(par.names)-1)) {
+  
+  dfr  <- rbind(dfr,data.frame(id=1,order=i,fold=1:nfolds,predictor.removed=paste('drop ',i-1,': ',par.remove[i],sep=''),obs=brt.linf.res[[i]]$folds[,'obs'],hat=brt.linf.res[[i]]$folds[,'hat']))
+}
+
+fig <- ggplot(dfr,aes(x=obs,y=hat)) +
+  geom_point(size=3,alpha=0.3) + 
+  geom_abline(a=0,b=1) + 
+  facet_wrap(~predictor.removed) + 
+  theme_bw(base_size=20) +
+  labs(x='Observed value',y='Prediction')
+
+pdfr(fig,name='brt_linf_res2')
+
 
 ############################
 # m                        #
@@ -200,7 +429,7 @@ for(i in 1:(length(par.names)-1)) {
  cross <- brt.update$cross(fb,folds=100) 
  
  brt.m.res[[i]] <- list()
- brt.m.res[[1]][['formula']]    <- formula.update
+ brt.m.res[[i]][['formula']]    <- formula.update
  brt.m.res[[i]][['summary']]    <- cross$summary 
  brt.m.res[[i]][['folds']]      <- cross$folds
  brt.m.res[[i]][['influence']]  <- data.frame(predictor=brt.update$brt$gbm.call$predictor.names,influence=as.numeric(rinfl/sum(rinfl)))
@@ -214,16 +443,39 @@ saver(brt.m.res,name='brt_m_res')
 
 # FIGURES
 par.drop <- unlist(lapply(brt.m.res,function(x) x$drop))
+par.remove <- c('none',par.drop[-length(par.drop)])
 
 dfr <- data.frame()
-dfr <- rbind(dfr,data.frame(id=1,order=1:9,predictor.removed=c('none',par.drop[-length(par.drop)]),value=unlist(lapply(brt.m.res,function(x) {y<-x$summary['mpe','mean'];y})),label='Mean prediction error'))
-dfr <- rbind(dfr,data.frame(id=1,order=1:9,predictor.removed=c('none',par.drop[-length(par.drop)]),value=unlist(lapply(brt.m.res,function(x) {y<-x$summary['dev','mean'];y})),label='Mean prediction deviance'))
+for(i in 1:(length(par.names)-1)) {
+  
+ dfr1 <- data.frame(id=1,order=i,fold=1:100,predictor.removed=par.remove[i],value=brt.m.res[[i]]$folds[,'mpe'],label='Mean prediction error')
+ dfr2 <- data.frame(id=1,order=i,fold=1:100,predictor.removed=par.remove[i],value=brt.m.res[[i]]$folds[,'dev'],label='Mean prediction deviance')
+ dfr  <- rbind(dfr,dfr1,dfr2)
+}
 
-ggplot(dfr) + 
-  geom_line(aes(x=order,y=value,group=id),size=2) + 
-  scale_x_discrete(labels=dfr$predictor.removed) + 
+fig <- ggplot(dfr,aes(x=order,y=value,group=id)) +
+  stat_summary(fun.ymin=function(x) mean(x) - sd(x)/sqrt(100),fun.ymax=function(x) mean(x) + sd(x)/sqrt(100),geom='ribbon',alpha=0.2) +
+  stat_summary(fun.y=function(x) mean(x),geom='line',lwd=1.5) +
+  scale_x_discrete(labels=par.remove) + 
   facet_wrap(~label,ncol=1,scale='free_y') +
   labs(x='Predictor removed',y='') +
-  theme_bw(base_size=20) 
+  theme_bw(base_size=20)
 
+pdfr(fig,width=12,name='brt_m_res1')
+
+dfr <- data.frame()
+for(i in 1:(length(par.names)-1)) {
+  
+  dfr  <- rbind(dfr,data.frame(id=1,order=i,fold=1:100,predictor.removed=paste('drop ',i-1,': ',par.remove[i],sep=''),obs=brt.m.res[[i]]$folds[,'obs'],hat=brt.m.res[[i]]$folds[,'hat']))
+}
+
+
+fig <- ggplot(dfr,aes(x=obs,y=hat)) +
+  geom_point(size=3,alpha=0.3) + 
+  geom_abline(a=0,b=1) + 
+  facet_wrap(~predictor.removed) + 
+  theme_bw(base_size=20) +
+  labs(x='Observed value',y='Prediction')
+
+pdfr(fig,name='brt_m_res2')
    
