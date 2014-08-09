@@ -5,9 +5,21 @@ rm(list=ls())
 source('collate.R')
 source('load_data.R')
 
-# create brt fishnet
+##############
+# groom data #
+##############
 
-brt14 <- Fishnet(
+fb[which(fb$temp<=0),'temp'] <- NA
+fb[which(fb$m>2),'m']        <- NA
+
+gs[which(gs$m>2),'m']        <- NA
+
+
+#############
+# fishnet 1 #
+#############
+
+mfishnet1 <- Fishnet(
   
   species   = SpeciesRandom(),
   genus     = GenusParser(),
@@ -15,36 +27,132 @@ brt14 <- Fishnet(
   order     = OrderLookupper(),
   class     = ClassLookupper(),
   
+  habit     = TaxonomicImputer('habit',c(log,exp)),
   trophic   = TaxonomicImputer('trophic',c(log,exp)),
-  amax      = TaxonomicImputer('amax',c(log,exp)),
+  temp      = TaxonomicImputer('temp',c(log,exp)),
   lmax      = TaxonomicImputer('lmax',c(log,exp)),
-  lmat      = TaxonomicImputer('lmat',c(log,exp)),
   
-  linf      = Glmer(log(linf) ~ log(lmax) + log(lmat),exp),
-  
-  k         = Brter(log(k)~family+trophic+log(linf)+log(amax),exp),
-  m         = Brter(log(m)~family+log(linf)+log(k)+log(amax),exp)
+  amax      = Brter(log(amax)~family+habit+trophic+log(temp)+log(lmax),exp,ntrees=5000,learning.rate=0.001),
+  k         = Brter(log(k)~family+log(temp)+log(lmax)+log(amax),exp,ntrees=5000,learning.rate=0.001),
+  m         = Brter(log(m)~family+log(temp)+log(k)+log(amax),exp,ntrees=5000,learning.rate=0.001)
   
 )
-  
-names(gs)[match('l',names(gs))]<-'lmat'
-gs <- subset(gs,m<2.5)
-brt14$fit(gs)
 
 # perform jacknife for different nodes
 jknife <- list()
-jknife[['linf']] <- brt14$nodes[['linf']]$cross(gs,jacknife=T)
-jknife[['k']] <- brt14$nodes[['k']]$cross(gs,jacknife=T)
-jknife[['m']]    <- brt14$nodes[['m']]$cross(gs,jacknife=T)
+jknife[['fb']] <- list()
+jknife[['fb']][['amax']] <- mfishnet1$nodes[['amax']]$cross(fb,folds=10)
+jknife[['fb']][['k']]    <- mfishnet1$nodes[['k']]$cross(fb,folds=10)
+jknife[['fb']][['m']]    <- mfishnet1$nodes[['m']]$cross(fb,folds=10)
+jknife[['gs']] <- list()
+jknife[['gs']][['amax']] <- mfishnet1$nodes[['amax']]$cross(gs,jacknife=T)
+jknife[['gs']][['k']]    <- mfishnet1$nodes[['k']]$cross(gs,jacknife=T)
+jknife[['gs']][['m']]    <- mfishnet1$nodes[['m']]$cross(gs,jacknife=T)
+
+saver(jknife,name='mfishnet1_jknife')
+
 
 dfr <- lapply(jknife,function(x) x$folds[,c('hat','obs')])
-dfr <- rbind(cbind(par='linf',dfr[['linf']]),cbind(par='k',dfr[['k']]),cbind(par='m',dfr[['m']]))
+dfr <- rbind(cbind(par='amax',dfr[['amax']]),cbind(par='k',dfr[['k']]),cbind(par='m',dfr[['m']]))
 
 ggplot(dfr) + 
   geom_point(aes(x=obs,y=hat),size=3,alpha=0.3) + 
   geom_abline(a=0,b=1) + 
   facet_wrap(~par,scales="free") + 
   theme_bw(base_size=20)
+
+# cross validate fishnet
+
+data.fb <- fb[,c('m','species','genus','family','order','class','habit','trophic','temp','lmax','k','amax')]
+data.fb <- data.fb[!is.na(data.fb$m),]
+
+cvfishnet <- function(data,folds=10,byspecies=F) {
+  
+  if(byspecies) {
+    data$species <- factor(data$species)
+    spp <- levels(data$species)
+    folds <- length(spp)
+    levels(data$species) <- 1:folds
+    folder <- as.numeric(data$species)
+    levels(data$species) <- spp
+  } else {
+    folder = rep(1:folds,length.out=nrow(data))
+    folder = sample(folder)
+  }
+  
+  # Result data.frame
+  results = NULL
+  # For each fold...
+  for(fold in 1:folds){
+    cat("Fold",fold,": ")
+    # Define training a testing datasets
+    train = data[folder!=fold,]
+    test = data[folder==fold,]
+    
+    # test vector
+    tests <- test[,'m']
+    test[,'m'] <- NA
+    
+    # Fit model to training data
+    mfishnet1$fit(train)
+    
+    # Get nodes to predict values for their predictands
+    # node prediction 'fills in the blanks' at each step
+    # i.e. existent data values are not over-written
+    test[,'amax'] <- mfishnet1$nodes[['amax']]$predict.safe(test,na.strict=T,na.keep=T)
+    test[,'k']    <- mfishnet1$nodes[['k']]$predict.safe(test,na.strict=T,na.keep=T)
+    test[,'m']    <- mfishnet1$nodes[['m']]$predict(test,na.strict=T,na.keep=T)
+    
+    # get predictions
+    preds <- test[,'m']
+    
+    # remove NA's
+    na.loc <- is.na(preds) | is.na(tests)
+    preds <- preds[!na.loc]
+    tests <- tests[!na.loc]
+    
+    # Calculate various prediction errors
+    if(!all(na.loc)) {
+      me = mean(abs(tests-preds))
+      mse = mean((tests-preds)^2)
+      mpe = mean(abs((tests-preds)/tests))
+      r2 = cor(tests,preds,use="pairwise.complete.obs")^2
+      dev = mean((tests - preds) * (tests - preds))
+      
+      # Add to results
+      results = rbind(results,data.frame(
+        fold = fold,
+        obs = mean(tests),
+        hat = mean(preds),
+        me = me,
+        mse = mse,
+        mpe = mpe,
+        r2 = r2,
+        dev = dev
+      ))
+    }
+    
+  }
+  # Summarise results
+  summary <- data.frame(mean=apply(results[,4:8],2,mean,na.rm=T),se=apply(results[,4:8],2,function(x) sd(x)/sqrt(length(x))))
+  # Return summary and raw results
+  return (list(
+    summary = summary,
+    folds = results
+  ))
+}
+
+mfishnet1.res           <- cvfishnet(data.fb)
+mfishnet1.res.byspecies <- cvfishnet(data.fb,byspecies=T)
+
+
+dfr <- mfishnet1.res$folds[,c('hat','obs')]
+
+ggplot(dfr) + 
+  geom_point(aes(x=obs,y=hat),size=3,alpha=0.3) + 
+  geom_abline(a=0,b=1) +  
+  theme_bw(base_size=20) +
+  labs(x='Observed value',y='Prediction')
 
 
 # SOME EXAMPLES
