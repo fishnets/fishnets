@@ -55,15 +55,19 @@ Brter <- function(formula,transform=identity,ntrees=2000,tree.complexity=10,lear
     #gbm.plot.fits(self$brt)
   }
   
-  self$predict <- function(data,transform=T){
+  self$predict <- function(data,transform=T,na.strict=T,na.keep=F){
     data <- as.data.frame(data)
-    # Create a model frame using the formula. This creates a
-    # matrix that can be used for fitting the trees
-    # When creating a model frame from a formula you need to have
-    # all the variable presents, so add it first (it can't be NA otherwise all rows get omitted)
-    data[,self$predictand] <- 1
-    frame <- model.frame(self$formula,data)
-    # Generate predictions
+     
+    # include predictand in data if it is missing
+    if(!(self$predictand %in% names(data)))
+      data[,self$predictand] <- NA
+    
+    # create a model frame using the formula
+    # and keeping all NA values
+    frame <- model.frame(self$formula,data,na.action=na.pass)
+    
+    # Generate predictions of length equal
+    # to nrows(data)
     preds <- predict.gbm(
       self$brt,
       newdata = frame,
@@ -71,8 +75,20 @@ Brter <- function(formula,transform=identity,ntrees=2000,tree.complexity=10,lear
       type = "response"
     )
     # Record s.d. of residuals for $sample()
-    self$error <- sd(self$brt$residuals)
+    self$error <- sd(self$brt$residuals,na.rm=T)
     
+    # if na.strict we suppose that we are not justified in predicting
+    # predictand if any of the covariates are missing
+    if(na.strict) {
+      na.loc        <- apply(frame,1,function(x) any(is.na(x[-1])))
+      preds[na.loc] <- NA
+    }
+    
+    # if !na.keep remove all NA's from prediction vector
+    if(!na.keep) preds <- preds[!is.na(preds)]
+    
+    # return with or without back-transformation
+    # of predicted values
     if(transform) return(self$transform(preds))
     else return(preds)
   }
