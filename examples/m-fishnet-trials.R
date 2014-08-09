@@ -142,17 +142,23 @@ cvfishnet <- function(data,folds=10,byspecies=F) {
   ))
 }
 
-mfishnet1.res           <- cvfishnet(data.fb)
+#mfishnet1.res           <- cvfishnet(data.fb)
 mfishnet1.res.byspecies <- cvfishnet(data.fb,byspecies=T)
 
+saver(mfishnet1.res.byspecies,name='mfishnet1.res')
 
-dfr <- mfishnet1.res$folds[,c('hat','obs')]
+#dfr <- mfishnet1.res$folds[,c('hat','obs')]
+dfr <- data.frame(mfishnet1.res.byspecies$folds[,c('hat','obs')],label='Predicted Values')
+dfr <- rbind(dfr,data.frame(obs=dfr$obs,hat=dfr$hat-dfr$obs,label='Prediction Residuals'))
 
-ggplot(dfr) + 
-  geom_point(aes(x=obs,y=hat),size=3,alpha=0.3) + 
-  geom_abline(a=0,b=1) +  
+fig <- ggplot(dfr,aes(x=obs,y=hat)) + 
+  geom_point(size=4,alpha=0.3) + 
+  geom_abline(aes(intercept=a,slope=b),data=data.frame(label=c('Predicted Values','Prediction Residuals'),a=c(0,0),b=c(1,0)),colour="#990000", linetype="dashed",size=1) +
+  facet_wrap(~label,scale='free_y',ncol=1) +
   theme_bw(base_size=20) +
-  labs(x='Observed value',y='Prediction')
+  labs(x='Observed value',y='')
+
+pdfr(fig,width=12,name='mfishnet1_res_byspecies')
 
 
 # SOME EXAMPLES
