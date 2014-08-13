@@ -41,6 +41,7 @@ Node <- function(){
         message('folds:',folds,'\n')
       }
     }
+    
     # Randomly assign rows of data to a fold
     # Do this in a way that divides the data as evenly as possible..
     # Systematically assign folder number to give very close to even numbers in each fold...

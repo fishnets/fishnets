@@ -17,8 +17,8 @@ imputer <- Fishnet(
   
   habit     = TaxonomicImputer('habit'),
   depthmax  = TaxonomicImputer('depthmax',c(log,exp)),
-  temp      = TaxonomicImputer('temp'),
   trophic   = TaxonomicImputer('trophic',c(log,exp)),
+  lmat      = TaxonomicImputer('lmat',c(log,exp)),
   lmax      = TaxonomicImputer('lmax',c(log,exp)),
   amax      = TaxonomicImputer('amax',c(log,exp))
 )
