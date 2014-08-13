@@ -1,17 +1,17 @@
 #' A `Node` for matural mortality based on
-#' [Charnov et al 2013]() Equation 3
-MHoenig1983Fitted <- function(){
-  self <- extend(MHoenig1983,'MHoenig1983Fitted')
+#' [Charnov 1993]() Equation 3
+MCharnov1993Fitted <- function(){
+  self <- extend(MCharnov1993,'MMCharnov1993Fitted')
 
-  formula <- log(m) ~ log(amax)
+  formula <- log(m/k) ~ 1
   
   self$fit <- function(data, ...){
     self$glm <- glm(formula,data=data)
   }
   
   self$predict <- function(data){
-    logm <- predict.glm(self$glm,newdata=data,type='response')
-    exp(logm)
+    logmk <- predict.glm(self$glm,newdata=data,type='response')
+    exp(logmk)*data$k
   }
   
   self$n <- function(data) {
@@ -28,7 +28,7 @@ MHoenig1983Fitted <- function(){
     # Sample from normal distribution with that sigma
     preds <- suppressWarnings(rnorm(nrow(predictions),mean=predictions$fit,sigma))
     # Apply post transformation
-    exp(preds)
+    exp(preds)*data$k
   }
   
   self

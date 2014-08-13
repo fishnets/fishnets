@@ -4,9 +4,9 @@ MHoenig1983 <- function(){
   self <- extend(Node,'MHoenig1983')
 
   self$predictand <- 'm'
-  self$predictors <- c('amax')
+  self$predictors <- 'amax'
   
-  self$fit <- function(data){
+  self$fit <- function(data, ...){
     predicted <- log(self$predict(data))
     observed <- log(data$m)
     self$error <- sd(predicted-observed,na.rm=T)

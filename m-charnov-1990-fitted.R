@@ -1,19 +1,23 @@
 #' A `Node` for matural mortality based on
 #' [Charnov et al 2013]() Equation 3
-MCharnovEtAl2013Fitted <- function(){
-  self <- extend(MCharnovEtAl2013,'MCharnovEtAl2013Fitted')
+MCharnov1990Fitted <- function(){
+  self <- extend(MCharnov1990,'MMCharnov1990Fitted')
 
-  self$fit <- function(data){
-    self$glm <- glm(log(m/k) ~ -1 + log(lmat/linf),data=data)
+  formula <- log(amat*m) ~ 1
+  
+  self$fit <- function(data, ...){
+    self$glm <- glm(formula,data=data)
   }
   
   self$predict <- function(data){
-    logmk <- predict.glm(self$glm,newdata=data,type='response')
-    exp(logmk)*data$k
+    logamatm <- predict.glm(self$glm,newdata=data,type='response')
+    exp(logamatm)/data$amat
   }
   
   self$n <- function(data) {
     # number of data points used for fitting
+    frame <- model.frame(formula,data)
+    nrow(frame)
   }
   
   self$sample <- function(data){
@@ -22,9 +26,9 @@ MCharnovEtAl2013Fitted <- function(){
     # Calculate a standard deviation that combines se.fit and residual s.d.
     sigma <- sqrt(predictions$se.fit^2 + predictions$residual.scale^2)
     # Sample from normal distribution with that sigma
-    preds <- rnorm(nrow(predictions),mean=predictions$fit,sigma)
+    preds <- suppressWarnings(rnorm(nrow(predictions),mean=predictions$fit,sigma))
     # Apply post transformation
-    exp(preds)*data$k
+    exp(preds)/data$amat
   }
   
   self

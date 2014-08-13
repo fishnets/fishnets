@@ -1,10 +1,10 @@
 #' A `Node` for matural mortality based on
-#' [Pauly 1980]()
-MPauly1980 <- function(){
-  self <- extend(Node,'MPauly1980')
+#' [Charnov & Berrigan 1990]()
+MCharnov1990 <- function(){
+  self <- extend(Node,'MCharnov1990')
 
   self$predictand <- 'm'
-  self$predictors <- c('linf','k','temp')
+  self$predictors <- 'amat'
   
   self$fit <- function(data, ...){
     predicted <- log(self$predict(data))
@@ -13,7 +13,7 @@ MPauly1980 <- function(){
   }
   
   self$predict <- function(data){
-    with(data,exp(-0.0066-0.279*log(linf)+0.6543*log(k)+0.4634*log(temp)))
+    with(data,1.8/amat)
   }
   
   self$sample <- function(data){
