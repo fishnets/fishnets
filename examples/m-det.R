@@ -16,11 +16,13 @@ source('utils.R')
 # groom data #
 ##############
 
+# remove outliers
 fb[which(fb$temp<=0),'temp'] <- NA
 fb[which(fb$m>2),'m']        <- NA
 
 gs[which(gs$m>2),'m']        <- NA
 
+# counts
 fb.tmp <- fb[!is.na(fb$m),]
 for(i in 1:ncol(fb)) {
   print(paste(names(fb)[i],':',sum(!is.na(fb.tmp[,i]))))
@@ -93,9 +95,9 @@ c90fbfit <- MCharnov1990Fitted()
 c90fbfit$fit(fb)
 fb.c90fbfit <- data.frame(fb,m.predict=c90fbfit$predict(fb))
 
-plot(log(m)~log(amat),data=fb,main='c90fb')
-points(log(m.predict)~log(amat),data=fb.c90fb,col=2)
-points(log(m.predict)~log(amat),data=fb.c90fbfit,col=4)
+#plot(log(m)~log(amat),data=fb,main='c90fb')
+#points(log(m.predict)~log(amat),data=fb.c90fb,col=2)
+#points(log(m.predict)~log(amat),data=fb.c90fbfit,col=4)
 
 cv.c90fb    <- c90fb$cross(fb)
 cv.c90fbfit <- c90fbfit$cross(fb)
@@ -108,9 +110,9 @@ c90gsfit <- MCharnov1990Fitted()
 c90gsfit$fit(gs)
 gs.c90gsfit <- data.frame(gs,m.predict=c90gsfit$predict(gs))
 
-plot(log(m)~log(amat),data=gs,main='c90gs')
-points(log(m.predict)~log(amat),data=gs.c90gs,col=2)
-points(log(m.predict)~log(amat),data=gs.c90gsfit,col=4)
+#plot(log(m)~log(amat),data=gs,main='c90gs')
+#points(log(m.predict)~log(amat),data=gs.c90gs,col=2)
+#points(log(m.predict)~log(amat),data=gs.c90gsfit,col=4)
 
 cv.c90gs    <- c90gs$cross(gs)
 cv.c90gsfit <- c90gsfit$cross(gs)
@@ -135,9 +137,9 @@ c93fbfit <- MCharnov1993Fitted()
 c93fbfit$fit(fb)
 fb.c93fbfit <- data.frame(fb,m.predict=c93fbfit$predict(fb))
 
-plot(log(m)~log(k),data=fb,main='c93fb')
-points(log(m.predict)~log(k),data=fb.c93fb,col=2)
-points(log(m.predict)~log(k),data=fb.c93fbfit,col=4)
+#plot(log(m)~log(k),data=fb,main='c93fb')
+#points(log(m.predict)~log(k),data=fb.c93fb,col=2)
+#points(log(m.predict)~log(k),data=fb.c93fbfit,col=4)
 
 cv.c93fb    <- c93fb$cross(fb)
 cv.c93fbfit <- c93fbfit$cross(fb)
@@ -150,9 +152,9 @@ c93gsfit <- MCharnov1993Fitted()
 c93gsfit$fit(gs)
 gs.c93gsfit <- data.frame(gs,m.predict=c93gsfit$predict(gs))
 
-plot(log(m)~log(k),data=gs,main='c93gs')
-points(log(m.predict)~log(k),data=gs.c93gs,col=2)
-points(log(m.predict)~log(k),data=gs.c93gsfit,col=4)
+#plot(log(m)~log(k),data=gs,main='c93gs')
+#points(log(m.predict)~log(k),data=gs.c93gs,col=2)
+#points(log(m.predict)~log(k),data=gs.c93gsfit,col=4)
 
 cv.c93gs    <- c93gs$cross(gs)
 cv.c93gsfit <- c93gsfit$cross(gs)
@@ -178,9 +180,9 @@ c13fbfit <- MCharnov2013Fitted()
 c13fbfit$fit(fb)
 fb.c13fbfit <- data.frame(fb,m.predict=c13fbfit$predict(fb))
 
-plot(log(m/k)~log(lmat/linf),data=fb,main='c13fb')
-points(log(m.predict/k)~log(lmat/linf),data=fb.c13fb,col=2)
-points(log(m.predict/k)~log(lmat/linf),data=fb.c13fbfit,col=4)
+#plot(log(m/k)~log(lmat/linf),data=fb,main='c13fb')
+#points(log(m.predict/k)~log(lmat/linf),data=fb.c13fb,col=2)
+#points(log(m.predict/k)~log(lmat/linf),data=fb.c13fbfit,col=4)
 
 cv.c13fb <- c13fb$cross(fb)
 cv.c13fbfit <- c13fbfit$cross(fb)
@@ -193,9 +195,9 @@ c13gsfit <- MCharnov2013Fitted()
 c13gsfit$fit(gs)
 gs.c13gsfit <- data.frame(gs,m.predict=c13gsfit$predict(gs))
 
-plot(log(m/k)~log(lmat/linf),data=gs,main='c13gs')
-points(log(m.predict/k)~log(lmat/linf),data=gs.c13gs,col=2)
-points(log(m.predict/k)~log(lmat/linf),data=gs.c13gsfit,col=4)
+#plot(log(m/k)~log(lmat/linf),data=gs,main='c13gs')
+#points(log(m.predict/k)~log(lmat/linf),data=gs.c13gs,col=2)
+#points(log(m.predict/k)~log(lmat/linf),data=gs.c13gsfit,col=4)
 
 cv.c13gs <- c13gs$cross(gs)
 cv.c13gsfit <- c13gsfit$cross(gs)
@@ -221,9 +223,9 @@ h83fbfit <- MHoenig1983Fitted()
 h83fbfit$fit(fb)
 fb.h83fbfit <- data.frame(fb,m.predict=h83fbfit$predict(fb))
 
-plot(log(m)~log(amax),data=fb,main='h83fb')
-points(log(m.predict)~log(amax),data=fb.h83fb,col=2)
-points(log(m.predict)~log(amax),data=fb.h83fbfit,col=4)
+#plot(log(m)~log(amax),data=fb,main='h83fb')
+#points(log(m.predict)~log(amax),data=fb.h83fb,col=2)
+#points(log(m.predict)~log(amax),data=fb.h83fbfit,col=4)
 
 cv.h83fb <- h83fb$cross(fb)
 cv.h83fbfit <- h83fbfit$cross(fb)
@@ -237,9 +239,9 @@ h83gsfit <- MHoenig1983Fitted()
 h83gsfit$fit(gs)
 gs.h83gsfit <- data.frame(gs,m.predict=h83gsfit$predict(gs))
 
-plot(log(m)~log(amax),data=gs,main='h83gs')
-points(log(m.predict)~log(amax),data=gs.h83gs,col=2)
-points(log(m.predict)~log(amax),data=gs.h83gsfit,col=4)
+#plot(log(m)~log(amax),data=gs,main='h83gs')
+#points(log(m.predict)~log(amax),data=gs.h83gs,col=2)
+#points(log(m.predict)~log(amax),data=gs.h83gsfit,col=4)
 
 cv.h83gs <- h83gs$cross(gs)
 cv.h83gsfit <- h83gsfit$cross(gs)
@@ -263,9 +265,9 @@ q99fbfit <- MQuinn1999Fitted()
 q99fbfit$fit(fb)
 fb.q99fbfit <- data.frame(fb,m.predict=q99fbfit$predict(fb))
 
-plot(log(m)~log(amax),data=fb,main='q99fb')
-points(log(m.predict)~log(amax),data=fb.q99fb,col=2)
-points(log(m.predict)~log(amax),data=fb.q99fbfit,col=4)
+#plot(log(m)~log(amax),data=fb,main='q99fb')
+#points(log(m.predict)~log(amax),data=fb.q99fb,col=2)
+#points(log(m.predict)~log(amax),data=fb.q99fbfit,col=4)
 
 cv.q99fb <- q99fb$cross(fb)
 cv.q99fbfit <- q99fbfit$cross(fb)
@@ -278,9 +280,9 @@ q99gsfit <- MQuinn1999Fitted()
 q99gsfit$fit(gs)
 gs.q99gsfit <- data.frame(gs,m.predict=q99gsfit$predict(gs))
 
-plot(log(m)~log(amax),data=gs,main='q99gs')
-points(log(m.predict)~log(amax),data=gs.q99gs,col=2)
-points(log(m.predict)~log(amax),data=gs.q99gsfit,col=4)
+#plot(log(m)~log(amax),data=gs,main='q99gs')
+#points(log(m.predict)~log(amax),data=gs.q99gs,col=2)
+#points(log(m.predict)~log(amax),data=gs.q99gsfit,col=4)
 
 cv.q99gs <- q99gs$cross(gs)
 cv.q99gsfit <- q99gsfit$cross(gs)
@@ -304,9 +306,9 @@ p80fbfit <- MPauly1980Fitted()
 p80fbfit$fit(fb)
 fb.p80fbfit <- data.frame(fb,m.predict=p80fbfit$predict(fb))
 
-plot(log(m/k)~log(linf),data=fb,main='p80fb')
-points(log(m.predict/k)~log(linf),data=fb.p80fb,col=2)
-points(log(m.predict/k)~log(linf),data=fb.p80fbfit,col=4)
+#plot(log(m/k)~log(linf),data=fb,main='p80fb')
+#points(log(m.predict/k)~log(linf),data=fb.p80fb,col=2)
+#points(log(m.predict/k)~log(linf),data=fb.p80fbfit,col=4)
 
 cv.p80fb <- p80fb$cross(fb)
 cv.p80fbfit <- p80fbfit$cross(fb)
@@ -320,9 +322,9 @@ p80gsfit <- MPauly1980Fitted()
 p80gsfit$fit(gs)
 gs.p80gsfit <- data.frame(gs,m.predict=p80gsfit$predict(gs))
 
-plot(log(m/k)~log(linf),data=gs,main='p80gs')
-points(log(m.predict/k)~log(linf),data=gs.p80gs,col=2)
-points(log(m.predict/k)~log(linf),data=gs.p80gsfit,col=4)
+#plot(log(m/k)~log(linf),data=gs,main='p80gs')
+#points(log(m.predict/k)~log(linf),data=gs.p80gs,col=2)
+#points(log(m.predict/k)~log(linf),data=gs.p80gsfit,col=4)
 
 cv.p80gs <- p80gs$cross(gs)
 cv.p80gsfit <- p80gsfit$cross(gs)
@@ -388,9 +390,7 @@ p80$gs$lit <- p80gs
 p80$gs$fit <- p80gsfit 
 
 # cross validation tables
-cv.sum <- rbind(cv.c90,cv.c93,cv.h83,cv.q99,cv.c13,cv.p80)
-subset(cv.sum,fitted)
-subset(cv.sum,!fitted)
+dfr <- rbind(cv.c90,cv.c93,cv.h83,cv.q99,cv.c13,cv.p80)
 
 # regression coefficients
 exp(coef(c90fbfit$glm))
@@ -410,7 +410,7 @@ coef(p80gsfit$glm)
 # save
 saver(c90,c93,h83,q99,c13,p80,cv.sum,name='m_det_res')
 
-
+write.csv(dfr,file='C:/PROJECTS/FISHNETS/res/cvdet.csv')
 
 
 

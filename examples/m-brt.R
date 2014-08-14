@@ -72,72 +72,41 @@ for(i in 1:length(gs$amat)) {
 # fishbase                 #
 ############################
 
-formula <- log(m)~family+sex+trophic+habit+log(temp)+log(lmat)+log(linf)+log(k)+log(amax)+log(amat)
-vars    <- all.vars(formula)
-frame <- model.frame(formula,fb,na.action=na.pass)
-names(frame) <- c("log.m","family","sex","trophic","habit","log.temp","log.lmat","log.linf","log.k","log.amax","log.amat")
-brt.m <- gbm.step(data = frame[!is.na(frame$log.m),],
-                  gbm.y = 1,
-                  gbm.x = 2:ncol(frame), 
-                  family = "gaussian",
-                  tree.complexity = 10,
-                  learning.rate = 0.001,
-                  bag.fraction = 0.5,
-                  max.trees = 10000)
-
-summary(brt.m)
-
-brt.m.simplify <- gbm.simplify(brt.m)
-lapply(brt.m.simplify$pred.list,function(x) vars[x])
-
-brt.m.predictors <- vars[brt.m.simplify$pred.list[[7]]]
-brt.m.formula    <- log(m)~family+log(k)+log(amax)
-
-brt.m <- Brter(brt.m.formula,exp,tree.complexity = 10,learning.rate = 0.002,bag.fraction = 0.5,ntrees = 3050)
+#formula <- log(m)~family+sex+trophic+habit+log(temp)+log(lmat)+log(linf)+log(k)+log(amax)+log(amat)
+#vars    <- all.vars(formula)
+#frame <- model.frame(formula,fb,na.action=na.pass)
+#names(frame) <- c("log.m","family","sex","trophic","habit","log.temp","log.lmat","log.linf","log.k","log.amax","log.amat")
+#brt.m <- gbm.step(data = frame[!is.na(frame$log.m),],
+#                  gbm.y = 1,
+#                  gbm.x = 2:ncol(frame), 
+#                  family = "gaussian",
+#                  tree.complexity = 10,
+#                  learning.rate = 0.001,
+#                  bag.fraction = 0.5,
+#                  max.trees = 10000)
+#
+#summary(brt.m)
+#
+#brt.m.simplify <- gbm.simplify(brt.m)
+#lapply(brt.m.simplify$pred.list,function(x) vars[x])
+#
+#brt.m.predictors <- vars[brt.m.simplify$pred.list[[7]]]
+#brt.m.formula    <- log(m)~family+log(k)+log(amax)
+#
+#brt.m <- Brter(brt.m.formula,exp,tree.complexity = 10,learning.rate = 0.002,bag.fraction = 0.5,ntrees = 3050)
 #brt.m$fit(fb)
-
-brt.m.cv <- brt.m$cross(fb,folds=100)
-
-dfr <- cbind(par='m',brt.m.cv$folds[,c('hat','obs')])
-
-ggplot(dfr) + 
-  geom_point(aes(x=obs,y=hat),size=3,alpha=0.3) + 
-  geom_abline(a=0,b=1) + 
-  theme_bw(base_size=20) + 
-  labs(x='Observed',y='Predicted',title=as.character(brt.m.formula)[3])
-
-saver(brt.m,brt.m.formula,brt.m.predictors,brt.m.cv,name='brt_m')
-
-# let's try using the pars argument
 #
-#brt.test <- Brter(log(m)~family+trophic+habit+sex+log(temp)+log(linf)+log(k)+log(amax),exp,ntrees=5000,learning.rate=0.001)
+#brt.m.cv <- brt.m$cross(fb,folds=100)
 #
-#brt.test$fit(fb)
-#pars <- brt.test$brt$gbm.call$gbm.x
+#dfr <- cbind(par='m',brt.m.cv$folds[,c('hat','obs')])
 #
-#res <- list()
-#pars.update <- pars
+#ggplot(dfr) + 
+#  geom_point(aes(x=obs,y=hat),size=3,alpha=0.3) + 
+#  geom_abline(a=0,b=1) + 
+#  theme_bw(base_size=20) + 
+#  labs(x='Observed',y='Predicted',title=as.character(brt.m.formula)[3])
 #
-#for(i in 1:(length(pars)-1)) {
-#  
-#  brt.test$fit(fb,pars.update)
-#  cat('predictors:',brt.test$brt$gbm.call$predictor.names,'\n')
-#  
-#  rinfl <- relative.influence(brt.test$brt,n.trees = brt.test$brt$gbm.call$best.trees)
-#  
-#  res[[i]] <- list()
-#  res[[i]][['summary']]   <- brt.test$cross(fb,pars=pars.update)$summary 
-#  res[[i]][['influence']] <- data.frame(predictor=brt.test$brt$gbm.call$predictor.names,influence=as.numeric(rinfl/sum(rinfl)))
-#  res[[i]][['drop']]      <- brt.test$brt$gbm.call$predictor.names[which.min(rinfl)]
-#  
-#  pars.update <- pars.update[-which.min(rinfl)]
-#  
-#}
-#
-# results are consistent with gbm.simplify()
-#unlist(lapply(res,function(x) x$drop))
-#
-
+#saver(brt.m,brt.m.formula,brt.m.predictors,brt.m.cv,name='brt_m')
 
 # preliminary screening removed class, order and amat
 # inclusion of lmat appeared to inflate the minimum deviance and prediction error
@@ -167,8 +136,6 @@ for(i in 1:(length(par.names)-1)) {
  pars.update <- pars.update[-which.min(rinfl)]
  
 }
-
-saver(brt.m.res,name='fb/m_brt_res')
 
 # FIGURES
 par.drop <- unlist(lapply(brt.m.res,function(x) x$drop))
@@ -213,14 +180,12 @@ pdfr(fig,name='fb/m_brt_res_fig2')
 formula.final <-log(m)~family+log(temp)+log(linf)+log(k)+log(amax)
 
 brt.final <- Brter(formula.final,exp,ntrees=5000,learning.rate=0.001)
-
 brt.final$fit(fb)
+brt.cv <- brt.final$cross(fb)
 
-summary(brt.final$brt)
+#summary(brt.final$brt)
 
-# performance statistics
-brt.m.res[[4]][['formula']]
-brt.m.res[[i]][['summary']]
+saver(brt.m.res,formula.final,brt.final,brt.cv,name='fb/m_brt_res')
 
 
 ############################
@@ -255,8 +220,6 @@ for(i in 1:(length(par.names)-1)) {
   pars.update <- pars.update[-which.min(rinfl)]
   
 }
-
-saver(brt.m.res,name='gs/m_brt_res')
 
 # FIGURES
 par.drop <- unlist(lapply(brt.m.res,function(x) x$drop))
@@ -301,9 +264,28 @@ pdfr(fig,name='gs/m_brt_res_fig2')
 formula.final <-log(m)~family+log(linf)+log(k)+log(amax)
 
 brt.final <- Brter(formula.final,exp,ntrees=5000,learning.rate=0.001)
-
 brt.final$fit(gs)
+brt.cv <- brt.final$cross(gs)
 
-summary(brt.final$brt)
+#summary(brt.final$brt)
 
-   
+saver(brt.m.res,formula.final,brt.final,brt.cv,name='fb/m_brt_res')
+
+#################
+# SUMMARY TABLE #
+#################
+
+dfr <- data.frame()
+
+loader('fb/m_brt_res')
+dfr <- rbind(dfr,
+             data.frame(source='(7a)',db='fb',n=brt.final$n(fb),mpe=round(brt.cv$summary['mpe',1],2),dev=round(brt.cv$summary['dev',1],2))
+)
+loader('gs/m_brt_res')
+dfr <- rbind(dfr,
+             data.frame(source='(7b)',db='gs',n=brt.final$n(gs),mpe=round(brt.cv$summary['mpe',1],2),dev=round(brt.cv$summary['dev',1],2))
+)
+
+write.csv(dfr,file='C:/PROJECTS/FISHNETS/res/cvbrt.csv')
+
+
