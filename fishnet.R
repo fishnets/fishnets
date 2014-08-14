@@ -20,7 +20,7 @@ Fishnet <- function(...){
     self$stored <- NULL
     # Fit all nodes
     for(name in names(self$nodes)){
-      cat('Fitting',name)
+      #cat('Fitting',name)
       self$nodes[[name]]$fit(data)
       
       if (impute){
@@ -42,7 +42,7 @@ Fishnet <- function(...){
           }
         }
       }
-      cat('.\n')
+      #cat('.\n')
     }
     self$data <- data
     self

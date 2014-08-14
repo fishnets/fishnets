@@ -22,6 +22,7 @@ imputer <- Fishnet(
   lmax      = TaxonomicImputer('lmax',c(log,exp)),
   amax      = TaxonomicImputer('amax',c(log,exp))
 )
-# Do imputation base on Fishbase data
+# Do imputation based on Fishbase data
 imputer$fit(fb)
 gs <- imputer$predict(gs)
+rm(imputer)
