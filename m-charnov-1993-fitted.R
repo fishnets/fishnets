@@ -3,32 +3,66 @@
 MCharnov1993Fitted <- function(){
   self <- extend(MCharnov1993,'MMCharnov1993Fitted')
 
-  formula <- log(m/k) ~ 1
-  
   self$fit <- function(data, ...){
-    self$glm <- glm(formula,data=data)
+    self$glm <- glm(m/k ~ 1,data=data,family=gaussian(link='log'))
   }
   
-  self$predict <- function(data){
-    logmk <- predict.glm(self$glm,newdata=data,type='response')
-    exp(logmk)*data$k
+  self$predict <- function(data,transform=T,na.strict=T,na.keep=T){
+    
+    data <- as.data.frame(data)
+    
+    # by default predict.glm() will predict NA for
+    # any data row with missing covariate values
+    # consistent with na.strict=T
+    preds <- predict.glm(self$glm,newdata=data,type='response')
+    preds <- with(data,preds*k)
+    
+    # if !na.keep remove all NA's from predictand vector
+    if(!na.keep) preds <- preds[!is.na(preds)]
+    
+    return(preds)
+  }
+  
+  self$predict.safe <- function(data,transform=T,na.strict=T,na.keep=T) {
+    
+    data <- as.data.frame(data)
+    
+    if(self$predictand %in% names(data)) {
+      safe.loc <- !is.na(data[,self$predictand])
+    } else {
+      safe.loc <- !numeric(nrow(data))
+    }
+    
+    # by default predict.glm() will predict NA for
+    # any data row with missing covariate values
+    # consistent with na.strict=T
+    preds <- predict.glm(self$glm,newdata=data,type='response')
+    preds <- with(data,preds*k)
+    
+    # restore existent values
+    preds[safe.loc] <- data[safe.loc,self$predictand]
+    
+    # if !na.keep remove all NA's from prediction vector
+    if(!na.keep) preds <- preds[!is.na(preds)]
+    
+    return(preds)
   }
   
   self$n <- function(data) {
     # number of data points used for fitting
-    frame <- model.frame(formula,data)
+    frame <- model.frame(paste(self$predictand,'~',paste(self$predictors,collapse='+')),data)
     nrow(frame)
   }
   
   self$sample <- function(data){
     # Get predictions with errors and no transformation
-    predictions <- as.data.frame(predict.glm(self$glm,newdata=data,type='response',se.fit=T))
+    predictions <- as.data.frame(predict.glm(self$glm,newdata=data,type='link',se.fit=T))
     # Calculate a standard deviation that combines se.fit and residual s.d.
     sigma <- sqrt(predictions$se.fit^2 + predictions$residual.scale^2)
     # Sample from normal distribution with that sigma
     preds <- suppressWarnings(rnorm(nrow(predictions),mean=predictions$fit,sigma))
     # Apply post transformation
-    exp(preds)*data$k
+    with(data,exp(preds)*k)
   }
   
   self

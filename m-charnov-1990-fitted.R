@@ -1,7 +1,7 @@
 #' A `Node` for matural mortality based on
 #' [Charnov et al 2013]() Equation 3
 MCharnov1990Fitted <- function(){
-  self <- extend(MCharnov1990,'MMCharnov1990Fitted')
+  self <- extend(MCharnov1990,'MCharnov1990Fitted')
 
   formula <- log(amat*m) ~ 1
   
@@ -9,9 +9,45 @@ MCharnov1990Fitted <- function(){
     self$glm <- glm(formula,data=data)
   }
   
-  self$predict <- function(data){
-    logamatm <- predict.glm(self$glm,newdata=data,type='response')
-    exp(logamatm)/data$amat
+  self$predict <- function(data,transform=T,na.strict=T,na.keep=T){
+    
+    data <- as.data.frame(data)
+    
+    # by default predict.glm() will predict NA for
+    # any data row with missing covariate values
+    # consistent with na.strict=T
+    preds <- predict.glm(self$glm,newdata=data,type='response')
+    preds <- with(data,exp(preds)/amat)
+    
+    # if !na.keep remove all NA's from prediction vector
+    if(!na.keep) preds <- preds[!is.na(preds)]
+    
+    return(preds)
+  }
+  
+  self$predict.safe <- function(data,transform=T,na.strict=T,na.keep=T) {
+     
+    data <- as.data.frame(data)
+    
+    if(self$predictand %in% names(data)) {
+      safe.loc <- !is.na(data[,self$predictand])
+    } else {
+      safe.loc <- !numeric(nrow(data))
+    }
+    
+    # by default predict.glm() will predict NA for
+    # any data row with missing covariate values
+    # consistent with na.strict=T
+    preds <- predict.glm(self$glm,newdata=data,type='response')
+    preds <- with(data,exp(preds)/amat)
+    
+    # restore existent values
+    preds[safe.loc] <- data[safe.loc,self$predictand]
+    
+    # if !na.keep remove all NA's from prediction vector
+    if(!na.keep) preds <- preds[!is.na(preds)]
+    
+    return(preds)
   }
   
   self$n <- function(data) {

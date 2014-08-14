@@ -9,9 +9,45 @@ MPauly1980Fitted <- function(){
     self$glm <- glm(formula,data=data)
   }
   
-  self$predict <- function(data){
-    logm <- predict.glm(self$glm,newdata=data,type='response')
-    exp(logm)
+  self$predict <- function(data,transform=T,na.strict=T,na.keep=T){
+    
+    data <- as.data.frame(data)
+    
+    # by default predict.glm() will predict NA for
+    # any data row with missing covariate values
+    # consistent with na.strict=T
+    preds <- predict.glm(self$glm,newdata=data,type='response')
+    preds <- exp(preds)
+    
+    # if !na.keep remove all NA's from prediction vector
+    if(!na.keep) preds <- preds[!is.na(preds)]
+    
+    return(preds)
+  }
+  
+  self$predict.safe <- function(data,transform=T,na.strict=T,na.keep=T) {
+    
+    data <- as.data.frame(data)
+    
+    if(self$predictand %in% names(data)) {
+      safe.loc <- !is.na(data[,self$predictand])
+    } else {
+      safe.loc <- !numeric(nrow(data))
+    }
+    
+    # by default predict.glm() will predict NA for
+    # any data row with missing covariate values
+    # consistent with na.strict=T
+    preds <- predict.glm(self$glm,newdata=data,type='response')
+    preds <- exp(preds)
+    
+    # restore existent values
+    preds[safe.loc] <- data[safe.loc,self$predictand]
+    
+    # if !na.keep remove all NA's from prediction vector
+    if(!na.keep) preds <- preds[!is.na(preds)]
+    
+    return(preds)
   }
   
   self$n <- function(data) {
