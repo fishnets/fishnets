@@ -8,17 +8,7 @@ library(ggplot2)
 rm(list=ls())
 source('collate.R')
 source('load_data.R')
-
-saver <- function(x, ..., name, path='C:/PROJECTS/FISHNETS/res/') {
-  save(x, ..., file=paste(path,name,'.Rdata',sep=''))
-}
-
-pdfr <- function(x, ..., name, path='C:/PROJECTS/FISHNETS/res/') {
-  pdf(..., file=paste(path,name,'.pdf',sep=''))
-  print(x)
-  dev.off()
-}
-
+source('utils.R')
 
 # according to life history theory, primary correlates
 # with m are: k and amax; via the BH invariants

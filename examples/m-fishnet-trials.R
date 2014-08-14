@@ -103,6 +103,20 @@ cvfishnet <- function(data,folds=10,byspecies=F) {
     test[,'k']    <- mfishnet1$nodes[['k']]$predict.safe(test,na.strict=T,na.keep=T)
     test[,'m']    <- mfishnet1$nodes[['m']]$predict(test,na.strict=T,na.keep=T)
     
+    # Get nodes to predict values for their predictands
+    # node prediction 'fills in the blanks' at each step
+    # i.e. existent data values are not over-written
+    #test <- as.data.frame(test)
+    #for(name in names(self$nodes)){
+    #  if(name %in% c("species","genus","family","order","class")) next
+    #  if("TaxonomicImputer" %in% class(self$nodes[[name]])) {
+    #    safe.loc <- !is.na(test[,self$nodes[[name]]$predictand])
+    #    test[!safe.loc,name] <- self$nodes[[name]]$predict(test)[!safe.loc]
+    #  } else {
+    #    test[,name] <- self$nodes[[name]]$predict.safe(test,na.strict=T,na.keep=T)
+    #  }
+    #}
+    
     # get predictions
     preds <- test[,'m']
     
