@@ -1,4 +1,7 @@
 
+##############
+# load data  #
+##############
 
 # Load the Fishbase data
 fb <- FishbaseWeb$read('data/fishbase-web')
@@ -26,3 +29,58 @@ imputer <- Fishnet(
 imputer$fit(fb)
 gs <- imputer$predict(gs)
 rm(imputer)
+
+
+##############
+# groom data #
+##############
+
+fb[which(fb$temp<=0),'temp'] <- NA
+fb[which(fb$m>2),'m']        <- NA
+
+gs[which(gs$m>2),'m']        <- NA
+
+# calculate amat in fishbase using VB growth equation
+obj <- function(alpha) lmat - linf * (1 - exp(-k * (alpha - t0)))
+
+for(i in 1:length(fb$amat)) {
+  
+  if(is.na(fb$amat[i])) {
+    
+    lmat <- fb$lmat[i]
+    linf <- fb$linf[i]
+    k    <- fb$k[i]
+    t0   <- fb$t0[i]
+    
+    if(any(is.na(c(lmat,linf,k,t0)))) next
+    if(lmat>linf) next
+    if(lmat<(linf * (1 - exp(-k * (0 - t0))))) next
+    
+    fb$amat[i] <- uniroot(obj,interval=c(0,100))$root
+    
+  }
+}
+
+# estimate amat in gislasson database using VB growth
+# equation and assuming t0 = 0 (Gislason 2010)
+gs$amat <- NA
+
+for(i in 1:length(gs$amat)) {
+  
+  if(is.na(gs$amat[i])) {
+    
+    lmat <- gs$lmat[i]
+    linf <- gs$linf[i]
+    k    <- gs$k[i]
+    t0   <- 0
+    
+    if(any(is.na(c(lmat,linf,k,t0)))) next
+    if(lmat>linf) next
+    if(lmat<(linf * (1 - exp(-k * (0 - t0))))) next
+    
+    gs$amat[i] <- uniroot(obj,interval=c(0,100))$root
+    
+  }
+}
+
+rm(lmat,linf,k,t0,i,obj)

@@ -15,58 +15,6 @@ source('utils.R')
 # m/k and m*amax. Therefore need to optimise estimation
 # of these too.
 
-##############
-# groom data #
-##############
-
-fb[which(fb$temp<=0),'temp'] <- NA
-fb[which(fb$m>2),'m']        <- NA
-
-gs[which(gs$m>2),'m']        <- NA
-
-# calculate amat in fishbase using VB growth equation
-obj <- function(alpha) lmat - linf * (1 - exp(-k * (alpha - t0)))
-
-for(i in 1:length(fb$amat)) {
-  
-  if(is.na(fb$amat[i])) {
-    
-    lmat <- fb$lmat[i]
-    linf <- fb$linf[i]
-    k    <- fb$k[i]
-    t0   <- fb$t0[i]
-    
-    if(any(is.na(c(lmat,linf,k,t0)))) next
-    if(lmat>linf) next
-    if(lmat<(linf * (1 - exp(-k * (0 - t0))))) next
-    
-    fb$amat[i] <- uniroot(obj,interval=c(0,100))$root
-    
-  }
-}
-
-# estimate amat in gislasson database using VB growth
-# equation and assuming t0 = 0 (Gislason 2010)
-gs$amat <- NA
-
-for(i in 1:length(gs$amat)) {
-  
-  if(is.na(gs$amat[i])) {
-    
-    lmat <- gs$lmat[i]
-    linf <- gs$linf[i]
-    k    <- gs$k[i]
-    t0   <- 0
-    
-    if(any(is.na(c(lmat,linf,k,t0)))) next
-    if(lmat>linf) next
-    if(lmat<(linf * (1 - exp(-k * (0 - t0))))) next
-    
-    gs$amat[i] <- uniroot(obj,interval=c(0,100))$root
-    
-  }
-}
-
 
 ############################
 # fishbase                 #
@@ -113,7 +61,7 @@ for(i in 1:length(gs$amat)) {
 par.names <- c("family","trophic","habit","sex","log(temp)","log(linf)","log(k)","log(amax)")
 pars.update <- 1:length(par.names)
   
-brt.m.res <- list()
+res <- list()
 
 for(i in 1:(length(par.names)-1)) {
   
@@ -126,26 +74,26 @@ for(i in 1:(length(par.names)-1)) {
  rinfl <- relative.influence(brt.update$brt,n.trees = brt.update$brt$gbm.call$best.trees)
  cross <- brt.update$cross(fb,folds=10) 
  
- brt.m.res[[i]] <- list()
- brt.m.res[[i]][['formula']]    <- formula.update
- brt.m.res[[i]][['summary']]    <- cross$summary 
- brt.m.res[[i]][['folds']]      <- cross$folds
- brt.m.res[[i]][['influence']]  <- data.frame(predictor=brt.update$brt$gbm.call$predictor.names,influence=as.numeric(rinfl/sum(rinfl)))
- brt.m.res[[i]][['drop']]       <- brt.update$brt$gbm.call$predictor.names[which.min(rinfl)]
+ res[[i]] <- list()
+ res[[i]][['formula']]    <- formula.update
+ res[[i]][['summary']]    <- cross$summary 
+ res[[i]][['folds']]      <- cross$folds
+ res[[i]][['influence']]  <- data.frame(predictor=brt.update$brt$gbm.call$predictor.names,influence=as.numeric(rinfl/sum(rinfl)))
+ res[[i]][['drop']]       <- brt.update$brt$gbm.call$predictor.names[which.min(rinfl)]
  
  pars.update <- pars.update[-which.min(rinfl)]
  
 }
 
 # FIGURES
-par.drop <- unlist(lapply(brt.m.res,function(x) x$drop))
+par.drop <- unlist(lapply(res,function(x) x$drop))
 par.remove <- c('none',par.drop[-length(par.drop)])
 
 dfr <- data.frame()
 for(i in 1:(length(par.names)-1)) {
   
- dfr1 <- data.frame(id=1,order=i,fold=1:10,predictor.removed=par.remove[i],value=brt.m.res[[i]]$folds[,'mpe'],label='Mean prediction error')
- dfr2 <- data.frame(id=1,order=i,fold=1:10,predictor.removed=par.remove[i],value=brt.m.res[[i]]$folds[,'dev'],label='Mean prediction deviance')
+ dfr1 <- data.frame(id=1,order=i,fold=1:10,predictor.removed=par.remove[i],value=res[[i]]$folds[,'mpe'],label='Mean prediction error')
+ dfr2 <- data.frame(id=1,order=i,fold=1:10,predictor.removed=par.remove[i],value=res[[i]]$folds[,'dev'],label='Mean prediction deviance')
  dfr  <- rbind(dfr,dfr1,dfr2)
 }
 
@@ -162,7 +110,7 @@ pdfr(fig,width=12,name='fb/m_brt_res_fig1')
 dfr <- data.frame()
 for(i in 1:(length(par.names)-1)) {
   
-  dfr  <- rbind(dfr,data.frame(id=1,order=i,fold=1:10,predictor.removed=paste('drop ',i-1,': ',par.remove[i],sep=''),obs=brt.m.res[[i]]$folds[,'obs'],hat=brt.m.res[[i]]$folds[,'hat']))
+  dfr  <- rbind(dfr,data.frame(id=1,order=i,fold=1:10,predictor.removed=paste('drop ',i-1,': ',par.remove[i],sep=''),obs=res[[i]]$folds[,'obs'],hat=res[[i]]$folds[,'hat']))
 }
 
 
@@ -176,16 +124,16 @@ fig <- ggplot(dfr,aes(x=obs,y=hat)) +
 pdfr(fig,name='fb/m_brt_res_fig2')
 
 
-# FINAL MODEL
-formula.final <-log(m)~family+log(temp)+log(linf)+log(k)+log(amax)
+# SAVE RESULTS
+brt.initial <- Brter(log(m)~family+trophic+habit+sex+log(temp)+log(linf)+log(k)+log(amax),exp,ntrees=5000,learning.rate=0.001)
+brt.final   <- Brter(log(m)~family+log(temp)+log(linf)+log(k)+log(amax),exp,ntrees=5000,learning.rate=0.001)
 
-brt.final <- Brter(formula.final,exp,ntrees=5000,learning.rate=0.001)
+brt.initial$fit(fb)
 brt.final$fit(fb)
-brt.cv <- brt.final$cross(fb)
 
 #summary(brt.final$brt)
 
-saver(brt.m.res,formula.final,brt.final,brt.cv,name='fb/m_brt_res')
+saver(res,brt.initial,brt.final,name='fb/m_brt_res')
 
 
 ############################
@@ -197,7 +145,7 @@ saver(brt.m.res,formula.final,brt.final,brt.cv,name='fb/m_brt_res')
 par.names <- c("family","trophic","habit","sex","log(temp)","log(linf)","log(k)","log(amax)")
 pars.update <- 1:length(par.names)
 
-brt.m.res <- list()
+res <- list()
 
 for(i in 1:(length(par.names)-1)) {
   
@@ -210,26 +158,26 @@ for(i in 1:(length(par.names)-1)) {
   rinfl <- relative.influence(brt.update$brt,n.trees = brt.update$brt$gbm.call$best.trees)
   cross <- brt.update$cross(fb,folds=10) 
   
-  brt.m.res[[i]] <- list()
-  brt.m.res[[i]][['formula']]    <- formula.update
-  brt.m.res[[i]][['summary']]    <- cross$summary 
-  brt.m.res[[i]][['folds']]      <- cross$folds
-  brt.m.res[[i]][['influence']]  <- data.frame(predictor=brt.update$brt$gbm.call$predictor.names,influence=as.numeric(rinfl/sum(rinfl)))
-  brt.m.res[[i]][['drop']]       <- brt.update$brt$gbm.call$predictor.names[which.min(rinfl)]
+  res[[i]] <- list()
+  res[[i]][['formula']]    <- formula.update
+  res[[i]][['summary']]    <- cross$summary 
+  res[[i]][['folds']]      <- cross$folds
+  res[[i]][['influence']]  <- data.frame(predictor=brt.update$brt$gbm.call$predictor.names,influence=as.numeric(rinfl/sum(rinfl)))
+  res[[i]][['drop']]       <- brt.update$brt$gbm.call$predictor.names[which.min(rinfl)]
   
   pars.update <- pars.update[-which.min(rinfl)]
   
 }
 
 # FIGURES
-par.drop <- unlist(lapply(brt.m.res,function(x) x$drop))
+par.drop <- unlist(lapply(res,function(x) x$drop))
 par.remove <- c('none',par.drop[-length(par.drop)])
 
 dfr <- data.frame()
 for(i in 1:(length(par.names)-1)) {
   
-  dfr1 <- data.frame(id=1,order=i,fold=1:10,predictor.removed=par.remove[i],value=brt.m.res[[i]]$folds[,'mpe'],label='Mean prediction error')
-  dfr2 <- data.frame(id=1,order=i,fold=1:10,predictor.removed=par.remove[i],value=brt.m.res[[i]]$folds[,'dev'],label='Mean prediction deviance')
+  dfr1 <- data.frame(id=1,order=i,fold=1:10,predictor.removed=par.remove[i],value=res[[i]]$folds[,'mpe'],label='Mean prediction error')
+  dfr2 <- data.frame(id=1,order=i,fold=1:10,predictor.removed=par.remove[i],value=res[[i]]$folds[,'dev'],label='Mean prediction deviance')
   dfr  <- rbind(dfr,dfr1,dfr2)
 }
 
@@ -246,7 +194,7 @@ pdfr(fig,width=12,name='gs/m_brt_res_fig1')
 dfr <- data.frame()
 for(i in 1:(length(par.names)-1)) {
   
-  dfr  <- rbind(dfr,data.frame(id=1,order=i,fold=1:10,predictor.removed=paste('drop ',i-1,': ',par.remove[i],sep=''),obs=brt.m.res[[i]]$folds[,'obs'],hat=brt.m.res[[i]]$folds[,'hat']))
+  dfr  <- rbind(dfr,data.frame(id=1,order=i,fold=1:10,predictor.removed=paste('drop ',i-1,': ',par.remove[i],sep=''),obs=res[[i]]$folds[,'obs'],hat=res[[i]]$folds[,'hat']))
 }
 
 
@@ -261,30 +209,47 @@ pdfr(fig,name='gs/m_brt_res_fig2')
 
 
 # FINAL MODEL
-formula.final <-log(m)~family+log(linf)+log(k)+log(amax)
+brt.initial <- Brter(log(m)~family+trophic+habit+sex+log(temp)+log(linf)+log(k)+log(amax),exp,ntrees=5000,learning.rate=0.001)
+brt.final   <- Brter(log(m)~family+log(linf)+log(k)+log(amax),exp,ntrees=5000,learning.rate=0.001)
 
-brt.final <- Brter(formula.final,exp,ntrees=5000,learning.rate=0.001)
+brt.initial$fit(gs)
 brt.final$fit(gs)
-brt.cv <- brt.final$cross(gs)
 
 #summary(brt.final$brt)
 
-saver(brt.m.res,formula.final,brt.final,brt.cv,name='fb/m_brt_res')
+saver(res,brt.initial,brt.final,name='gs/m_brt_res')
 
 #################
 # SUMMARY TABLE #
 #################
 
+rm(list=ls())
+source('collate.R')
+source('load_data.R')
+source('utils.R')
+
 dfr <- data.frame()
 
 loader('fb/m_brt_res')
+brt.cv <- brt.initial$cross(fb)
 dfr <- rbind(dfr,
-             data.frame(source='(7a)',db='fb',n=brt.final$n(fb),mpe=round(brt.cv$summary['mpe',1],2),dev=round(brt.cv$summary['dev',1],2))
+             data.frame(source='(7a) initial',db='fb',n=brt.initial$n(fb),mpe=round(brt.cv$summary['mpe',1],2),dev=round(brt.cv$summary['dev',1],2))
 )
+brt.cv <- brt.final$cross(fb)
+dfr <- rbind(dfr,
+             data.frame(source='(7a) final',db='fb',n=brt.final$n(fb),mpe=round(brt.cv$summary['mpe',1],2),dev=round(brt.cv$summary['dev',1],2))
+)
+
 loader('gs/m_brt_res')
+brt.cv <- brt.initial$cross(gs)
 dfr <- rbind(dfr,
-             data.frame(source='(7b)',db='gs',n=brt.final$n(gs),mpe=round(brt.cv$summary['mpe',1],2),dev=round(brt.cv$summary['dev',1],2))
+             data.frame(source='(7b) initial',db='gs',n=brt.initial$n(gs),mpe=round(brt.cv$summary['mpe',1],2),dev=round(brt.cv$summary['dev',1],2))
 )
+brt.cv <- brt.final$cross(gs)
+dfr <- rbind(dfr,
+             data.frame(source='(7b) final',db='gs',n=brt.final$n(gs),mpe=round(brt.cv$summary['mpe',1],2),dev=round(brt.cv$summary['dev',1],2))
+)
+
 
 write.csv(dfr,file='C:/PROJECTS/FISHNETS/res/cvbrt.csv')
 

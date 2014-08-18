@@ -13,14 +13,8 @@ source('load_data.R')
 source('utils.R')
 
 ##############
-# groom data #
+# check data #
 ##############
-
-# remove outliers
-fb[which(fb$temp<=0),'temp'] <- NA
-fb[which(fb$m>2),'m']        <- NA
-
-gs[which(gs$m>2),'m']        <- NA
 
 # counts
 fb.tmp <- fb[!is.na(fb$m),]
@@ -35,53 +29,11 @@ for(i in 1:ncol(gs)) {
 }
 rm(gs.tmp)
 
-# calculate amat in fishbase using VB growth equation
-obj <- function(alpha) lmat - linf * (1 - exp(-k * (alpha - t0)))
-
-for(i in 1:length(fb$amat)) {
-  
-  if(is.na(fb$amat[i])) {
-    
-    lmat <- fb$lmat[i]
-    linf <- fb$linf[i]
-    k    <- fb$k[i]
-    t0   <- fb$t0[i]
-    
-    if(any(is.na(c(lmat,linf,k,t0)))) next
-    if(lmat>linf) next
-    if(lmat<(linf * (1 - exp(-k * (0 - t0))))) next
-    
-    fb$amat[i] <- uniroot(obj,interval=c(0,100))$root
-    
-  }
-}
-
 # check that taxanomic imputation of lmat corresponds
 # to that expected using BH invariant in gislasson database
 # (Charnov 2013)
 plot(gs$lmat,gs$linf * 2/3); abline(0,1)
 
-# estimate amat in gislasson database using VB growth
-# equation and assuming t0 = 0 (Gislason 2010)
-gs$amat <- NA
-
-for(i in 1:length(gs$amat)) {
-  
-  if(is.na(gs$amat[i])) {
-    
-    lmat <- gs$lmat[i]
-    linf <- gs$linf[i]
-    k    <- gs$k[i]
-    t0   <- 0
-    
-    if(any(is.na(c(lmat,linf,k,t0)))) next
-    if(lmat>linf) next
-    if(lmat<(linf * (1 - exp(-k * (0 - t0))))) next
-    
-    gs$amat[i] <- uniroot(obj,interval=c(0,100))$root
-    
-  }
-}
 
 ################
 # Charnov 1990 #
@@ -119,10 +71,10 @@ cv.c90gsfit <- c90gsfit$cross(gs)
 
 # summary
 cv.c90 <- rbind(
-  data.frame(source='c90',method='GLM',fitted=FALSE,db='fb',n=NA,mpe=round(cv.c90fb$summary['mpe',1],2),dev=round(cv.c90fb$summary['dev',1],2)),
-  data.frame(source='c90',method='GLM',fitted=TRUE,db='fb',n=c90fbfit$n(fb),mpe=round(cv.c90fbfit$summary['mpe',1],2),dev=round(cv.c90fbfit$summary['dev',1],2)),
-  data.frame(source='c90',method='GLM',fitted=FALSE,db='gs',n=NA,mpe=round(cv.c90gs$summary['mpe',1],2),dev=round(cv.c90gs$summary['dev',1],2)),
-  data.frame(source='c90',method='GLM',fitted=TRUE,db='gs',n=c90gsfit$n(gs),mpe=round(cv.c90gsfit$summary['mpe',1],2),dev=round(cv.c90gsfit$summary['dev',1],2))
+  data.frame(source='(1)',method='GLM',fitted=FALSE,db='fb',n=NA,mpe=round(cv.c90fb$summary['mpe',1],2),dev=round(cv.c90fb$summary['dev',1],2)),
+  data.frame(source='(1)',method='GLM',fitted=TRUE,db='fb',n=c90fbfit$n(fb),mpe=round(cv.c90fbfit$summary['mpe',1],2),dev=round(cv.c90fbfit$summary['dev',1],2)),
+  data.frame(source='(1)',method='GLM',fitted=FALSE,db='gs',n=NA,mpe=round(cv.c90gs$summary['mpe',1],2),dev=round(cv.c90gs$summary['dev',1],2)),
+  data.frame(source='(1)',method='GLM',fitted=TRUE,db='gs',n=c90gsfit$n(gs),mpe=round(cv.c90gsfit$summary['mpe',1],2),dev=round(cv.c90gsfit$summary['dev',1],2))
 )
 
 ################
@@ -161,10 +113,10 @@ cv.c93gsfit <- c93gsfit$cross(gs)
 
 # summary
 cv.c93 <- rbind(
-  data.frame(source='c93',method='GLM',fitted=FALSE,db='fb',n=NA,mpe=round(cv.c93fb$summary['mpe',1],2),dev=round(cv.c93fb$summary['dev',1],2)),
-  data.frame(source='c93',method='GLM',fitted=TRUE,db='fb',n=c93fbfit$n(fb),mpe=round(cv.c93fbfit$summary['mpe',1],2),dev=round(cv.c93fbfit$summary['dev',1],2)),
-  data.frame(source='c93',method='GLM',fitted=FALSE,db='gs',n=NA,mpe=round(cv.c93gs$summary['mpe',1],2),dev=round(cv.c93gs$summary['dev',1],2)),
-  data.frame(source='c93',method='GLM',fitted=TRUE,db='gs',n=c93gsfit$n(gs),mpe=round(cv.c93gsfit$summary['mpe',1],2),dev=round(cv.c93gsfit$summary['dev',1],2))
+  data.frame(source='(2)',method='GLM',fitted=FALSE,db='fb',n=NA,mpe=round(cv.c93fb$summary['mpe',1],2),dev=round(cv.c93fb$summary['dev',1],2)),
+  data.frame(source='(2)',method='GLM',fitted=TRUE,db='fb',n=c93fbfit$n(fb),mpe=round(cv.c93fbfit$summary['mpe',1],2),dev=round(cv.c93fbfit$summary['dev',1],2)),
+  data.frame(source='(2)',method='GLM',fitted=FALSE,db='gs',n=NA,mpe=round(cv.c93gs$summary['mpe',1],2),dev=round(cv.c93gs$summary['dev',1],2)),
+  data.frame(source='(2)',method='GLM',fitted=TRUE,db='gs',n=c93gsfit$n(gs),mpe=round(cv.c93gsfit$summary['mpe',1],2),dev=round(cv.c93gsfit$summary['dev',1],2))
 )
 
 
@@ -204,10 +156,10 @@ cv.c13gsfit <- c13gsfit$cross(gs)
 
 # summary
 cv.c13 <- rbind(
-  data.frame(source='c13',method='GLM',fitted=FALSE,db='fb',n=NA,mpe=round(cv.c13fb$summary['mpe',1],2),dev=round(cv.c13fb$summary['dev',1],2)),
-  data.frame(source='c13',method='GLM',fitted=TRUE,db='fb',n=c13fbfit$n(fb),mpe=round(cv.c13fbfit$summary['mpe',1],2),dev=round(cv.c13fbfit$summary['dev',1],2)),
-  data.frame(source='c13',method='GLM',fitted=FALSE,db='gs',n=NA,mpe=round(cv.c13gs$summary['mpe',1],2),dev=round(cv.c13gs$summary['dev',1],2)),
-  data.frame(source='c13',method='GLM',fitted=TRUE,db='gs',n=c13gsfit$n(gs),mpe=round(cv.c13gsfit$summary['mpe',1],2),dev=round(cv.c13gsfit$summary['dev',1],2))
+  data.frame(source='(5)',method='GLM',fitted=FALSE,db='fb',n=NA,mpe=round(cv.c13fb$summary['mpe',1],2),dev=round(cv.c13fb$summary['dev',1],2)),
+  data.frame(source='(5)',method='GLM',fitted=TRUE,db='fb',n=c13fbfit$n(fb),mpe=round(cv.c13fbfit$summary['mpe',1],2),dev=round(cv.c13fbfit$summary['dev',1],2)),
+  data.frame(source='(5)',method='GLM',fitted=FALSE,db='gs',n=NA,mpe=round(cv.c13gs$summary['mpe',1],2),dev=round(cv.c13gs$summary['dev',1],2)),
+  data.frame(source='(5)',method='GLM',fitted=TRUE,db='gs',n=c13gsfit$n(gs),mpe=round(cv.c13gsfit$summary['mpe',1],2),dev=round(cv.c13gsfit$summary['dev',1],2))
 )
 
 
@@ -247,10 +199,10 @@ cv.h83gs <- h83gs$cross(gs)
 cv.h83gsfit <- h83gsfit$cross(gs)
 
 cv.h83 <- rbind(
-  data.frame(source='h83',method='GLM',fitted=FALSE,db='fb',n=NA,mpe=round(cv.h83fb$summary['mpe',1]   ,2),dev=round(cv.h83fb$summary['dev',1],2)),
-  data.frame(source='h83',method='GLM',fitted=TRUE,db='fb',n=h83fbfit$n(fb),mpe=round(cv.h83fbfit$summary['mpe',1],2),dev=round(cv.h83fbfit$summary['dev',1],2)),
-  data.frame(source='h83',method='GLM',fitted=FALSE,db='gs',n=NA,mpe=round(cv.h83gs$summary['mpe',1]   ,2),dev=round(cv.h83gs$summary['dev',1],2)),
-  data.frame(source='h83',method='GLM',fitted=TRUE,db='gs',n=h83gsfit$n(gs),mpe=round(cv.h83gsfit$summary['mpe',1],2),dev=round(cv.h83gsfit$summary['dev',1],2))
+  data.frame(source='(3)',method='GLM',fitted=FALSE,db='fb',n=NA,mpe=round(cv.h83fb$summary['mpe',1]   ,2),dev=round(cv.h83fb$summary['dev',1],2)),
+  data.frame(source='(3)',method='GLM',fitted=TRUE,db='fb',n=h83fbfit$n(fb),mpe=round(cv.h83fbfit$summary['mpe',1],2),dev=round(cv.h83fbfit$summary['dev',1],2)),
+  data.frame(source='(3)',method='GLM',fitted=FALSE,db='gs',n=NA,mpe=round(cv.h83gs$summary['mpe',1]   ,2),dev=round(cv.h83gs$summary['dev',1],2)),
+  data.frame(source='(3)',method='GLM',fitted=TRUE,db='gs',n=h83gsfit$n(gs),mpe=round(cv.h83gsfit$summary['mpe',1],2),dev=round(cv.h83gsfit$summary['dev',1],2))
 )
 
 ##############
@@ -288,10 +240,10 @@ cv.q99gs <- q99gs$cross(gs)
 cv.q99gsfit <- q99gsfit$cross(gs)
 
 cv.q99 <- rbind(
-  data.frame(source='q99',method='GLM',fitted=FALSE,db='fb',n=NA,mpe=round(cv.q99fb$summary['mpe',1],2),dev=round(cv.q99fb$summary['dev',1],2)),
-  data.frame(source='q99',method='GLM',fitted=TRUE,db='fb',n=q99fbfit$n(fb),mpe=round(cv.q99fbfit$summary['mpe',1],2),dev=round(cv.q99fbfit$summary['dev',1],2)),
-  data.frame(source='q99',method='GLM',fitted=FALSE,db='gs',n=NA,mpe=round(cv.q99gs$summary['mpe',1],2),dev=round(cv.q99fb$summary['dev',1],2)),
-  data.frame(source='q99',method='GLM',fitted=TRUE,db='gs',n=q99gsfit$n(gs),mpe=round(cv.q99gsfit$summary['mpe',1],2),dev=round(cv.q99gsfit$summary['dev',1],2))
+  data.frame(source='(4)',method='GLM',fitted=FALSE,db='fb',n=NA,mpe=round(cv.q99fb$summary['mpe',1],2),dev=round(cv.q99fb$summary['dev',1],2)),
+  data.frame(source='(4)',method='GLM',fitted=TRUE,db='fb',n=q99fbfit$n(fb),mpe=round(cv.q99fbfit$summary['mpe',1],2),dev=round(cv.q99fbfit$summary['dev',1],2)),
+  data.frame(source='(4)',method='GLM',fitted=FALSE,db='gs',n=NA,mpe=round(cv.q99gs$summary['mpe',1],2),dev=round(cv.q99fb$summary['dev',1],2)),
+  data.frame(source='(4)',method='GLM',fitted=TRUE,db='gs',n=q99gsfit$n(gs),mpe=round(cv.q99gsfit$summary['mpe',1],2),dev=round(cv.q99gsfit$summary['dev',1],2))
 )
 
 ##############
@@ -330,10 +282,10 @@ cv.p80gs <- p80gs$cross(gs)
 cv.p80gsfit <- p80gsfit$cross(gs)
 
 cv.p80 <- rbind(
-  data.frame(source='p80',method='GLM',fitted=FALSE,db='fb',n=NA,mpe=round(cv.p80fb$summary['mpe',1],2),dev=round(cv.p80fb$summary['dev',1],2)),
-  data.frame(source='p80',method='GLM',fitted=TRUE,db='fb',n=p80fbfit$n(fb),mpe=round(cv.p80fbfit$summary['mpe',1],2),dev=round(cv.p80fbfit$summary['dev',1],2)),
-  data.frame(source='p80',method='GLM',fitted=FALSE,db='gs',n=NA,mpe=round(cv.p80gs$summary['mpe',1],2),dev=round(cv.p80gs$summary['dev',1],2)),
-  data.frame(source='p80',method='GLM',fitted=TRUE,db='gs',n=p80gsfit$n(gs),mpe=round(cv.p80gsfit$summary['mpe',1],2),dev=round(cv.p80gsfit$summary['dev',1],2))
+  data.frame(source='(6)',method='GLM',fitted=FALSE,db='fb',n=NA,mpe=round(cv.p80fb$summary['mpe',1],2),dev=round(cv.p80fb$summary['dev',1],2)),
+  data.frame(source='(6)',method='GLM',fitted=TRUE,db='fb',n=p80fbfit$n(fb),mpe=round(cv.p80fbfit$summary['mpe',1],2),dev=round(cv.p80fbfit$summary['dev',1],2)),
+  data.frame(source='(6)',method='GLM',fitted=FALSE,db='gs',n=NA,mpe=round(cv.p80gs$summary['mpe',1],2),dev=round(cv.p80gs$summary['dev',1],2)),
+  data.frame(source='(6)',method='GLM',fitted=TRUE,db='gs',n=p80gsfit$n(gs),mpe=round(cv.p80gsfit$summary['mpe',1],2),dev=round(cv.p80gsfit$summary['dev',1],2))
 )
 
 ###########
@@ -391,6 +343,8 @@ p80$gs$fit <- p80gsfit
 
 # cross validation tables
 dfr <- rbind(cv.c90,cv.c93,cv.h83,cv.q99,cv.c13,cv.p80)
+dfr <- dfr[,-2]
+dfr <- rbind(subset(dfr,!fitted),subset(dfr,fitted))
 
 # regression coefficients
 exp(coef(c90fbfit$glm))
@@ -408,7 +362,7 @@ coef(c13gsfit$glm)
 coef(p80gsfit$glm)
 
 # save
-saver(c90,c93,h83,q99,c13,p80,cv.sum,name='m_det_res')
+saver(c90,c93,h83,q99,c13,p80,dfr,name='m_det_res')
 
 write.csv(dfr,file='C:/PROJECTS/FISHNETS/res/cvdet.csv')
 

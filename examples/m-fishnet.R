@@ -10,59 +10,6 @@ source('collate.R')
 source('load_data.R')
 source('utils.R')
 
-##############
-# groom data #
-##############
-
-fb[which(fb$temp<=0),'temp'] <- NA
-fb[which(fb$m>2),'m']        <- NA
-
-gs[which(gs$m>2),'m']        <- NA
-
-# calculate amat in fishbase using VB growth equation
-obj <- function(alpha) lmat - linf * (1 - exp(-k * (alpha - t0)))
-
-for(i in 1:length(fb$amat)) {
-  
-  if(is.na(fb$amat[i])) {
-    
-    lmat <- fb$lmat[i]
-    linf <- fb$linf[i]
-    k    <- fb$k[i]
-    t0   <- fb$t0[i]
-    
-    if(any(is.na(c(lmat,linf,k,t0)))) next
-    if(lmat>linf) next
-    if(lmat<(linf * (1 - exp(-k * (0 - t0))))) next
-    
-    fb$amat[i] <- uniroot(obj,interval=c(0,100))$root
-    
-  }
-}
-
-# estimate amat in gislasson database using VB growth
-# equation and assuming t0 = 0 (Gislason 2010)
-gs$amat <- NA
-
-for(i in 1:length(gs$amat)) {
-  
-  if(is.na(gs$amat[i])) {
-    
-    lmat <- gs$lmat[i]
-    linf <- gs$linf[i]
-    k    <- gs$k[i]
-    t0   <- 0
-    
-    if(any(is.na(c(lmat,linf,k,t0)))) next
-    if(lmat>linf) next
-    if(lmat<(linf * (1 - exp(-k * (0 - t0))))) next
-    
-    gs$amat[i] <- uniroot(obj,interval=c(0,100))$root
-    
-  }
-}
-
-rm(lmat,linf,k,t0,i)
 
 ###############
 # CV function #
@@ -540,6 +487,11 @@ pdfr(fig,width=10,name='gs/mfishnet7b_prediction')
 # SUMMARY TABLE #
 #################
 
+rm(list=ls())
+source('collate.R')
+source('load_data.R')
+source('utils.R')
+
 dfr <- data.frame()
 
 loader('fb/mfishnet1_res')
@@ -600,15 +552,7 @@ loader('fb/mfishnet7a_res')
 dfr <- rbind(dfr,
              data.frame(source='(7a)',db='fb',n=mfishnet$nodes[['m']]$n(fb),mpe=round(res$summary['mpe',1],2),dev=round(res$summary['dev',1],2))
 )
-loader('gs/mfishnet7a_res')
-dfr <- rbind(dfr,
-             data.frame(source='(7a)',db='gs',n=mfishnet$nodes[['m']]$n(gs),mpe=round(res$summary['mpe',1],2),dev=round(res$summary['dev',1],2))
-)
 
-loader('fb/mfishnet7b_res')
-dfr <- rbind(dfr,
-             data.frame(source='(7b)',db='fb',n=mfishnet$nodes[['m']]$n(fb),mpe=round(res$summary['mpe',1],2),dev=round(res$summary['dev',1],2))
-)
 loader('gs/mfishnet7b_res')
 dfr <- rbind(dfr,
              data.frame(source='(7b)',db='gs',n=mfishnet$nodes[['m']]$n(gs),mpe=round(res$summary['mpe',1],2),dev=round(res$summary['dev',1],2))
