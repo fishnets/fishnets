@@ -38,4 +38,6 @@ source('m-quinn-1999.R')
 source('m-quinn-1999-fitted.R')
 source('m-pauly-1980.R')
 source('m-pauly-1980-fitted.R')
+source('m-jensen-2001.R')
+source('m-jensen-2001-fitted.R')
 

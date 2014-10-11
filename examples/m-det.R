@@ -62,9 +62,12 @@ c90gsfit <- MCharnov1990Fitted()
 c90gsfit$fit(gs)
 gs.c90gsfit <- data.frame(gs,m.predict=c90gsfit$predict(gs))
 
-#plot(log(m)~log(amat),data=gs,main='c90gs')
-#points(log(m.predict)~log(amat),data=gs.c90gs,col=2)
-#points(log(m.predict)~log(amat),data=gs.c90gsfit,col=4)
+par(mfrow=c(1,2),mar=c(3,2,1,1))
+plot(log(m)~log(amat),data=gs,main='c90gs')
+points(log(m.predict)~log(amat),data=gs.c90gs,col=2)
+points(log(m.predict)~log(amat),data=gs.c90gsfit,col=4)
+plot(m.predict~m,data=gs.c90gsfit,main='c90gs')
+abline(0,1,col=2)
 
 cv.c90gs    <- c90gs$cross(gs)
 cv.c90gsfit <- c90gsfit$cross(gs)
@@ -108,6 +111,13 @@ gs.c93gsfit <- data.frame(gs,m.predict=c93gsfit$predict(gs))
 #points(log(m.predict)~log(k),data=gs.c93gs,col=2)
 #points(log(m.predict)~log(k),data=gs.c93gsfit,col=4)
 
+par(mfrow=c(1,2),mar=c(3,2,1,1))
+plot(log(m)~log(k),data=gs,main='c93gs')
+points(log(m.predict)~log(k),data=gs.c93gs,col=2)
+points(log(m.predict)~log(k),data=gs.c93gsfit,col=4)
+plot(m.predict~m,data=gs.c93gsfit,main='c93gs')
+abline(0,1,col=2)
+
 cv.c93gs    <- c93gs$cross(gs)
 cv.c93gsfit <- c93gsfit$cross(gs)
 
@@ -147,9 +157,13 @@ c13gsfit <- MCharnov2013Fitted()
 c13gsfit$fit(gs)
 gs.c13gsfit <- data.frame(gs,m.predict=c13gsfit$predict(gs))
 
-#plot(log(m/k)~log(lmat/linf),data=gs,main='c13gs')
-#points(log(m.predict/k)~log(lmat/linf),data=gs.c13gs,col=2)
-#points(log(m.predict/k)~log(lmat/linf),data=gs.c13gsfit,col=4)
+par(mfrow=c(1,2),mar=c(3,2,1,1))
+plot(log(m/k)~log(lmat/linf),data=gs,main='c13gs')
+points(log(m.predict/k)~log(lmat/linf),data=gs.c13gs,col=2)
+points(log(m.predict/k)~log(lmat/linf),data=gs.c13gsfit,col=4)
+plot(m.predict~m,data=gs.c13gsfit,main='c13gs')
+abline(0,1,col=2)
+
 
 cv.c13gs <- c13gs$cross(gs)
 cv.c13gsfit <- c13gsfit$cross(gs)
@@ -274,10 +288,6 @@ p80gsfit <- MPauly1980Fitted()
 p80gsfit$fit(gs)
 gs.p80gsfit <- data.frame(gs,m.predict=p80gsfit$predict(gs))
 
-#plot(log(m/k)~log(linf),data=gs,main='p80gs')
-#points(log(m.predict/k)~log(linf),data=gs.p80gs,col=2)
-#points(log(m.predict/k)~log(linf),data=gs.p80gsfit,col=4)
-
 cv.p80gs <- p80gs$cross(gs)
 cv.p80gsfit <- p80gsfit$cross(gs)
 
@@ -287,6 +297,31 @@ cv.p80 <- rbind(
   data.frame(source='(6)',method='GLM',fitted=FALSE,db='gs',n=NA,mpe=round(cv.p80gs$summary['mpe',1],2),dev=round(cv.p80gs$summary['dev',1],2)),
   data.frame(source='(6)',method='GLM',fitted=TRUE,db='gs',n=p80gsfit$n(gs),mpe=round(cv.p80gsfit$summary['mpe',1],2),dev=round(cv.p80gsfit$summary['dev',1],2))
 )
+
+###############
+# Jensen 2001 #
+###############
+
+# gislasson
+
+j01gs <- MJensen2001()
+gs.j01gs <- data.frame(gs,m.predict=j01gs$predict(gs))
+
+j01gsfit <- MJensen2001Fitted()
+j01gsfit$fit(gs)
+gs.j01gsfit <- data.frame(gs,m.predict=j01gsfit$predict(gs))
+
+par(mfrow=c(1,2),mar=c(3,2,1,1))
+plot(log(m)~log(k),data=gs,main='j01gs')
+points(log(m.predict)~log(k),data=gs.j01gs,col=2)
+points(log(m.predict)~log(k),data=gs.j01gsfit,col=4)
+plot(m.predict~m,data=gs.j01gsfit,main='j01gs')
+abline(0,1,col=2)
+
+
+cv.j01gs <- j01gs$cross(gs)
+cv.j01gsfit <- j01gsfit$cross(gs)
+
 
 ###########
 # SUMMARY #
