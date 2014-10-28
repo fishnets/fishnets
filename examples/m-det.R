@@ -33,7 +33,7 @@ rm(gs.tmp)
 # to that expected using BH invariant in gislasson database
 # (Charnov 2013)
 plot(gs$lmat,gs$linf * 2/3); abline(0,1)
-
+gs$lmat[gs$lmat>150] <- NA
 
 ################
 # Charnov 1990 #

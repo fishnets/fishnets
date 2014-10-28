@@ -36,9 +36,9 @@ rm(imputer)
 ##############
 
 fb[which(fb$temp<=0),'temp'] <- NA
-fb[which(fb$m>2),'m']        <- NA
+fb[which(fb$m>1.5),'m']        <- NA
 
-gs[which(gs$m>2),'m']        <- NA
+gs[which(gs$m>1.5),'m']        <- NA
 
 # calculate amat in fishbase using VB growth equation
 obj <- function(alpha) lmat - linf * (1 - exp(-k * (alpha - t0)))
@@ -84,3 +84,6 @@ for(i in 1:length(gs$amat)) {
 }
 
 rm(lmat,linf,k,t0,i,obj)
+
+save(fb,file='fb_data.Rdata')
+save(gs,file='gs_data.Rdata')

@@ -1,10 +1,12 @@
 #' A `Node` for matural mortality based on
-#' [Charnov 1993]() Equation 3
-MCharnov1993Fitted <- function(){
-  self <- extend(MCharnov1993,'MCharnov1993Fitted')
+#' [Roff 1984]() 
+MRoff1984Fitted <- function(){
+  self <- extend(MRoff1984,'MRoff1984Fitted')
 
+  formula <- log(m/(k * linf * (1 - lmat/linf)/lmat)) ~ 1
+  
   self$fit <- function(data, ...){
-    self$glm <- glm(log(m/k) ~ 1,data=data,family=gaussian(link='identity'))
+    self$glm <- glm(formula,data=data,family=gaussian(link='identity'))
   }
   
   self$predict <- function(data,transform=T,na.strict=T,na.keep=T){
@@ -15,7 +17,7 @@ MCharnov1993Fitted <- function(){
     # any data row with missing covariate values
     # consistent with na.strict=T
     preds <- predict.glm(self$glm,newdata=data,type='response')
-    preds <- with(data,exp(preds)*k)
+    preds <- with(data,exp(preds)*(k * linf * (1 - lmat/linf)/lmat))
     
     # if !na.keep remove all NA's from predictand vector
     if(!na.keep) preds <- preds[!is.na(preds)]
@@ -37,7 +39,7 @@ MCharnov1993Fitted <- function(){
     # any data row with missing covariate values
     # consistent with na.strict=T
     preds <- predict.glm(self$glm,newdata=data,type='response')
-    preds <- with(data,exp(preds)*k)
+    preds <- with(data,exp(preds)*(k * (1 - lmat/linf)/lmat))
     
     # restore existent values
     preds[safe.loc] <- data[safe.loc,self$predictand]

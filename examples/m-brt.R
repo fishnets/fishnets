@@ -105,7 +105,7 @@ fig <- ggplot(dfr,aes(x=order,y=value,group=id)) +
   labs(x='Predictor removed',y='') +
   theme_bw(base_size=20)
 
-pdfr(fig,width=12,name='fb/m_brt_res_fig1')
+pdfr(fig,width=12,name='fb_v2/m_brt_res_fig1')
 
 dfr <- data.frame()
 for(i in 1:(length(par.names)-1)) {
@@ -121,7 +121,7 @@ fig <- ggplot(dfr,aes(x=obs,y=hat)) +
   theme_bw(base_size=20) +
   labs(x='Observed value',y='Prediction')
 
-pdfr(fig,name='fb/m_brt_res_fig2')
+pdfr(fig,name='fb_v2/m_brt_res_fig2')
 
 
 # SAVE RESULTS
@@ -133,7 +133,7 @@ brt.final$fit(fb)
 
 #summary(brt.final$brt)
 
-saver(res,brt.initial,brt.final,name='fb/m_brt_res')
+saver(res,brt.initial,brt.final,name='fb_v2/m_brt_res')
 
 
 ############################
@@ -189,7 +189,7 @@ fig <- ggplot(dfr,aes(x=order,y=value,group=id)) +
   labs(x='Predictor removed',y='') +
   theme_bw(base_size=20)
 
-pdfr(fig,width=12,name='gs/m_brt_res_fig1')
+pdfr(fig,width=12,name='gs_v2/m_brt_res_fig1')
 
 dfr <- data.frame()
 for(i in 1:(length(par.names)-1)) {
@@ -205,7 +205,7 @@ fig <- ggplot(dfr,aes(x=obs,y=hat)) +
   theme_bw(base_size=20) +
   labs(x='Observed value',y='Prediction')
 
-pdfr(fig,name='gs/m_brt_res_fig2')
+pdfr(fig,name='gs_v2/m_brt_res_fig2')
 
 
 # FINAL MODEL
@@ -217,7 +217,7 @@ brt.final$fit(gs)
 
 #summary(brt.final$brt)
 
-saver(res,brt.initial,brt.final,name='gs/m_brt_res')
+saver(res,brt.initial,brt.final,name='gs_v2/m_brt_res')
 
 #################
 # SUMMARY TABLE #
@@ -230,7 +230,7 @@ source('utils.R')
 
 dfr <- data.frame()
 
-loader('fb/m_brt_res')
+loader('fb_v2/m_brt_res')
 brt.cv <- brt.initial$cross(fb)
 dfr <- rbind(dfr,
              data.frame(source='(7a) initial',db='fb',n=brt.initial$n(fb),mpe=round(brt.cv$summary['mpe',1],2),dev=round(brt.cv$summary['dev',1],2))
@@ -239,8 +239,12 @@ brt.cv <- brt.final$cross(fb)
 dfr <- rbind(dfr,
              data.frame(source='(7a) final',db='fb',n=brt.final$n(fb),mpe=round(brt.cv$summary['mpe',1],2),dev=round(brt.cv$summary['dev',1],2))
 )
+windows(width=4)
+summary(brt.final$brt)
+savePlot(file='C:/PROJECTS/FISHNETS/res/fb_v2/m_brt_res_fig3.pdf',type='pdf')
+dev.off()
 
-loader('gs/m_brt_res')
+loader('gs_v2/m_brt_res')
 brt.cv <- brt.initial$cross(gs)
 dfr <- rbind(dfr,
              data.frame(source='(7b) initial',db='gs',n=brt.initial$n(gs),mpe=round(brt.cv$summary['mpe',1],2),dev=round(brt.cv$summary['dev',1],2))
@@ -249,8 +253,12 @@ brt.cv <- brt.final$cross(gs)
 dfr <- rbind(dfr,
              data.frame(source='(7b) final',db='gs',n=brt.final$n(gs),mpe=round(brt.cv$summary['mpe',1],2),dev=round(brt.cv$summary['dev',1],2))
 )
+windows(width=4)
+summary(brt.final$brt)
+savePlot(file='C:/PROJECTS/FISHNETS/res/gs_v2/m_brt_res_fig3.pdf',type='pdf')
+dev.off()
 
 
-write.csv(dfr,file='C:/PROJECTS/FISHNETS/res/cvbrt.csv')
+write.csv(dfr,file='C:/PROJECTS/FISHNETS/res/cvbrt_v2.csv')
 
 
