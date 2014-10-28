@@ -1,10 +1,10 @@
 #' A `Node` for matural mortality based on
 #' [Charnov et al 2013]() Equation 3
-MHoenig1983Fitted <- function(){
-  self <- extend(MHoenig1983,'MHoenig1983Fitted')
+MCharnov2013Fitted <- function(){
+  self <- extend(MCharnov2013,'MCharnov2013Fitted')
 
-  formula <- log(m) ~ log(amax)
-  
+  formula <- log(m/k) ~ -1 + log(lmat/linf)
+    
   self$fit <- function(data, ...){
     self$glm <- glm(formula,data=data)
   }
@@ -17,7 +17,7 @@ MHoenig1983Fitted <- function(){
     # any data row with missing covariate values
     # consistent with na.strict=T
     preds <- predict.glm(self$glm,newdata=data,type='response')
-    preds <- exp(preds)
+    preds <- with(data,exp(preds)*k)
     
     # if !na.keep remove all NA's from prediction vector
     if(!na.keep) preds <- preds[!is.na(preds)]
@@ -39,7 +39,7 @@ MHoenig1983Fitted <- function(){
     # any data row with missing covariate values
     # consistent with na.strict=T
     preds <- predict.glm(self$glm,newdata=data,type='response')
-    preds <- exp(preds)
+    preds <- with(data,exp(preds)*k)
     
     # restore existent values
     preds[safe.loc] <- data[safe.loc,self$predictand]
@@ -62,9 +62,9 @@ MHoenig1983Fitted <- function(){
     # Calculate a standard deviation that combines se.fit and residual s.d.
     sigma <- sqrt(predictions$se.fit^2 + predictions$residual.scale^2)
     # Sample from normal distribution with that sigma
-    preds <- suppressWarnings(rnorm(nrow(predictions),mean=predictions$fit,sigma))
+    preds <- rnorm(nrow(predictions),mean=predictions$fit,sigma)
     # Apply post transformation
-    exp(preds)
+    exp(preds)*data$k
   }
   
   self

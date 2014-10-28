@@ -1,12 +1,12 @@
 #' A `Node` for matural mortality based on
-#' [Charnov et al 2013]() Equation 3
-MHoenig1983Fitted <- function(){
-  self <- extend(MHoenig1983,'MHoenig1983Fitted')
+#' [Roff 1984]() 
+MRoff1984Fitted <- function(){
+  self <- extend(MRoff1984,'MRoff1984Fitted')
 
-  formula <- log(m) ~ log(amax)
+  formula <- log(m/(k * linf * (1 - lmat/linf)/lmat)) ~ 1
   
   self$fit <- function(data, ...){
-    self$glm <- glm(formula,data=data)
+    self$glm <- glm(formula,data=data,family=gaussian(link='identity'))
   }
   
   self$predict <- function(data,transform=T,na.strict=T,na.keep=T){
@@ -17,9 +17,9 @@ MHoenig1983Fitted <- function(){
     # any data row with missing covariate values
     # consistent with na.strict=T
     preds <- predict.glm(self$glm,newdata=data,type='response')
-    preds <- exp(preds)
+    preds <- with(data,exp(preds)*(k * linf * (1 - lmat/linf)/lmat))
     
-    # if !na.keep remove all NA's from prediction vector
+    # if !na.keep remove all NA's from predictand vector
     if(!na.keep) preds <- preds[!is.na(preds)]
     
     return(preds)
@@ -39,7 +39,7 @@ MHoenig1983Fitted <- function(){
     # any data row with missing covariate values
     # consistent with na.strict=T
     preds <- predict.glm(self$glm,newdata=data,type='response')
-    preds <- exp(preds)
+    preds <- with(data,exp(preds)*(k * (1 - lmat/linf)/lmat))
     
     # restore existent values
     preds[safe.loc] <- data[safe.loc,self$predictand]
@@ -52,19 +52,19 @@ MHoenig1983Fitted <- function(){
   
   self$n <- function(data) {
     # number of data points used for fitting
-    frame <- model.frame(formula,data)
+    frame <- model.frame(paste(self$predictand,'~',paste(self$predictors,collapse='+')),data)
     nrow(frame)
   }
   
   self$sample <- function(data){
     # Get predictions with errors and no transformation
-    predictions <- as.data.frame(predict.glm(self$glm,newdata=data,type='response',se.fit=T))
+    predictions <- as.data.frame(predict.glm(self$glm,newdata=data,type='link',se.fit=T))
     # Calculate a standard deviation that combines se.fit and residual s.d.
     sigma <- sqrt(predictions$se.fit^2 + predictions$residual.scale^2)
     # Sample from normal distribution with that sigma
     preds <- suppressWarnings(rnorm(nrow(predictions),mean=predictions$fit,sigma))
     # Apply post transformation
-    exp(preds)
+    with(data,exp(preds)*k)
   }
   
   self
