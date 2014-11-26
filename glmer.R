@@ -16,7 +16,7 @@ Glmer <- function(formula,transform=identity,factors.min=5){
   self$predictand <- all.vars(self$formula)[1]
   self$predictors <- all.vars(self$formula)[-1]
   
-  self$fit <- function(data){    
+  self$fit <- function(data, ...){    
     # Restrict data to rows with variable of interest
     data <- data[!is.na(data[,self$predictand]),]
     # Prepare the data before fiting

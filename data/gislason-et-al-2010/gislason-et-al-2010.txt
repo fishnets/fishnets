@@ -1,0 +1,478 @@
+Supporting information
+
+Table S1. Species, natural mortality (M, y-1), sex (S, M: male; F: female; C: combined), source of M
+estimate, average annual ambient temperature ( , °C), body length of fish for which M was
+estimated (L, cm), von Bertalanffy growth parameters (L∞ (cm) and K(y-1)) and source of von
+Bertalanffy growth parameters.
+
+        Species              M      S        Source of M          τ     L     L∞      K       Source of L∞ and K
+                                                                                                     1
+Ammodytes marinus            2.10   C   Cook(2004)                 7    7.9   18.5   0.36   ICES(1995)
+Ammodytes marinus            1.80   C   Cook(2004)                 7   11.5   18.5   0.36   ICES(1995)1
+Ammodytes marinus            0.60   C   Cook(2004)                 7   13.3   18.5   0.36   ICES(1995)1
+                                                                                                       1
+Ammodytes marinus            0.65   C   Cook(2004)                 7   14.8   18.5   0.36   ICES(1995)
+Ammodytes marinus            1.60   C   Cook(2004)                 7   15.9   18.5   0.36   ICES(1995)1
+Ammodytes marinus            0.80   C   Cook(2004)                 7   16.9   18.5   0.36   ICES(1995)1
+Ammodytes tobianus           2.34   C   Reay(1973)                11    8.0   16.0   0.77   Reay(1973)
+Ammodytes tobianus           1.39   C   Reay(1973)                11   12.0   16.0   0.77   Reay(1973)
+Ammodytes tobianus           1.04   C   Reay(1973)                11   14.0   16.0   0.77   Reay(1973)
+Ammodytes tobianus           0.70   C   Reay(1973)                11   15.0   16.0   0.77   Reay(1973)
+Anchoa mitchilli             2.36   C   Newberger & Houde(1995)   17    6.6   12.9   0.23   Newberger & Houde(1995)
+Balistes vetula              2.60   C   Aiken(1983)               27   28.5   45.0   0.57   Aiken(1983)
+Benthosema glaciale          1.10   C   Gjøsæter(1973)             7    4.0    7.5   0.45   Gjøsæter(1973)
+Benthosema glaciale          0.37   C   Gjøsæter(1973)             7    5.2    7.5   0.45   Gjøsæter(1973)
+Benthosema glaciale          0.86   C   Gjøsæter(1973)             7    6.1    7.5   0.45   Gjøsæter(1973)
+Beryx splendes               0.57   C   Tanaka(2006)              18   21.1   44.7   0.14   Adachi et al.(2000)
+Brevoortia patronus          1.09   C   Ahrenholz(1981)           26   16.7   25.3   0.48   Nelson & Ahrenholz(1986)2
+Brevoortia tyrrannus         0.37   C   Schaaf & Huntsman(1972)   10   30.7   40.0   0.39   Schaaf & Huntsman(1972)
+Cephalopholis fulva          0.55   C   Thompson & Munro(1978)    27   29.8   34.0   0.63   Thompson & Munro(1978)
+Cetengraulis mysticetus      2.40   C   Bayliff(1967)             24   11.8   15.0   1.99   Bayliff(1967)
+Cheilodactylus macropterus   0.08   C   Vooren(1977)              14   41.0   47.7   0.28   Pauly(1980)
+Cheilodactylus macropterus   0.10   F   Annala et al.(1989)       14   35.8   44.6   0.22   Annala et al.(1989)
+Cheilodactylus macropterus   0.10   M   Annala et al.(1989)       14   35.8   44.7   0.17   Annala et al.(1989)
+Clupea harengus              0.17   C   Beverton(1963)             8   30.4   36.0   0.21   Beverton(1963)
+Clupea harengus              0.20   C   Beverton(1963)            12   26.8   29.5   0.39   Beverton(1963)
+Clupea harengus              0.17   C   Cushing(1959)             11   24.2   30.0   0.38   Beverton & Holt(1959)
+Clupea harengus              0.13   C   Cushing(1959)             11   24.2   30.0   0.38   Beverton & Holt(1959)
+Clupea harengus              0.18   C   Cushing(1959)             11   24.2   30.0   0.38   Beverton & Holt(1959)
+                                                                                                        3
+Clupea harengus              0.16   C   Burd(1974)                12   29.0   30.4   0.28   Burd(1974)
+Clupea pallassii             4.56   C   Stokesbury et al.(2002)    5    7.5   35.0   0.25   Beverton(1963)
+Clupea pallassii             2.01   C   Stokesbury et al.(2002)    5   12.5   35.0   0.25   Beverton(1963)
+Clupea pallassii             0.21   C   Tanasichuk(2000)          10   20.5   27.0   0.48   Beverton(1963)
+Clupea pallassii             0.32   C   Tanasichuk(2000)          10   21.8   27.0   0.48   Beverton(1963)
+Clupea pallassii             0.43   C   Tanasichuk(2000)          10   22.6   27.0   0.48   Beverton(1963)
+Clupea pallassii             0.43   C   Tanasichuk(2000)          10   23.1   27.0   0.48   Beverton(1963)
+Clupea pallassii             0.67   C   Tanasichuk(2000)          10   23.4   27.0   0.48   Beverton(1963)
+Clupea pallassii             0.99   C   Tanasichuk(2000)          10   23.7   27.0   0.48   Beverton(1963)
+Clupea pallassii             1.26   C   Tanasichuk(2000)          10   23.9   27.0   0.48   Beverton(1963)
+Clupea pallassii             0.50   C   Beverton(1963)            10   23.8   27.0   0.48   Beverton(1963)
+Cololabis saira              1.25   C   Hughes(1974)              12   25.5   34.2   0.42   Hughes(1974)
+Coris julis                  1.58   C   Macpherson et al.(2000)   17   16.2   27.2   0.11   Gordoa et al.(2000)
+Diplodus annularis           0.49   C   Macpherson et al.(2000)   17   15.4   20.4   0.54   Gordoa & Moli(1997)
+Diplodus sargus              1.33   C   Macpherson et al.(2000)   17   31.9   41.7   0.25   Gordoa & Moli(1997)
+Engraulis anchoita           0.43   C   Brandhorst et al.(1974)   16   16.7   17.3   0.71   Brandhorst et al.(1974)
+Engraulis anchoita           0.85   C   Brandhorst et al.(1974)   16   17.0   17.3   0.71   Brandhorst et al.(1974)
+Engraulis anchoita           0.93   C   Brandhorst et al.(1974)   16   17.2   17.3   0.71   Brandhorst et al.(1974)
+Engraulis anchoita           1.41   C   Brandhorst et al.(1974)   16   17.2   17.3   0.71   Brandhorst et al.(1974)
+
+
+
+                                                           1
+Engraulis anchoita          1.33   C   Brandhorst et al.(1974)     16   16.7     17.3   0.71   Brandhorst et al.(1974)
+Engraulis anchoita          2.13   C   Brandhorst et al.(1974)     16   17.0     17.3   0.71   Brandhorst et al.(1974)
+Engraulis anchoita          1.39   C   Brandhorst et al.(1974)     16   17.2     17.3   0.71   Brandhorst et al.(1974)
+Engraulis anchoita          0.90   C   Brandhorst et al.(1974)     16   16.5     17.3   0.71   Brandhorst et al.(1974)
+Engraulis japonicus         0.63   C   Iversen et al.(1993)        12   8.9      15.5   0.60   Iversen et al.(1993)
+Eopsetta jordani (female)   0.20   F   Ketchen & Forrester(1966)    9   49.0     58.6   0.17   Ketchen & Forrester(1966)
+Eopsetta jordani (male)     0.25   M   Ketchen & Forrester(1966)    9   41.0     49.0   0.16   Ketchen & Forrester(1966)
+Epinephelus guttatus        0.68   C   Thompson & Munro(1978)      27   38.7     52.0   0.24   Thompson & Munro(1978)
+Gadus morhua                0.10   C   Dickie(1963)                 6   60.0    115.0   0.10   Kohler(1964)
+Gadus morhua                0.18   C   Pinhorn(1975)                4   62.0     65.0   0.30   Beverton(1965)
+Gadus morhua                0.40   C   Sinclair(2001)               4   54.5     68.6   0.17   Sinclair(2001)
+Gadus morhua                0.30   C   Sinclair(2001)               4   73.6    100.3   0.15   Sinclair(2001)
+Gadus morhua                0.33   C   Garrod(1967)                 3   80.4    129.0   0.13   Trout(1954)
+Gadus morhua                3.80   C   Juilliard et al.(2001)       8   12.0    132.0   0.20   Beverton & Holt(1959)
+Gadus morhua                0.55   C   Juilliard et al.(2001)       8   33.7    132.0   0.20   Beverton & Holt(1959)
+Gadus morhua                1.10   C   Larsen & Pedersen(2002)      6   27.8    134.0   0.10   Beverton & Holt(1959)
+Gadus morhua                0.20   C   Larsen & Pedersen(2002)      6   41.9    134.0   0.10   Beverton & Holt(1959)
+Glaucosoma buergeri         0.14   C   Newman(2002a)               27   29.5     51.5   0.14   Newman(2002a)
+Hippocampus guttulatus      1.22   C   Curtis & Vincent(2006)      18   14.0     19.8   0.57   Curtis & Vincent(2006)
+Hippoglossoides             0.22   F   Pitt(1973)                   3   43.0     59.0   0.08   Pitt(1973)
+platessoides
+Hippoglossoides             0.23   F   Pitt(1973)                  3    53.0    81.1    0.06   Pitt(1973)
+platessoides
+Hippoglossoides             0.18   F   Pitt(1973)                  5    54.0    60.0    0.07   Pitt(1973)
+platessoides
+Hippoglossoides             0.18   F   Pitt(1973)                  5    62.0    72.5    0.11   Pitt(1973)
+platessoides
+Hippoglossoides             0.30   M Pitt(1973)                    8    37.0    42.6    0.10   Pitt(1973)
+platessoides
+Hippoglossoides             0.25   M Pitt(1973)                    8    44.0    55.2    0.11   Pitt(1973)
+platessoides
+Hippoglossoides             0.27   M Pitt(1973)                    6    49.0    50.0    0.09   Pitt(1973)
+platessoides
+Hippoglossoides             0.26   M Pitt(1973)                    6    52.0    58.5    0.15   Pitt(1973)
+platessoides
+Hippoglossoides             0.40   F   Bakken(1987)                3    11.7    85.5    0.04   Bakken(1987)
+platessoides
+Hippoglossoides             0.13   F   Bakken(1987)                3    25.6    85.5    0.04   Bakken(1987)
+platessoides
+Hippoglossoides             0.51   F   Bakken(1987)                3    44.7    85.5    0.04   Bakken(1987)
+platessoides
+Hippoglossoides             0.40   M Bakken(1987)                  3    12.9    45.0    0.10   Bakken(1987)
+platessoides
+Hippoglossoides             0.14   M Bakken(1987)                  3    25.2    45.0    0.10   Bakken(1987)
+platessoides
+Hippoglossoides             0.75   M Bakken(1987)                  3     37     45.0    0.10   Bakken(1987)
+platessoides
+Hippoglossus stenolepis     0.20   C   Chen & Xiao(2006)           5    75.0    144.0   0.18   Southward &
+                                                                                               Chapman(1965)
+Hyporhamphus melanochir     0.53   M   Jones(1990)                 20    34.0    36.7   0.51   Jones(1990)
+Hyporhamphus melanochir     0.36   F   Jones(1990)                 20    35.9    38.7   0.54   Jones(1990)
+Katsuwonus pelamis          10.0   C   Hampton(2000)               25    25.0    65.1   1.30   Hampton(2000)
+Katsuwonus pelamis          4.50   C   Hampton(2000)               25    35.0    65.1   1.30   Hampton(2000)
+Katsuwonus pelamis          1.60   C   Hampton(2000)               25    45.0    65.1   1.30   Hampton(2000)
+Katsuwonus pelamis          1.20   C   Hampton(2000)               25    55.0    65.1   1.30   Hampton(2000)
+Katsuwonus pelamis          2.00   C   Hampton(2000)               25    65.0    65.1   1.30   Hampton(2000)
+Lamna nasus                 0.18   C   Aasen(1963)                  7   189.0   280.0   0.12   Aasen(1963)
+Lethrinus miniatus          0.44   C   Williams et al.(2007)       26    44.0    45.3   0.48   Williams et al.(2003)
+Lethrinus miniatus          1.06   C   Williams et al.(2007)       26    45.8    47.2   0.43   Williams et al.(2003)
+
+
+
+                                                               2
+Lethrinus miniatus         0.57   C Williams et al.(2007)       26   43.4   46.3    0.38   Williams et al.(2003)
+Lopholatilus               0.25   M Harris & Grossman(1985)     10   74.5   92.2    0.09   Harris & Grossman(1985)
+chamaeleontoceps
+Lopholatilus               0.25   F   Harris & Grossman(1985)   10   70.5   86.5    0.09   Harris & Grossman(1985)
+chamaeleonticeps
+Lutjanus adetii            0.24   C   Newman et al.(1996)       26   24.1   25.4    0.32   Newman et al.(1996)
+Lutjanus carponotatus      0.20   C   Newman et al.(2000a)      26   28.7   31.3    0.45   Newman et al.(2000a)
+Lutjanus erythropterus     0.15   C   Newman et al.(2000b)      26   51.7   58.5    0.38   Newman et al.(2000b)
+Lutjanus griseus           0.18   C   Burton(2001)              25   54.3   71.6    0.17   Burton(2001)
+Lutjanus malabaricus       0.11   C   Newman(2002b)             27   49.6   62.2    0.23   Newman(2002b)
+Lutjanus malabaricus       0.13   C   Newman et al.(2000b)      26   59.1   72.8    0.29   Newman et al.(2000b)
+Lutjanus quinquilineatus   0.15   C   Newman et al.(1996)       26   19.2   20.7    0.31   Newman et al.(1996)
+Lutjanus ruselli           0.15   C   Newman(2002c)             27   36.4   38.6    0.35   Newman(2002c)
+Lutjanus sebae             0.15   C   Newman et al.(2000b)      26   56.1   79.2    0.14   Newman et al.(2000b)
+Lutjanus vitta             0.34   C   Newman et al.(2000a)      26   22.6   24.5    0.85   Newman et al.(2000a)
+Melanogrammus aeglefinus   0.43   C   Jones & Shanks(1990)       9   33.3   58.1    0.24   Jones(1962)
+Merluccius angustimanus    0.79   C   Mathews(1975)             20   25.2   32.7    0.35   Mathews(1975)
+Merluccius angustimanus    0.84   C   Mathews(1975)             20   18.1   32.7    0.35   Mathews(1975)
+Nemipterus japonicus       2.52   C   Vivekanandan &            27   16.0   30.5    1.00   Vivekanandan &
+                                      James(1986)                                          James(1986)
+Nemipterus marginatus      1.73   C   Pauly &                   28   15.1   24.5    0.42   Pauly &
+                                      Martosubroto(1980)                                   Martosubroto(1980)
+Pagrus auratus             2.58   C   Wakefield et al.(2007)    16   10.5   107.9   0.07   Sanders & Powell(1979)
+Plectropomus leopardus     0.12   C   Russ et al.(1998)         26   47.0    68.1   0.10   Ferreira & Russ(1995)
+Pleuronectes platessa      0.20   C   Siddeek(1989)             12   36.3    46.0   0.26   Basimi & Grove(1985)
+Pleuronectes platessa      0.14   M   Beverton(1964)             7   31.2    45.0   0.15   Beverton & Holt(1959)
+Pleuronectes platessa      0.08   F   Beverton(1964)             7   40.5    70.0   0.08   Beverton & Holt(1959)
+Pneumatophorus japonicus   0.50   C   Parrish & MacCall(1978)   15   36.7    43.6   0.24   Parrish & MacCall(1978)
+Pomatoschistus minutus     2.61   C   Fonds(1973)               10   4.5     9.3    0.93   Fonds(1973)
+Pomatoschistus minutus     4.04   C   Fonds(1973)               10   7.0     9.3    0.93   Fonds(1973)
+Pseudotolithus elongatus   0.34   C   Le Guen(1971)             26   31.5    46.7   0.26   Le Guen(1971)
+Rastrelliger neglectus     7.22   C   Hongskul(1974)            28   17.6    20.9   3.38   Hongskul(1974)
+Rhizoprionodon taylori     0.70   M   Simpendorfer(1999)        25   60.0    65.2   1.34   Simpendorfer(1993)
+Rhizoprionodon taylori     0.56   F   Simpendorfer(1999)        25   64.0    73.2   1.01   Simpendorfer(1993)
+Sardinella longiceps       0.67   C   Banerji(1973)             27   14.5    20.7   0.53   Banerji(1973)
+Sardinops caerulea         0.40   C   Beverton(1963)            15   26.9    29.3   0.45   Beverton(1963)
+Sardinops sagax            0.13   C   Silliman(1943)            15   26.7    30.5   0.40   Phillips(1948)
+Sardinops sagax            0.43   C   Fletcher(1995)            15   15.5    17.0   0.70   Fletcher(1995)
+Sebastes alutus            0.04   C   Archibald et al.(1981)     8   41.5    42.6   0.13   Archibald et al.(1981)
+Sebastes brevispinis       0.04   C   Archibald et al.(1981)     8   53.7    56.8   0.09   Archibald et al.(1981)
+Sebastes crameri           0.07   C   Archibald et al.(1981)     8   33.5    38.3   0.09   Archibald et al.(1981)
+Sebastes elongatus         0.15   M   Shaw & Gunderson(2006)    12   29.0    30.1   0.11   Shaw & Gunderson(2006)
+Sebastes elongatus         0.15   F   Shaw & Gunderson(2006)    12   34.5    37.5   0.08   Shaw & Gunderson(2006)
+Sebastes emphaeus          0.44   F   Beckmann et al.(1998)     12   15.7    17.1   0.54   Beckmann et al.(1998)
+Sebastes flavidus          0.07   C   Archibald et al.(1981)     8   48.0    48.6   0.19   Archibald et al.(1981)
+Sebastes pinniger          0.04   M   Archibald et al.(1981)     8   50.7    52.8   0.14   Archibald et al.(1981)
+Sebastes pinniger          0.11   F   Archibald et al.(1981)     8   54.2    62.1   0.10   Archibald et al.(1981)
+Sebastes prioriger         0.10   C   Archibald et al.(1981)     8   36.5    39.3   0.17   Archibald et al.(1981)
+Sebastes reedi             0.12   C   Archibald et al.(1981)     8   42.5    44.5   0.13   Archibald et al.(1981)
+Sebastes zacentrus         0.07   C   Archibald et al.(1981)     8   31.3    34.9   0.10   Archibald et al.(1981)
+Serranus cabrilla          0.68   C   Macpherson et al.(2000)   17   18.5    23.8   0.30   Tserpes &
+                                                                                           Tsimenides(2001)
+Sparisoma viride           0.24   C   Choat et al.(2003)        28   18.7    28.1   0.60   Choat et al.(2003)
+Symphodus roissali         1.71   C   Macpherson et al.(2000)   17   9.0     16.5   0.35   Gordoa et al.(2000)
+Thunnus alalunga           0.19   C   Wang & Liu(2006)          25   77.4   122.2   0.21   Santiago &
+                                                                                           Arrizabalaga(2005)
+Thunnus albacares          6.20   C   Hampton(2000)             25   25.0   166.4   0.25   Hampton(2000)
+Thunnus albacares          3.60   C   Hampton(2000)             25   35.0   166.4   0.25   Hampton(2000)
+
+
+
+                                                          3
+Thunnus albacares           1.40   C   Hampton(2000)               25    45.0   166.4   0.25   Hampton(2000)
+Thunnus albacares           0.68   C   Hampton(2000)               25    55.0   166.4   0.25   Hampton(2000)
+Thunnus albacares           0.44   C   Hampton(2000)               25    65.0   166.4   0.25   Hampton(2000)
+Thunnus albacares           0.69   C   Hampton(2000)               25    75.0   166.4   0.25   Hampton(2000)
+Thunnus albacares           1.80   C   Hampton(2000)               25    85.0   166.4   0.25   Hampton(2000)
+Thunnus albacares           2.10   C   Hampton(2000)               25    95.0   166.4   0.25   Hampton(2000)
+Thunnus albacares           5.22   C   Adam et al.(2003)           25    32.5   181.7   0.25   Hampton(2000)
+Thunnus albacares           0.80   C   Adam et al.(2003)           25    50.5   181.7   0.25   Hampton(2000)
+Thunnus albacares           1.31   C   Adam et al.(2003)           25    98.0   181.7   0.25   Hampton(2000)
+Thunnus maccoyii            0.24   C   Hampton(1991a)              26    95.1   186.9   0.14   Hampton(1991b)
+Thunnus obesus              4.20   C   Hampton(2000)               25    30.0   181.7   0.25   Hampton(2000)
+Thunnus obesus              0.50   C   Hampton(2000)               25    50.0   181.7   0.25   Hampton(2000)
+Thunnus obesus              0.80   C   Hampton(2000)               25    70.0   181.7   0.25   Hampton(2000)
+Thunnus obesus              0.10   C   Hampton(2000)               25    90.0   181.7   0.25   Hampton(2000)
+Thunnus obesus              0.90   C   Hampton(2000)               25   110.0   181.7   0.25   Hampton(2000)
+Thunnus obesus              2.12   C   Adam et al.(2003)           25    42.0   181.7   0.25   Hampton(2000)
+Thunnus obesus              1.35   C   Adam et al.(2003)           25    63.0   181.7   0.25   Hampton(2000)
+Thunnus obesus              0.66   C   Adam et al.(2003)           25   102.0   181.7   0.25   Hampton(2000)
+Trachurus declivis          0.18   C   Horn(1993)                  12    50.4    51.1   0.25   Horn(1993)
+Trachurus novaezelandiae    0.18   C   Horn(1993)                  12    35.8    38.5   0.23   Horn(1993)
+Trisopterus esmarkii        1.60   C   Raitt(1968)                  9    14.0    19.3   0.59   Raitt(1968)
+Trisopterus esmarkii        1.60   C   Raitt(1968)                  9    14.0    19.0   0.44   Raitt(1968)
+Trisopterus esmarkii        1.48   C   Bailey & Kunzlik(1984)       9    18.6    21.5   0.45   Bailey & Kunzlik(1984)
+Trisopterus esmarkii        1.50   C   Bailey & Kunzlik(1984)       9    19.5    21.6   0.53   Bailey & Kunzlik(1984)
+Trisopterus esmarkii        2.43   C   Bailey & Kunzlik(1984)       9    23.0    26.4   0.61   Bailey & Kunzlik(1984)
+
+
+1
+ Estimated from weight at age using Coull et al. (1989), 2 Using Jorgenson & Miller (1968), 3 Estimated from Table 4 in
+Burd (1974).
+
+
+
+
+                                                            4
+List of references cited in Table S1.
+
+Aasen, O. (1963) Length and growth of the porbeagle (Lamna nasus, Bonnaterre) in the northwest
+  Atlantic. Fiskeridirektoratets Skrifter, Serie Havundersøkelser 13, 20-37.
+Adachi, K., Takagi, K., Tanaka, E., Yamada, S., and Kitakado, T. (2000) Age and growth of alfonsino
+  Beryx splendens in the waters around the Izu Islands. Fisheries Science 66, 232-240.
+Adam, M.S., Sibert, J., Itano, D., and Holland, K. (2003) Dynamics of bigeye (Thunnus obesus) and
+  yellowfin (T. albacares) tuna in Hawaii's pelagic fisheries: analysis of tagging data with a bulk
+  transfer model incorporating size-specific attrition. Fishery Bulletin 101, 215-228.
+Ahrenholz, D. (1981) Recruitment and exploitation of Gulf Menhaden, Brevoortia patronus.
+  Fishery Bulletin 79, 325-335.
+Aiken, K.A. (1983) The biology, ecology and bionomics of the triggerfishes, Balistidae. In: Munro JL
+  (ed). Caribbean coral reef fishery resources ICLARM Studies and Reviews Vol. 7, 191-205.
+Annala, J.H., Wood, B.A., and Smith, D.W. (1989) Age, growth, mortality and yield-per-recruit
+  estimates of tarakihi from the Chatham Islands during 1984 and 1985. Fisheries Research
+  Centre Internal Report. 119 (Draft report held in MAF Fisheries Research Greta Point library,
+  Wellington). 23 pp.
+Archibald, C.P., Shaw, W., and Leaman, B.M. (1981) Growth and mortality estimates of rockfishes
+  (Scorpaenidae) from British Columbia Waters, 1977-1979. Canadian Technical Report of
+  Fisheries and Aquatic Sciences 1048. 57 pp.
+Bailey, R.S., and Kunzlik, P.A. (1984) Variation in growth and mortality rate of Norway pout
+  Trisopterus esmarkii (Nilson). ICES CM. 1984/G 70, 8 pp.
+Bakken, E. (1987). Growth, Biomass, and Production of a Small Unexploited Plaice Stock in St.
+  Margaret’s Bay, Nova Scotia. Canadian Technical Report of Fisheries and Aquatic Sciences 1555.
+Banerji, S.K. (1973) An assessment of the exploited pelagic fisheries in the Indian Seas. In:
+  Proceedings of the Symposium on Living Resources in the Seas around India, 114-136.
+Basimi, R.A., and Grove, D.J. (1985) Studies on feeding, growth and production of a recruited
+  inshore population of Pleuronectes platessa (L.) at East Anglesey, North Wales. Journal of Fish
+  Biology 27, 765-783.
+Bayliff, W.H. (1967) Growth, mortality and exploitation of the Engraulidae, with special reference
+  to the anchoveta, Cetengraulis mysticetus, and the colorado, Anchoa naso, in the eastern
+  Pacific Ocean. Bulletin of the Inter-American Tropical Tuna Commission 12, 365-432.
+Beckmann A.T., Gunderson D.R., Miller B.S., Buckley R.M., and Goetz B. (1998) Reproductive
+  biology, growth, and natural mortality of Puget Sound rockfish, Sebastes emphaeus (Starks,
+  1911). Fishery Bulletin 96, 352-356.
+Beverton, R.J.H. (1963) Maturation, growth, and mortality of clupeid and engraulid stocks in
+  relation to fishing. Rapport et Procès-verbaux des Réunions Conseil Permanent International
+  pour l’ Exploration de la Mer 154, 44-67.
+
+
+
+
+                                                  5
+Beverton, R.J.H. (1964) Differential catchability of male and female plaice in the North Sea and its
+  effect on estimates of stock abundance. Rapport et Procès-verbaux des Réunions Conseil
+  Permanent International pour l’ Exploration de la Mer 155, 103-112.
+Beverton, R. J. H. (1965) Catch effort of some ICNAF fisheries. Research Bulletin of the
+  International Commission of Northwest Atlantic Fisheries 2, 59–72.
+Beverton, R.J.H., and Holt, S.J. (1959) A review of the lifespans and mortality rates of fish in
+  nature, and their relation to growth and other physiological characteristics. CIBA Foundation
+  Colloquia on Ageing 5, 142-180.
+Brandhorst, W., Castello, J.P., Cousseau, M.B., and Capezzani, D.A. (1974) Evaluation of anchovy
+  resources (Engraulis anchoita) offshore Argentina and Uruguay. VIII. Spawning, growth, and
+  population structure. Physis (A) 33, 37-58.
+Burd, A.C. (1974) The northeast Atlantic herring and the failure of an industry. In: Sea Fisheries
+  Research (ed. Jones, F.R.H.). Paul Elek (Scientific Books) Ltd., pp. 167-192.
+Burton, M.L. (2001) Age, growth and mortality of gray snapper, Lutjanus griseus, from the east
+  coast of Florida. Fishery Bulletin 99, 254-265.
+Chen, D.G., and Xiao, Y.S. (2006) A general model for analyzing data from mark-recapture
+  experiments with an application to the pacific halibut. Environmental and Ecological Statistics
+  13, 149-161.
+Choat, J.H., Robertson, D.R., Ackerman, J.L., and Posada, J.M. (2003) An age-based demographic
+  analysis of the Caribbean stoplight parrotfish Sparisoma viride. Marine Ecology Progress Series
+  246, 265-277.
+Cook, R.M. (2004) Estimation of the age-specific rate of natural mortality for Shetland sandeels.
+  ICES Journal of Marine Science 61, 159-169.
+Coull, K.A., Jermyn, A.S., Newton, A.W., Henderson, G.I. and Hall, W.B. (1989) Length/weight
+  relationships of fish encountered in the Northeast Atlantic. Scottish Fisheries Research Report
+  No 43.
+Curtis, J.M.R., and Vincent, A.C.J. (2006) Life history of an unusual marine fish: survival, growth
+  and movement patterns of Hippocampus guttulatus Cuvier 1829. Journal of Fish Biology 68,
+  707-733.
+Cushing, D.H. (1959) On the effects of fishing on the herring of the southern North Sea. Journal du
+  Conseil International pour l' Exploration de la Mer 24, 283-307.
+Dickie, L.M. (1963) Estimation of mortality rates of Gulf of St. Lawrence cod from results of a
+  tagging experiment. Special Publication of the International Commission for Northwest Atlantic
+  Fisheries 3, 71-80.
+Ferreira, B.P., and Russ, G.R. (1995) Population structure of the coral trout, Plectropomus
+  leopardus, (Lacepède 1802) on fished and unfished reefs off Townsville, Central Great Barrier
+  Reef, Australia. Fishery Bulletin 93, 629–42.
+Fletcher, W.J. (1995) Application of the otolith weight-age relationship for the pilchard, Sardinops
+   sagax neopilchardus. Canadian Journal of Fisheries and Aquatic Sciences 52, 657-664.
+
+
+
+                                                  6
+Fonds, M. (1973) Sand gobies of the Dutch Wadden Sea (Pomatoschistus, Gobiidae, Pisces).
+  Netherlands Journal of Sea Research 6, 417-478.
+Garrod, D.J. (1967) Population dynamics of the Arcto-Norwegian cod. Journal of the Fisheries
+  Research Board of Canada 24, 145-190.
+Gordoa, A., and Moli, B. (1997) Age and growth of the sparids Diplodus vulgaris, D. sargus and D.
+  annularis in adult populations and the differences in their juvenile growth patterns in the
+  north-western Mediterranean Sea. Fisheries Research 33 (1-3), 123-129.
+Gordoa, A., Molí, B., and Raventós, N. (2000) Growth performance of four wrasse species on the
+  north-western Mediterranean coast. Fisheries Research 45, 43-50.
+Gjøsæter, J. (1973) Age, growth, and mortality of the myctophid fish Benthosema glaciale
+  (Reinhardt) from western Norway. Sarsia 52, 1-14.
+Hampton, J. (1991a) Estimation of southern bluefin tuna Thunnus maccoyii natural mortality and
+  movement rates from tagging experiments. Fishery Bulletin 89, 591-610.
+Hampton, J. (1991b) Estimation of southern bluefin tuna Thunnus maccoyii growth parameters
+  from tagging data, using von Bertalanffy models incorporating individual variation. Fishery
+  Bulletin 89, 577-590.
+Hampton, J. (2000) Natural mortality rates in tropical tunas: size really does matter. Canadian
+  Journal of Fisheries and Aquatic Sciences 57, 1002-1010.
+Harris, M.J., and Grossman, G.D. (1985) Growth, mortality, and age composition of a lightly
+  exploited tilefish substock off Georgia. Transactions of the American Fisheries Society 114, 837-
+  846.
+Hongskul, V. (1974) Population dynamics of Pla tu Rastrelliger neglectus (van Kampen) in the Gulf
+  of Thailand. Proceedings of the Indo-Pacific Fisheries Council 15, 297-350.
+Horn, P.L. (1993) Growth, age structure, and productivity of jack mackerels (Trachurus spp.) in
+  New Zealand waters. New Zealand Journal of Marine and Freshwater Research 27, 145-156.
+Hughes, S.E. (1974) Stock composition, growth, mortality and availability of Pacific saury,
+  Cololabis saira, of the northeastern Pacific Ocean. Fishery Bulletin 72(1), 121-131.
+ICES (1995) Report of the Working Group on the Assessment of Norway Pout and Sandeel. ICES
+  CM 1995/Assess:5.
+Iversen, S.A., Zhu D., Johannessen, A., and Toresen, R. (1993) Stock size, distribution and biology
+  of anchovy in the Yellow Sea and East China Sea. Fisheries Research 16, 147-163.
+Jones, G.K. (1990) Growth and mortality in a lightly fished population of garfish (Hyporhamphus
+  melanochir) in Baird Bay, South Australia. Transactions of the Royal Society of South Australia
+  114, 37-42.
+Jones, R. (1962) Haddock bionomics. 2. The growth of haddock in the North Sea and at Faeroe.
+  Scottish Department of Agriculture and Fisheries Fish. Marine Research 2, 1-19.
+Jones, R., and Shanks, A.M. (1990) An estimate of natural mortality for North Sea haddock.
+  Journal du Conseil International pour l' Exploration de la Mer 47, 99-103.
+
+
+
+                                                 7
+Jorgenson, S.C., and Miller, G.L. (1968) Length Relations of Some Marine Fishes from Coastal
+  Georgia. Contribution No. 93, Bureau of Commercial Fisheries, Biological Laboratory, Brunswick
+  Ga. 31 520. United States Fish and Wildlife Service, Special Scientific Report, Fisheries No. 575.
+Julliard, R., Stenseth, N.C., Gjosaeter, J., Lekve, K., Fromentin, J.M., and Danielssen, D.S. (2001).
+  Natural mortality and fishing mortality in a coastal cod population: A release-recapture
+  experiment. Ecological Applications 11, 540-558.
+Ketschen, K.S., and Forrester, C.R. (1966) Population dynamics of the petrale sole, Eopsetta
+  jordani, in waters of western Canada. Bulletin of the Fisheries Research Board of Canada 153,
+  195pp.
+Kohler, A.C. (1964) Variations in the growth of Atlntic cod (Gadus morhua L.). Journal of the
+  Fisheries Research Board of Canada 21, 57-100.
+Larsen, L.H., and Pedersen, T. (2002) Migration, growth and mortality of released reared and wild
+  cod (Gadus morhua L.) in Malangen, northern Norway. Sarsia 87, 97-109.
+Le Guen, J.C. (1971) Dynamique des populations de Pseudotolithus (Fonticulus) elongatus (Bowd.
+  1825) Poisson, Sciaenidae. Cahiers ORSTOM. Série Océanographie. 9(1), 3-84.
+Macpherson, E., Garcia-Rubies, A., and Gordoa A. (2000) Direct estimation of natural mortality
+ rates for littoral marine fishes using populational data from a marine reserve. Marine Biology
+ 137, 1067-1080.
+Matthews, C.P. (1975) Some observations on the ecology and population dynamics of Merluccius
+ angustimanus in the south Gulf of California. Journal of Fish Biology 7, 83-94.
+Nelson, W.R, and Ahrenholz D.W. (1986) Population and fishery characteristics of gulf menhaden,
+  Brevoortia patronus. Fisheries Bulletin 84(2), 311-325.
+Newberger, T.A., and Houde E.D. (1995) Population biology of bay anchovy Anchoa mitchilli in the
+  mid Cheasapeake Bay. Marine Ecology Progress Series 116, 25-37.
+Newman, S.J. (2002a) Age, growth, mortality and population characteristics of the pearl perch,
+  Glaucosoma buergeri Richardson 1845, from deeper continental shelf waters off the Pilbara
+  coast of north-western Australia. Journal of Applied Ichthyology 18, 95-101.
+Newman, S.J. (2002b) Growth rate, age determination, natural mortality and production potential
+  of the scarlet seaperch, Lutjanus malabaricus Schneider 1801, off the Pilbara coast of North-
+  western Australia. Fisheries Research 58, 215-225.
+Newman, S.J. (2002c) Growth, age estimation and preliminary estimates of longevity and
+  mortality in the Moses perch, Lutjanus russelli (Indian Ocean form), from continental shelf
+  waters off Northwestern Australia. Asian Fisheries Science 15, 283-294.
+Newman, S.J., Williams, D., and Russ, G.R. (1996) Age validation, growth and mortality rates of the
+  tropical snappers (Pisces: Lutjanidae) Lutjanus adetii (Castelnau, 1873) and L. quinquelineatus
+  (Bloch, 1790) from the central Great Barrier Reef, Australia. Marine and Freshwater Research
+  47, 575-584.
+Newman, S.J., Cappo, M., and Williams, D.M. (2000a) Age, growth and mortality of the stripey,
+  Lutjanus carponotatus (Richardson) and the brown-stripe snapper, L. vitta (Quoy and Gaimard)
+  from the central Great Barrier Reef, Australia. Fisheries Research 48, 263-275.
+
+
+                                                   8
+Newman, S.J., Cappo, M., and Williams, D.M. (2000b) Age, growth, mortality rates and
+  corresponding yield estimates using otoliths of the tropical red snappers, Lutjanus
+  erythropterus, L. malabaricus and L. sebae, from the central Great Barrier Reef. Fisheries
+  Research 48, 1-14.
+Parrish, R.H. and MacCall, A.D. (1978) Climatic variation and exploitation in the Pacific mackerel
+  fishery. Fish Bulletin (California Department of Fish and Game) 167, 110 pp.
+Pauly, D. (1980) On the interrelationships between natural mortality, growth parameters, and
+  mean environmental temperature in 175 fish stocks. Journal du Conseil International pour
+  l'Exploration de la Mer 39(2), 175-192.
+Pauly, D., and Martosubroto, P. (1980) The population dynamics of Nemipterus marginatus
+  (Cuvier & Val.) off western Kalimantan, South China Sea. Journal of Fish Biology 17, 263-273.
+Phillips, J.B. (1948) Growth of the sardine Sardinops caerulea 1941-42 through 1946-47. State of
+  California Department of Natural Resources, Division of Fish and Game. Fish Bulletin 71, 33 p.
+Pinhorn, A.T. (1975) Estimates of natural mortality for the cod stock complex in ICNAF Divisions
+  2J, 3K and 3L. ICNAF Research Bulletin 11, 31-36.
+Pitt, T.K. (1973) Assessment of American plaice stocks on the Grand Bank, ICNAF Divisions 3l and
+   3N. ICNAF Research Bulletin 10, 63-77.
+Raitt, D. (1968) The population dynamics of the Norway pout in the North Sea. Marine Research 5,
+  1-24.
+Reay, P.J. (1973) Some aspects of the biology of the sand eel, Ammodytes tobianus L. in Langstone
+  Harbour, Hampshire. Journal of the Marine Biological Association of the United Kingdom 53,
+  325-346.
+Russ, G.R, Lou, D.C., Higgs, J.B., and Ferreira, B.P. (1998) Mortality rate of a cohort of the coral
+  trout, Plectropomus leopardus, in zones of the Great Barrier Reef Marine Park closed to fishing.
+  Marine and Freshwater Research 49, 507-511.
+Sanders, M.J., and Powell D.G.M. (1979) Comparison of the growth rates of two stocks of snapper
+  (Chrysophrys auratus) in south-east Australian waters using capture-recapture data. New
+  Zealand Journal of Marine and Freshwater Research 13(2), 279-284.
+Santiago, J., and Arrizabalaga, H. (2005) An integrated growth study for North Atlantic albacore
+  (Thunnus alalunga Bonn. 1788). ICES Journal of Marine Science, 62, 740-749.
+Schaaf, W.E., and Huntsman, G.R. (1972) Effects of fishing on the Atlantic menhaden stock: 1955-
+  1969. Transactions of the American Fisheries Society 101, 290-297.
+Shaw F.R., and Gunderson, D.R. (2006) Life history traits of the greenstriped rockfish, Sebastes
+  elongatus. California Fish and Game 92, 1-23.
+Siddeek, M.S.M. (1989). The estimation of natural mortality in Irish Sea plaice, Pleuronectes
+   platessa L., using tagging methods. Journal of Fish Biology 35, 145-154.
+Silliman, R. P. (1943) A method of computing mortalities and replacements. In: Studies on the
+   Pacific pilchard or sardine (Sardinops caerulea). U.S. Fish and Wildlife Service, Special Scientific
+   Report 24, 10 p.
+
+
+                                                   9
+Simpfendorfer, C.A. (1993) Age and growth of the Australian sharpnose shark, Rhizoprionodon
+  taylori, from north Queensland, Australia. Environmental Biology of Fishes 36, 233-241.
+Simpfendorfer, C.A. (1999) Mortality estimates and demographic analysis for the Australian
+  sharpnose shark, Rhizoprionodon taylori, from northern Australia. Fishery Bulletin 97, 978-986.
+Sinclair, A.F. (2001) Natural mortality of cod (Gadus morhua) in the southern Gulf of St. Lawrence.
+   ICES Journal of Marine Science 58, 1-10.
+Southward, G.M., and Chapman, D.G. (1965) Utilization of Pacific halibut stocks: Study of
+  Bertalanffy's growth equation. Report of the International Pacific Halibut Commission 39, 33 p.
+Stokesbury, K.D.E., Kirsch, J., Patrick, E.V., and Norcross, B.L. (2002) Natural mortality estimates of
+  juvenile Pacific herring (Clupea pallasi) in Prince William Sound, Alaska. Canadian Journal of
+  Fisheries and Aquatic Sciences 59, 416-424.
+Tanaka, E. (2006) Simultaneous estimation of instantaneous mortality coefficients and rate of
+  effective survivors to number of released fish using multiple sets of tagging experiments.
+  Fisheries Science 72, 710-718.
+Tanasichuk, R.W. (2000) Age-specific natural mortality rates of adult Pacific herring (Clupea
+  pallasi) from southern British Columbia. Canadian Journal of Fisheries and Aquatic Sciences 57,
+  2258-2272.
+Thompson, R. and Munro, J.L. (1978) Aspects of the biology and ecology of Caribbean reef fishes:
+  Serranidae (hinds and groupers). Journal of Fish Biology 12, 115-146.
+Trout, G.C. (1954) Otolith growth of Barents Sea cod. ICES Rapp. P.-v. Réun. Cons. int. Explor. Mer
+  136, 89-102.
+Tserpes, G., and Tsimenides, N. (2001) Age, growth and mortality of Serranus cabrilla (Linnaeus,
+  1758) on the Cretan shelf. Fisheries Research 55, 27-34.
+Vivekanandan, E. and James, D.B. (1986) Population dynamics of Nemipterus japonicus (Bloch) in
+  the trawling grounds off Madras. Indian Journal of Fisheries 33, 145-154.
+Vooren, C.M. (1977) Growth and mortality of Tarakihi (Pisces: Cheilodactylidae) in lightly
+  exploited populations. New Zealand Journal of Marine and Freshwater Research 11, 1-22.
+Wakefield, C.B., Moran, M.J., Tapp, N.E., and Jackson, G. (2007) Catchability and selectivity of
+ juvenile snapper (Pagrus auratus, Sparidae) and western butterfish (Pentapodus vitta,
+ Nemipteridae) from prawn trawling in a large marine embayment in Western Australia.
+ Fisheries Research 85, 37-48.
+Wang, Y.B. and Liu, Q. (2006) Estimation of natural mortality using statistical analysis of fisheries
+ catch-at-age data. Fisheries Research 78, 342-351.
+Williams, A.J., Davies, C.R., Mapstone, B.D., Russ, G.R. (2003) Scales of spatial variation in
+ demography of a large coral reef fish: an exception to the typical model? Fishery Bulletin 101,
+ 673–683.
+Williams, A.J., Mapstone, B.D., and Davies, C.R. (2007) Spatial patterns in cohort-specific mortality
+ of red throat emperor, Lethrinus miniatus, on the Great Barrier Reef. Fisheries Research 84,
+ 328-337.
+
+
+                                                  10
+

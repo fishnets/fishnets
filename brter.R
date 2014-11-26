@@ -8,44 +8,65 @@ require(dismo)
 #' @param formula A formula for the terms to be included in the BRT
 #' @param transform A function to apply to predicted value e.g. if formula is log(k)~... use exp
 #' @param autotrees Should the number of trees be optimised usind gbm.step?
-Brter <- function(formula,transform=identity,ntrees=2000,
-                  bag.fraction = 0.5){
+Brter <- function(formula,transform=identity,ntrees=2000,tree.complexity=10,learning.rate=0.001,
+                  bag.fraction = 0.5,max.trees=5000){
   self <- extend(Node,'Brter')
   
-  self$formula <- formula
-  self$transform <- transform
+  self$formula    <- formula
+  self$transform  <- transform
   self$predictand <- all.vars(formula)[1]
   self$predictors <- all.vars(formula)[-1]
-  self$ntrees <- ntrees
+  
+  if(length(self$predictors)<2) 
+    stop('Formula must contain at least 2 predictors\n')
+      
+  self$fit <- function(data,pars){
     
-  self$fit <- function(data){
-    # Create a model frame using the formula. This creates a
-    # matrix that can be used for fitting the trees
-    frame <- model.frame(self$formula,data)
+    # create data frame for model fitting
+    frame <- suppressWarnings(model.frame(self$formula,as.data.frame(data)))
     
-    if(self$ntrees>0){
+    # make sure character vectors in frame are factors
+    for(par in names(frame)) 
+      if(is.character(frame[,par]))
+        frame[,par] <- as.factor(frame[,par])
+    
+    # the 'pars' argument allows further control of which
+    # covariates should be included from the formula. It defaults
+    # to 'all covariates' and can be specified as either a character 
+    # vector or numeric reference to particular columns. This is useful
+    # for selection of predictors
+    if(missing(pars)) { pars <- 2:ncol(frame)
+    } else {
+      if(is.character(pars)) pars <- match(pars,names(frame))
+    }
+    
+    if(length(pars)<2) 
+      stop('Formula must contain at least 2 predictors\n')
+    
+    if(ntrees>0){
       self$brt <- gbm.fixed(
         data = frame,
         gbm.y = 1,
-        gbm.x = 2:ncol(frame), 
+        gbm.x = pars, 
         family = "gaussian",
-        tree.complexity = 10,
-        learning.rate = 0.001,
+        tree.complexity = tree.complexity,
+        learning.rate = learning.rate,
         bag.fraction = bag.fraction,
-        n.trees = self$ntrees
+        n.trees = ntrees
       )
     } else {
       self$brt <- gbm.step(
         data = frame,
         gbm.y = 1,
-        gbm.x = 2:ncol(frame), 
+        gbm.x = pars, 
         family = "gaussian",
-        tree.complexity = 10,
-        learning.rate = 0.001,
+        tree.complexity = tree.complexity,
+        learning.rate = learning.rate,
         bag.fraction = bag.fraction,
-        max.trees = 5000
+        max.trees = max.trees
       )
     }
+    cat('predictors:',self$brt$gbm.call$predictor.names,'\n')
   }
   
   self$summary <- function(){
@@ -53,25 +74,96 @@ Brter <- function(formula,transform=identity,ntrees=2000,
     #gbm.plot(self$brt)
     #gbm.plot.fits(self$brt)
   }
-  
-  self$predict <- function(data,transform=T){
-    data <- as.data.frame(data)
-    # Create a model frame using the formula. This creates a
-    # matrix that can be used for fitting the trees
-    # When creating a model frame from a formula you need to have
-    # all the variable presents, so add it first (it can't be NA otherwise all rows get omitted)
-    data[,self$predictand] <- 1
+ 
+  self$n <- function(data) {
+    # number of data points used for fitting
     frame <- model.frame(self$formula,data)
-    # Generate predictions
+    nrow(frame)
+  }
+  
+  # 'safe' predict function that only predicts
+  # if predictand value is absent
+  self$predict.safe <- function(data,transform=T,na.strict=T,na.keep=F) {
+    data <- as.data.frame(data)
+    
+    # include predictand in data if it is missing
+    if(!(self$predictand %in% names(data)))
+      data[,self$predictand] <- NA
+    
+    # record locations that should not be
+    # overwritten
+    safe.loc <- !is.na(data[,self$predictand])
+    
+    # create a model frame using the formula
+    # and keeping all NA values
+    frame <- model.frame(self$formula,data,na.action=na.pass)
+    
+    # Generate predictions of length equal
+    # to nrows(data)
+    preds <- frame[,1]
+    preds[!safe.loc] <- predict.gbm(
+      self$brt,
+      newdata = frame,
+      n.trees = self$brt$gbm.call$best.trees,
+      type = "response"
+    )[!safe.loc]
+    
+    # Record s.d. of residuals for $sample()
+    self$error <- sd(self$brt$residuals,na.rm=T)
+    
+    # if na.strict we suppose that we are not justified in predicting
+    # predictand if any of the covariates are missing
+    if(na.strict) {
+      na.loc <- apply(frame,1,function(x) any(is.na(x[-1])))
+      preds[!safe.loc &na.loc] <- NA
+    }
+    
+    # if !na.keep remove all NA's from prediction vector
+    if(!na.keep) preds <- preds[!is.na(preds)]
+    
+    # return with or without back-transformation
+    # of predicted values
+    if(transform) return(self$transform(preds))
+    else return(preds)
+  }
+  
+  self$predict <- function(data,transform=T,na.strict=T,na.keep=T){
+    
+    data <- as.data.frame(data)
+        
+    if(!(self$predictand %in% names(data)))
+      data[,self$predictand] <- NA
+        
+    # create data frame for model prediction
+    frame <- model.frame(self$formula,data,na.action=na.pass)
+    
+    # Generate predictions of length equal
+    # to nrows(data)
     preds <- predict.gbm(
       self$brt,
       newdata = frame,
       n.trees = self$brt$gbm.call$best.trees,
       type = "response"
     )
-    # Record s.d. of residuals for $sample()
-    self$error <- sd(self$brt$residuals)
     
+    # Record s.d. of residuals for $sample()
+    self$error <- sd(self$brt$residuals,na.rm=T)
+    
+    # if na.strict we suppose that we are not justified in predicting
+    # predictand if any of the covariates is missing
+    # [NB na.strict=T and na.keep=F are required for output 
+    # compatible with default setting of self$fit(), which drops
+    # all NAs when building the model frame]
+    if(na.strict) {
+      na.loc        <- apply(frame,1,function(x) any(is.na(x[-1])))
+      preds[na.loc] <- NA
+    }
+    
+    # if !na.keep remove all NA's from prediction vector
+    if(!na.keep) preds <- preds[!is.na(preds)]
+  
+    # return with or without back-transformation
+    # of predicted values
     if(transform) return(self$transform(preds))
     else return(preds)
   }

@@ -16,7 +16,7 @@ TaxonomicImputer <- function(predictand,transform=c(identity,identity),nmin=1){
   self$predictors <- c('species','genus','family','order','class')
   self$nmin <- nmin
   
-  self$fit <- function(data){
+  self$fit <- function(data, ...){
     # Determine the type of the predictand
     self$type <- if(is.numeric(data[,self$predictand])) numeric else factor
     # Determine type of default values to record based on type of predictand
