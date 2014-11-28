@@ -60,6 +60,8 @@ Bayser <- function(formula,transform=identity,factors.min=5){
     fdata <- model.frame(paste(self$predictand,'~',paste(self$predictors,collapse='+')),self$fit_data)
     pdata <- model.frame(paste(self$predictand,'~',paste(self$predictors,collapse='+')),data)
     
+    if(nrow(pdata)<1) return(NA)
+    
     pdata[,self$predictand] <- NA
     
     ld <- nrow(pdata)
