@@ -172,5 +172,28 @@ Brter <- function(formula,transform=identity,ntrees=2000,tree.complexity=10,lear
     self$transform(rnorm(nrow(data),mean=self$predict(data,transform=F),sd=self$error))
   }
   
+  #' Tune model formulas simple search over a range of values
+  self$tune <-function(data,trials,...){
+    results <- NULL
+    for(formula in trials){
+      cat("formula:",deparse(as.formula(formula)),"\n")
+      self$formula = as.formula(formula)
+      self$predictand <- all.vars(self$formula)[1]
+      self$predictors <- all.vars(self$formula)[-1]
+      results <- rbind(results,data.frame(
+        formula = formula,
+        t(self$cross(data,...)$summary$mean)
+      ))
+    }
+    formula = trials[which.min(results[,3])]
+    self$formula = as.formula(formula)
+    self$predictand <- all.vars(self$formula)[1]
+    self$predictors <- all.vars(self$formula)[-1]
+    list(
+      best = trials[which.min(results[,3])],
+      trials = results
+    )
+  }
+  
   self
 }

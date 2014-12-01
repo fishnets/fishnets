@@ -2,8 +2,6 @@
 #' [Myers et al 1999](http://www.nrcresearchpress.com/doi/abs/10.1139/f99-201). 
 #' Note that Myers et al. fit a Ricker model to the stock recruit data, but then calculate the Beverton-Holt steepness from the Ricker \alpha. This has been shown to be overly conservative, and the node will post a warning to this effect.
 
-source('collate.R')
-
 Steepness <- object('SteepnessMyersEtAl1999')
 
 #' Read data from disk

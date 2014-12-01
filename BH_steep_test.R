@@ -41,10 +41,10 @@ steep_red <- steep_merged %>%
             lmat = gmean(lmat), 
             k = gmean(k), 
             amax = gmean(amax),
-            recsigma = NA) %>% ungroup()
+            recsigma = NA) %>% ungroup() %>% data.frame()
 
 
-# build a net for steepnes. Use Bayesian nodes in an attempt to not overfit (i.e., to egt better predictive power)
+# build a net for steepnes. Use Bayesian nodes in an attempt to not overfit (i.e., to get better predictive power)
 
 logit <- function(x) log(x/(1-x))
 logit_inv <- function(xt) 1/(1 + exp(-xt))
@@ -72,7 +72,7 @@ BH_net <- Fishnet(
   m         = Bayser(log(m) ~ f(family,model="iid")+f(class,model="iid")+log(k)+log(linf)+f(habit,model="iid")+log(depthmax)+trophic,exp),
   lmat      = Bayser(log(lmat) ~ f(family,model="iid")+log(k)+log(linf)+f(habit,model="iid")+log(depthmax),exp),
   recsigma  = RecsigmaThorsonEtAl2014(),
-  mean_BH_z  = Brter(logit_BH(mean_BH_z) ~  habit + log(linf) + log(k) + log(m)+ log(fecundity) +recsigma + trophic+log(depthmax),transform = logit_BH_inv,ntrees =3500,bag.fraction=0.9)
+  mean_BH_z = Brter(logit_BH(mean_BH_z) ~  habit + log(linf) + log(k) + log(m)+ log(fecundity) +recsigma + trophic+log(depthmax),transform = logit_BH_inv,ntrees =3500,bag.fraction=0.9)
   
 )
 
@@ -80,8 +80,8 @@ BH_net <- Fishnet(
 BH_net$fit(steep_red,impute = T)
 
 # function to make testset for cross validation
-make_testset <- function(net,data,name){
-  testset <- data.frame(net$data[,-which(colnames(net$data) == name)], name = data[name])
+make_testset <- function(net,org_data,name){
+  testset <- data.frame(net$data[,-which(colnames(net$data) == name)], name = org_data[name])
   testset
 }
 
@@ -139,6 +139,17 @@ jacknife_cv <- function(data,net,node){
   data.frame(Predicted = pred,Observed = data[[node]])
 }
 
+formulae <- vector(,6)
+formulae[1] <- ('logit_BH(mean_BH_z) ~ log(linf) + log(k) + log(m)+ log(fecundity) +log(recsigma)+log(m)*log(recsigma) + log(trophic) + log(depthmax)')
+formulae[2] <- ('logit_BH(mean_BH_z) ~ log(linf) + log(k) + log(m)+ log(fecundity) +log(recsigma) + log(trophic) + log(depthmax)')
+formulae[3] <- ('logit_BH(mean_BH_z) ~ log(linf) + log(k) + log(m)+ log(fecundity) +log(recsigma)+log(trophic) + log(depthmax)')
+formulae[4] <- ('logit_BH(mean_BH_z) ~ log(m)+ log(fecundity)')
+formulae[5] <- ('logit_BH(mean_BH_z) ~ log(m)+ log(fecundity)+log(depthmax)')
+formulae[6] <- ('logit_BH(mean_BH_z) ~ log(depthmax) + log(k) + log(fecundity)')
+
+BH_net$nodes$mean_BH_z$tune(testset,formulae,46)
+
+
 steep_cv <- jacknife_cv(testset,BH_net,'mean_BH_z')
 
 lm_pred_steep <- lm(Observed~Predicted,data=steep_cv)
@@ -151,6 +162,18 @@ abline(0,1,lwd=2)
 BH_net$nodes$mean_BH_z  = Bayser(logit_BH(mean_BH_z) ~ log(linf) + log(k) + log(m)+ log(fecundity) +log(recsigma)+log(m)*log(recsigma) + log(trophic) + log(depthmax),transform = logit_BH_inv)
 
 BH_net$nodes$mean_BH_z$fit(testset)
+
+
+formulae <- vector(,7)
+formulae[1] <- ('logit_BH(mean_BH_z) ~ log(linf) + log(k) + log(m)+ log(fecundity) +log(recsigma)+log(m)*log(recsigma) + log(trophic) + log(depthmax)')
+formulae[2] <- ('logit_BH(mean_BH_z) ~ f(family,model="iid") + f(habit,model="iid")+ log(linf) + log(k) + log(m)+ log(fecundity) +log(recsigma) + log(trophic) + log(depthmax)')
+formulae[3] <- ('logit_BH(mean_BH_z) ~ f(family,model="iid") + log(linf) + log(k) + log(m)+ log(fecundity) +log(recsigma) + log(trophic) + log(depthmax)')
+formulae[4] <- ('logit_BH(mean_BH_z) ~ log(linf) + log(k) + log(m)+ log(fecundity) +log(recsigma)+log(trophic) + log(depthmax)')
+formulae[5] <- ('logit_BH(mean_BH_z) ~ f(family,model="iid")+ log(m)')
+formulae[6] <- ('logit_BH(mean_BH_z) ~ f(family,model="iid")')
+formulae[7] <- ('logit_BH(mean_BH_z) ~ log(depthmax)')
+
+BH_net$nodes$mean_BH_z$tune(testset,formulae)
 
 steep_cv_bayes <- jacknife_cv(testset,BH_net,'mean_BH_z')
 

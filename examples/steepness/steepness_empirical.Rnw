@@ -1,0 +1,228 @@
+\documentclass{dragonfly-report}
+
+\usepackage{hyperref}
+
+\title{Improving steepness priors in \emph{fishnets}}{Improving
+  priors for the steepness of the stock-recruitment function within the R package \emph{fishnets}}
+
+% Proposals require a subtitle which goes below the main title on the cover page. 
+\subtitle{}
+\author{Philipp Neubauer}
+
+\addbibresource{steepness.bib}
+
+\begin{document}
+\maketitle
+
+\section{Inferring steepness: available literature and estimation in the context of fishnets}
+
+Steepness is generally defined as the fraction of recruitment from an unfished population ($R_0$) when the spawning stock biomass is at 20\% of its unfished (equilibrium) level ($B_0$). Given a functional form of the stock-recruit function $f$, steepness can be tied to the parameters of that function (at least in the case of the Ricker and Beverton-Holt (B-H) S-R functions), such that parameters of $f$ can be expressed in terms of steepness. However, depending on the form of $f$, the bounds on steepness are different: the Beverton-Holt S-R function admits steepness values in $[0.2;1]$ while the Ricker S-R function admits values between $0.2$ and infinity (i.e., recruitment can increase above $R_0$ at $0.2 B_0$). 
+
+Given that the range of steepness varies among the B-H and Ricker S-R functions, steepness estimated from one S-R function is not directly applicable to the other, which posed a non-trivial problem for the development of a general purpose prior for steepness. Ideally, the steepness node should have a method for Ricker and B-H steepness. However, empirical approaches to the specification of prior distributions for steepness have generally focused on either one S-R model, with \citet{michielsens_2004_bayesian} being the exception. \citet{myers_1999_maximum} first provided estimates of B-H steepness for a large number of species and families based on Myers' S-R database. The estimates were simple transformations of the maximum lifetime reproductive rate, which was estimated from a meta-analysis using the Ricker S-R model across all stocks. \citet{michielsens_2004_bayesian} pointed out that fits of the Ricker and B-H functions lead to different estimates for the slope at the origin and different expectations for steepness. The direct transformation from Ricker model parameters to B-H steepness applied in Myers et al. 1999 therefore gives misleading (i.e., overly conservative) results.
+
+Short of doing a new meta-analysis of steepness from the RAM legacy DB or other data source, \citet{myers_1999_maximum} was nevertheless considered an appropriate starting point for an empirical node as the reported estimates for the maximum lifetime reproductive rate make it possible to re-calculate the Ricker steepness (instead of the Beverton-Holt steepness reported in their paper). However, given the potentially strong selection bias in the study (for managed, VPA assessed stocks), it seemed less than ideal to use species or family level estimates from reported values directly. Rather, I attempted to use these estimates in combination with life-history to build a predictive model for steepness.
+
+Theory suggests that recruitment variability and natural mortality M set the lower bounds for steepness \citep{he_2006_prior}. However, at low recruitment variability and M, there is little information about steepness in these parameters alone. Given an age structured model, Mangel et al. (2010; 2013) showed that steepness depends on growth, fecundity and mortality rates, and \citet{rose2001compensatory} provided evidence that empirical estimates of steepness follow expectations from life-history theory. Von Bertlanaffy growth and fecundity were therefore considered in addition to recruitment variability and natural mortality in the development of the empirical steepness node. Furthermore, given the complex relationships between life-history parameters and their constraints on steepness, a non-parametric node based on `brter` was considered the most practical start.
+
+The biggest issue with an empirical node is that the only data that span a range of families and orders remains the somewhat outdated \citet{myers_1999_maximum}. The Myers dataset is the largest, but only gives unbiased estimates for the Ricker model steepness (i.e., after back-transforming and using equations in \citet{michielsens_2004_bayesian} to calculate Ricker steepness). \citet{shertzer2012spawner} obtain priors for demersal fish, but only provide an ad-hoc fit of truncated normal and beta distributions to estimates of steepness from stock assessments. Other datasets that provide more formally derived priors for steepness (e.g., \citet{michielsens_2004_bayesian}, \citet{dorn2002advice} and \citet{forrest2010hierarchical}) are too narrow to inform over broad enough a taxonomic range for an empirical node. Data from \citet{forrest2010hierarchical} were nevertheless included as estimates for US/Canada west-coast rockfish, in hope to obtain more robust estimates of empirical relationships with life-history parameters. However, the fundamental problem of inadequate sources of empirical estimates of steepness for the B-H function steepness means that it was be difficult to construct an empirical node for the B-H.
+
+\section{An empirical steepness node}
+
+\subsection{Data: a collated dataset for steepness}
+
+Empirical estimates based on maximum lifetime reproductive rates were extracted from \citet{myers_1999_maximum}, and both mean B-H and Ricker steepness were recorded (the latter calculated using formulae in \citet{michielsens_2004_bayesian}), along with other parameters reported in \citet{myers_1999_maximum}. These data were augmented with data from \citet{forrest2010hierarchical} for \emph{Sebastes ssp.}. The combined dataset is available in the $\/data\/steepness$ directory as Myers\_et\_al\_steepness\_extended.csv. Data at the family level as also extracted and saved into Myers\_et\_al\_steepness\_families\_extended.csv.
+
+<<setup,echo=FALSE>>=
+
+opts_knit$set(root.dir = '../../')
+opts_chunk$set(message = FALSE,warning=FALSE) 
+@
+
+
+A data node for steepness was implemented, such that 
+<<steepness data node>>=
+
+# Source in the package ----
+              
+source('collate.R')
+
+steep <- Steepness$create('./data/steepness')
+head(steep)
+
+@
+
+returns the data table. The table can then be merged with a fishbase data extract to pair empirical steepness estimates with life-history data. Note that the fishbase data is not restricted to species with $z$ estimates, rather the merge is, in SQL terms, a left join onto the fishbase data:
+
+<<merge data node>>=
+
+# Load the Fishbase data
+fb <- FishbaseWeb$read('data/fishbase-web')
+# Limit to the 7940 with both k and linf
+fb <- subset(fb,!is.na(k) & !is.na(linf))
+# An an id column for indexing later
+fb$id <- 1:nrow(fb)
+# Add a dummy row for helping with predictor nodes
+# that need to have at least two predictors
+fb$dummy <- 1.0
+
+# merge with steepness data
+steep_merged <- Steepness$merge(steep,fb)
+
+head(steep_merged)
+
+@
+
+In order to set up a fishnet that that extracts empirical relationships between steepness and life-history, the merged fishbase/steepness data was aggregated at species level to avoid multiple, possibly contradictory, life-history correlates with steepness. Geometric means were used to aggregate life-history parameters, under thew assumption that most follow log-normal distributions.
+
+<<>>=
+
+require(dplyr)
+
+# geometric mean
+gmean <- function(x) exp(mean(log(x),na.rm=T))
+
+# reduce dataset; gometric means for paramters by species
+steep_reduced <- steep_merged %>% 
+  select(species, genus, family, class, order, mean_BH_z, linf, m, fecundity, trophic, lmat, lmax , k, amax, habit, trophic, depthmax) %>% 
+  group_by(order,class,genus,family,species) %>% 
+  summarise(mean_BH_z = unique(mean_BH_z),
+            habit = unique(habit),
+            trophic = gmean(trophic), 
+            linf = gmean(linf), 
+            m = gmean(m), 
+            depthmax = gmean(depthmax),
+            fecundity = gmean(fecundity), 
+            trophic = gmean(trophic), 
+            lmax = gmean(lmax), 
+            lmat = gmean(lmat), 
+            k = gmean(k), 
+            amax = gmean(amax),
+            recsigma = NA) %>% 
+  ungroup() %>% 
+  data.frame()
+
+@
+
+\subsection{A Bayesian empirical node to avoid overfitting}
+
+An initial attempot at defining a fishnet based on previously available nodes (brter: boosted regression trees; svmer: support vector machines; glmer: generalized linear models) suggested that overfitting of empirical relationships might be interferring with predictive power of the nodes. To investigate this potential problem, I implemented a Bayesian node based on the \href{http://www.r-inla.org/}{INLA} package in R. Fully Bayesian methods are less prone to overfitting, and the INLA approach, based on laplacian approximations, allows for fast parameter estiamtion in linear and linear mixed models. The resulting node, called \emph{bayser}, uses the same formula syntax as previous empirical nodes, with additional option to estiamte random effects with the $f(effect, 'iid')$ syntax (e.g., f(family,model="iid") for a family level random effect). This option should facilitate the use of taxonomic information in empirical nodes, whereas the use of taxonomy as a fixed effect frequently leads to overfitting. The \emph{bayser} node comes with $fit$, $sample$, $predict$ and $tune$ methods:
+
+<<bayser example>>=
+
+linf = Bayser(log(linf) ~ f(family,model="iid")+f(order,model="iid")+log(lmax)+habit,exp)
+# fitting to data
+linf$fit(steep_reduced[1:1500,])
+
+# predicting onto new data
+example_predictions <- linf$predict(steep_reduced[1501:nrow(steep_reduced),])
+
+predict_df <- data.frame(bayser = example_predictions[!is.na(steep_reduced$lmax[1501:nrow(steep_reduced)])], observed = steep_reduced[1501:nrow(steep_reduced),'linf'][!is.na(steep_reduced$lmax[1501:nrow(steep_reduced)])])
+
+linf_brter = Brter(log(linf) ~ family + order+ log(lmax)+habit,exp)
+# fitting to data
+linf_brter$fit(steep_reduced[1:1500,])
+# predicting onto new data
+example_predictions_brter <- linf_brter$predict(steep_reduced[1501:nrow(steep_reduced),])
+
+predict_df <- reshape2::melt(data.frame(brter = example_predictions_brter[!is.na(steep_reduced$lmax[1501:nrow(steep_reduced)])],predict_df),id.vars = c('observed'))
+@
+
+<<fig.cap = 'Example predictions for linf as a function of lmax and taxonomy on a subset of fishbase data, showing that the predictive power in Bayser can be superior to that of Brter when taxonomy is used as a predictor.',out.height='3 in',out.width='3in',fig.align = 'center'>>=
+require(ggplot2)
+
+ggplot(predict_df) + 
+  geom_point(aes(y = value, x = observed, col = variable)) + 
+  geom_abline(slope=1, intercept=0) + 
+  theme_bw() + 
+  xlab('Data') + 
+  ylab('Prediction') +
+  scale_colour_discrete('Method')
+
+@
+
+
+\subsection{Sequential imputing of data in fishnets}
+
+In the $Bayser$ example above, $linf$ depends on $lmax$ in an empirical node. The relationship can only be estiamted for data rows (i.e.,species) with data for both traits. For more complex life history interactions, missing data for the combination of covariantes in the model can strongly influence the total number of species for which the relationship can be estriamted. For example, one species may not have a reported von Bertlanaffy k, while another species may have k but no estiamte of fecundity. Neither row could be inlcuded in a node like steepness, which may dpend on both factors. In the case of steepness, only 46 empirical estiamtes at the species level are available from the dataset described above, and missing values dramatically reduce the number of covariates taht could be used to construct an empirical node for steepness.
+
+To obtain more data for complex empirical relationships, I implemented an option within the generic $fit$ method of a fishnet, which allows data to be sequentially imputed. Thus, if linf depends on lmax, and k in turn depends on linf, then linf could be imputed for species with missing linf based on the node relating it to lmax. This allows k to be estiamted for species with data for lamx and missing data for linf. The imputation naturally relies on a linearly evolving net, where relationships depend on  values imputed at lower level nodes. The option can be turned on using $impute = TRUE$ when fitting a fishnet (see the steepness node fitting below).
+
+\subsection{The empirical steepness node: fishing for predictive power}
+
+The empirical fishnet node to estiamte steepness was embedded in a larger fishnet that aimed to build a covariate set (using the $impute~=~T$ option). All empirical nodes leading up to steepness node itself used the Bayser node, and included taxonomic information as random effects. The actual steepness node was initially specified as a $Brter$ node, in order to capture potentially non-linear relationships between steepness and co-variates.
+
+<<fitting the steepness node>>=
+
+# build a net for steepnes. Use Bayesian nodes in an attempt to not overfit (i.e., to get better predictive power)
+# transformations are defined for Beverton-Holt S-R parameters to map steepness onto the real line and back.
+
+logit <- function(x) log(x/(1-x))
+logit_inv <- function(xt) 1/(1 + exp(-xt))
+BH_tr <- function(h) h/0.8-0.25
+BH_tr_inv <- function(ht) (ht+0.25)*0.8
+logit_BH <- function(h) logit(BH_tr(h))
+logit_BH_inv <- function(ht) BH_tr_inv(logit_inv(ht))
+
+BH_net <- Fishnet(
+  species   = SpeciesRandom(),
+  genus     = GenusParser(),
+  family    = FamilyLookupper(),
+  order     = OrderLookupper(),
+  class     = ClassLookupper(),
+  
+  habit     = TaxonomicImputer('habit'),
+  depthmax  = TaxonomicImputer('depthmax',c(log,exp),5),
+  trophic   = TaxonomicImputer('trophic',c(log,exp),3),
+  lmax      = TaxonomicImputer('lmax',c(log,exp),5),
+  amax      = TaxonomicImputer('amax',c(log,exp),5),
+  
+  linf      = Bayser(log(linf) ~ f(family,model="iid")+f(class,model="iid")+log(lmax),exp),
+  fecundity = Bayser(log(fecundity) ~ f(family,model="iid")+f(class,model="iid") + log(linf) + log(depthmax),exp),
+  k         = Bayser(log(k) ~ f(family,model="iid") + log(linf) + f(habit,model="iid") + log(depthmax),exp),
+  m         = Bayser(log(m) ~ f(family,model="iid")+f(class,model="iid")+log(k)+log(linf)+f(habit,model="iid")+log(depthmax)+trophic,exp),
+  lmat      = Bayser(log(lmat) ~ f(family,model="iid")+log(k)+log(linf)+f(habit,model="iid")+log(depthmax),exp),
+  recsigma  = RecsigmaThorsonEtAl2014(),
+  mean_BH_z = Brter(logit_BH(mean_BH_z) ~  habit + log(linf) + log(k) + log(m)+ log(fecundity) +recsigma + trophic+log(depthmax),transform = logit_BH_inv,ntrees =3500,bag.fraction=0.9)
+  
+)
+
+# fit the BH_et to the summarised fishbase data
+BH_net$fit(steep_reduced,impute = T)
+
+@
+
+The predictive power of inidivdual nodes and the steepness node itself was assessed using crossvalidation and jacknifing:
+
+<<checking>>=
+
+# function to make testset for cross validation
+make_testset <- function(net,org_data,name){
+  testset <- data.frame(net$data[,-which(colnames(net$data) == name)], name = org_data[name])
+  testset
+}
+
+testset <- make_testset(BH_net,steep_red,'mean_BH_z')
+
+# CV meta function
+crossval <- function(net,data,name){
+  net$nodes[[name]]$cross(make_testset(net,data,name))
+}
+
+# do CV on nodes other than steepness
+crossval(BH_net,steep_reduced,'linf')
+crossval(BH_net,steep_reduced,'lmat')
+
+@
+
+
+\section{Potential further developments}
+
+\subsection{Can the steepness node be improved?}
+
+An alternative to using meta-analysis estimates to inform an empirical node would be to repeat simulations based on theory \citep{mangel_2010_reproductive, mangel2013perspective} with species for which sufficient data is available. This subset is probably small, and the simulations would require assumptions about larval/early-juvenile survival. This would be a much trickier start but give consistent priors for both Ricker and B-H. A regression against life history parameters from fish-base could then make it possible to get a predicted distribution from the fishnet. 
+
+\subsection{Suggested developments for fishnets}
+
+\printbibliography
+
+\end{document}
