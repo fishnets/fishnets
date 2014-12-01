@@ -151,7 +151,7 @@ To obtain more data for complex empirical relationships, I implemented an option
 
 The empirical fishnet node to estiamte steepness was embedded in a larger fishnet that aimed to build a covariate set (using the $impute~=~T$ option). All empirical nodes leading up to steepness node itself used the Bayser node, and included taxonomic information as random effects. The actual steepness node was initially specified as a $Brter$ node, in order to capture potentially non-linear relationships between steepness and co-variates.
 
-<<fitting the steepness node>>=
+<<fitting the steepness node,tidy=TRUE>>=
 
 # build a net for steepnes. Use Bayesian nodes in an attempt to not overfit (i.e., to get better predictive power)
 # transformations are defined for Beverton-Holt S-R parameters to map steepness onto the real line and back.
