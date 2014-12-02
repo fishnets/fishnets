@@ -223,7 +223,7 @@ ggplot(bwa.org) +
   labs(x='Steepness (z)',y='Density')
 
 
-# Comparison of estiamted vs 'data' -----
+# Comparison of estimated vs 'data' -----
 
 BH_net_test <- BH_net
 
