@@ -1,5 +1,5 @@
-%\documentclass{dragonfly-report}
-\documentclass{article}
+\documentclass{dragonfly-report}
+%\documentclass{article}
 
 \usepackage{hyperref}
 \usepackage{subfig}
@@ -7,10 +7,10 @@
 \title{Improving steepness priors in \emph{fishnets}}{Improving
   priors for the steepness of the stock-recruitment function within the R package \emph{fishnets}}
 
-%\subtitle{}
+\subtitle{}
 \author{Philipp Neubauer}
 
-%\addbibresource{steepness.bib}
+\addbibresource{steepness.bib}
 
 \begin{document}
 \maketitle
@@ -19,14 +19,13 @@
 
 Steepness is generally defined as the fraction of recruitment from an unfished population ($R_0$) when the spawning stock biomass is at 20\% of its unfished (equilibrium) level ($B_0$). Given a functional form of the stock-recruit function $f$, steepness can be tied to the parameters of that function (at least in the case of the Ricker and Beverton-Holt (B-H) S-R functions), such that parameters of $f$ can be expressed in terms of steepness. However, depending on the form of $f$, the bounds on steepness are different: the Beverton-Holt S-R function admits steepness values in $[0.2;1]$ while the Ricker S-R function admits values between $0.2$ and infinity (i.e., recruitment can increase above $R_0$ at $0.2 B_0$). 
 
-Given that the range of steepness varies among the B-H and Ricker S-R functions, steepness estimated from one S-R function is not directly applicable to the other, which posed a non-trivial problem for the development of a general purpose prior for steepness. Ideally, the steepness node should have a method for Ricker and B-H steepness. However, empirical approaches to the specification of prior distributions for steepness have generally focused on either one S-R model, with \citet{michielsens_2004_bayesian} and \citet{forrest2010hierarchical} being the exceptions. \citet{myers_1999_maximum} first provided estimates of B-H steepness for a large number of species and families based on Myers' S-R database. The estimates were simple transformations of the maximum lifetime reproductive rate, which was estimated from a meta-analysis using the Ricker S-R model across all stocks. \citet{michielsens_2004_bayesian} pointed out that fits of the Ricker and B-H functions lead to different estimates for the slope at the origin and different expectations for steepness. The direct transformation from Ricker model parameters to B-H steepness applied in Myers et al. 1999 therefore gives misleading (i.e., overly conservative) results. Furthermore, there is a potentially strong selection bias in the study (for managed, VPA assessed stocks)., which could have further biased results.
+Theory provides some insight into potential life history predictors for steepness. For example, recruitment variability and natural mortality M set the lower bounds for steepness \citep{he_2006_prior}. However, at low recruitment variability and M, there is little information about steepness in these parameters alone. Given an age structured model, Mangel et al. (2010; 2013) showed that steepness depends on growth, fecundity and (larval and adult) mortality rates, and \citet{rose2001compensatory} provided evidence that empirical estimates of steepness follow expectations from life-history theory. However, given the multitude of assumptions that need to be made for a node based on theory alone (i.e., the Mangel et al. model), from larval mortality schedules to fecudity at age, a theoretical node was deemed unachieveable in the context of fishnets. As an aside, the Mangel et al. paper should be udnerstood as an excecise that provides a mechanistic underpinning for steepness, not a practically appliceable model. 
 
-The biggest issue with an empirical node was thus that the only data that span a range of families and orders remains the somewhat outdated and biased \citet{myers_1999_maximum}. \citet{shertzer2012spawner} obtain priors for demersal fish, but only provide an ad-hoc fit of truncated normal and beta distributions to estimates of steepness from stock assessments. They do not provide individual estiamtes for species. Other datasets that provide more formally derived priors for steepness (e.g., \citet{michielsens_2004_bayesian}, \citet{dorn2002advice} and \citet{forrest2010hierarchical}) are too narrow to inform over broad enough a taxonomic range for an empirical node. Data from \citet{forrest2010hierarchical} were nevertheless included as estimates for US/Canada west-coast rockfish, in hope to obtain more robust estimates of empirical relationships with life-history parameters. However, the fundamental problem of inadequate sources of empirical estimates of steepness means that it was difficult to construct an empirical node for the B-H.
+The most promising avenue for a steepness node within fishnets that could be used to predict steepness for (almost) arbitrary stocks, seemed an empirical node that relates steepness to life-history. The biggest issue with the empirical node, however, was that the somewhat outdated and biased (see below) \citet{myers_1999_maximum} remains the only data source that spans a range of families and orders. \citet{shertzer2012spawner} obtained priors for demersal fish, but only provided an ad-hoc fit of truncated normal and beta distributions to estimates of steepness from stock assessments (for south-east US stocks only). They did not provide individual estiamtes for species. Other datasets that provide more formally derived (and unbiased) priors for steepness (e.g., \citet{michielsens_2004_bayesian}, \citet{dorn2002advice} and \citet{forrest2010hierarchical}) are too narrow to inform over broad enough a taxonomic range for an empirical node.
 
-Short of doing a new meta-analysis of steepness from the RAM legacy DB or other data source, \citet{myers_1999_maximum} was nevertheless considered an appropriate starting point for an empirical node in fishnets. The reported estimates for the maximum lifetime reproductive rate made it possible to re-calculate the Ricker steepness (alongside the somewhat biased Beverton-Holt steepness reported in their paper). I then attempted to use these estimates in combination with life-history to build a predictive model for steepness within fishnets.
+Given that the range of steepness varies among the B-H and Ricker S-R functions, steepness estimated from one S-R function is not directly applicable to the other. This posed a non-trivial problem for the development of a general purpose prior for steepness; Ideally, the steepness node should have a method for Ricker and B-H steepness. However, empirical approaches to the specification of prior distributions for steepness have generally focused on either one S-R model (with \citet{michielsens_2004_bayesian} and \citet{forrest2010hierarchical} being the exceptions). \citet{myers_1999_maximum} first provided estimates of B-H steepness for a large number of species and families based on Myers' S-R database. The estimates were simple transformations of the maximum lifetime reproductive rate, which was estimated from a meta-analysis using the Ricker S-R model across all stocks. \citet{michielsens_2004_bayesian} pointed out that fits of the Ricker and B-H functions lead to different estimates for the slope at the origin and different expectations for steepness. The direct transformation from Ricker model parameters to B-H steepness applied in Myers et al. 1999 therefore gives misleading (i.e., overly conservative) results. Furthermore, there is a potentially strong selection bias in the study (for managed, VPA assessed stocks), which could have further biased results at species level by including only a biased subset of populations for any particular species.
 
-Theory provides some insight into potential life history predictors for steepness. For example, recruitment variability and natural mortality M set the lower bounds for steepness \citep{he_2006_prior}. However, at low recruitment variability and M, there is little information about steepness in these parameters alone. Given an age structured model, Mangel et al. (2010; 2013) showed that steepness depends on growth, fecundity and mortality rates, and \citet{rose2001compensatory} provided evidence that empirical estimates of steepness follow expectations from life-history theory. Von Bertlanaffy growth and fecundity were therefore considered in addition to recruitment variability and natural mortality (amongst otehr life history parameters) in the development of the empirical steepness node. Furthermore, given the complex relationships between life-history parameters and their constraints on steepness, a non-parametric node based on `brter` was considered the most practical starting point.
-
+Nevertheless, short of doing a new meta-analysis of steepness from the RAM legacy DB or other data source, \citet{myers_1999_maximum} was considered the only possible starting point for an empirical node in fishnets. Estimates for US/Canada west-coast rockfish from \citet{forrest2010hierarchical} were included to improve estimates of empirical relationships with life-history parameters. The reported estimates for the maximum lifetime reproductive rate in \citet{myers_1999_maximum} made it possible to re-calculate the Ricker steepness (alongside the somewhat biased Beverton-Holt steepness reported in their paper). These estimates were then combined with life-history information in fishbase to build a predictive model for steepness within fishnets. Given the complex relationships between life-history parameters and their constraints on steepness, a non-parametric node based on `brter` was considered the most practical starting point.
 \section{An empirical steepness node}
 
 \subsection{Data: a collated dataset for steepness}
@@ -75,7 +74,7 @@ head(tbl_df(steep_merged))
 
 @
 
-In order to set up a fishnet that that extracts empirical relationships between steepness and life-history, the merged fishbase/steepness data was aggregated at species level to avoid multiple, possibly contradictory, life-history correlates with steepness. Geometric means were used to aggregate life-history parameters, under thew assumption that most follow log-normal distributions.
+In order to set up a fishnet that that extracts empirical relationships between steepness and life-history, the merged fishbase/steepness data was aggregated at species level to avoid multiple, possibly contradictory, life-history correlates with steepness. Geometric means were used to aggregate life-history parameters, under the assumption that most follow log-normal distributions.
 
 <<cache=TRUE>>=
 
@@ -122,7 +121,7 @@ steep_reduced <- steep_merged %>%
 
 \subsection{A Bayesian empirical node to avoid overfitting}
 
-An initial attempot at defining a fishnet based on previously available nodes (brter: boosted regression trees; svmer: support vector machines; glmer: generalized linear models) suggested that overfitting of empirical relationships might be interferring with predictive power of the nodes. To investigate this potential problem, I implemented a Bayesian node based on the \href{http://www.r-inla.org/}{INLA} package in R. Fully Bayesian methods are less prone to overfitting, and the INLA approach, based on laplacian approximations, allows for fast parameter estiamtion in linear and linear mixed models. The resulting node, called \emph{bayser}, uses the same formula syntax as previous empirical nodes, with additional option to estiamte random effects with the $f(effect, 'iid')$ syntax (e.g., f(family,model="iid") for a family level random effect). This option should facilitate the use of taxonomic information in empirical nodes, whereas the use of taxonomy as a fixed effect frequently leads to overfitting. The \emph{bayser} node comes with $fit$, $sample$, $predict$ and $tune$ methods:
+An initial attempt at defining a fishnet based on previously available nodes (brter: boosted regression trees; svmer: support vector machines; glmer: generalized linear models) suggested that overfitting of empirical relationships might be interferring with predictive power of the nodes. To investigate this potential problem, I implemented a Bayesian node based on the \href{http://www.r-inla.org/}{INLA} package in R. Fully Bayesian methods are less prone to overfitting, and the INLA approach, based on laplacian approximations, allows for fast parameter estiamtion in linear and linear mixed models. The resulting node, called \emph{bayser}, uses the same formula syntax as previous empirical nodes, with additional option to estiamte random effects with the $f(effect, 'iid')$ syntax (e.g., f(family,model="iid") for a family level random effect). This option should facilitate the use of taxonomic information in empirical nodes, whereas the use of taxonomy as a fixed effect frequently leads to overfitting. The \emph{bayser} node comes with $fit$, $sample$, $predict$ and $tune$ methods:
 
 <<bayser example, cache=TRUE>>=
 
@@ -631,6 +630,6 @@ An alternative to using meta-analysis estimates to inform an empirical node woul
 
 \subsection{Suggested developments for fishnets}
 
-%\printbibliography
+\printbibliography
 
 \end{document}
