@@ -19,9 +19,9 @@
 
 Steepness is generally defined as the fraction of recruitment from an unfished population ($R_0$) when the spawning stock biomass is at 20\% of its unfished (equilibrium) level ($B_0$). Given a functional form of the stock-recruit function $f$, steepness can be tied to the parameters of that function (at least in the case of the Ricker and Beverton-Holt (B-H) S-R functions), such that parameters of $f$ can be expressed in terms of steepness. However, depending on the form of $f$, the bounds on steepness are different: the Beverton-Holt S-R function admits steepness values in $[0.2;1]$ while the Ricker S-R function admits values between $0.2$ and infinity (i.e., recruitment can increase above $R_0$ at $0.2 B_0$). 
 
-Theory provides some insight into potential life history predictors for steepness. For example, recruitment variability and natural mortality M set the lower bounds for steepness \citep{he_2006_prior}. However, at low recruitment variability and M, there is little information about steepness in these parameters alone. Given an age structured model, Mangel et al. (2010; 2013) showed that steepness depends on growth, fecundity and (larval and adult) mortality rates, and \citet{rose2001compensatory} provided evidence that empirical estimates of steepness follow expectations from life-history theory. However, given the multitude of assumptions that need to be made for a node based on theory alone (i.e., the Mangel et al. model), from larval mortality schedules to fecudity at age, a theoretical node was deemed unachieveable in the context of fishnets. As an aside, the Mangel et al. paper should be udnerstood as an excecise that provides a mechanistic underpinning for steepness, not a practically appliceable model. 
+Theory provides some insight into potential life history predictors for steepness. For example, recruitment variability and natural mortality M set the lower bounds for steepness \citep{he_2006_prior}. However, at low recruitment variability and M, there is little information about steepness in these parameters alone. Given an age structured model, Mangel et al. (2010; 2013) showed that steepness depends on growth, fecundity and (larval and adult) mortality rates, and \citet{rose2001compensatory} provided evidence that empirical estimates of steepness follow expectations from life-history theory. However, given the multitude of assumptions that need to be made for a node based on theory alone (i.e., the Mangel et al. model), from larval mortality schedules to fecundity at age, a theoretical node was deemed unachievable in the context of fishnets. As an aside, the Mangel et al. paper should be understood as an exercise that provides a mechanistic underpinning for steepness, not a practically applicable model. 
 
-The most promising avenue for a steepness node within fishnets that could be used to predict steepness for (almost) arbitrary stocks, seemed an empirical node that relates steepness to life-history. The biggest issue with the empirical node, however, was that the somewhat outdated and biased (see below) \citet{myers_1999_maximum} remains the only data source that spans a range of families and orders. \citet{shertzer2012spawner} obtained priors for demersal fish, but only provided an ad-hoc fit of truncated normal and beta distributions to estimates of steepness from stock assessments (for south-east US stocks only). They did not provide individual estiamtes for species. Other datasets that provide more formally derived (and unbiased) priors for steepness (e.g., \citet{michielsens_2004_bayesian}, \citet{dorn2002advice} and \citet{forrest2010hierarchical}) are too narrow to inform over broad enough a taxonomic range for an empirical node.
+The most promising avenue for a steepness node within fishnets that could be used to predict steepness for (almost) arbitrary stocks, seemed an empirical node that relates steepness to life-history. The biggest issue with the empirical node, however, was that the somewhat outdated and biased (see below) \citet{myers_1999_maximum} remains the only data source that spans a range of families and orders. \citet{shertzer2012spawner} obtained priors for demersal fish, but only provided an ad-hoc fit of truncated normal and beta distributions to estimates of steepness from stock assessments (for south-east US stocks only). They did not provide individual estimates for species. Other datasets that provide more formally derived (and unbiased) priors for steepness (e.g., \citet{michielsens_2004_bayesian}, \citet{dorn2002advice} and \citet{forrest2010hierarchical}) are too narrow to inform over broad enough a taxonomic range for an empirical node.
 
 Given that the range of steepness varies among the B-H and Ricker S-R functions, steepness estimated from one S-R function is not directly applicable to the other. This posed a non-trivial problem for the development of a general purpose prior for steepness; Ideally, the steepness node should have a method for Ricker and B-H steepness. However, empirical approaches to the specification of prior distributions for steepness have generally focused on either one S-R model (with \citet{michielsens_2004_bayesian} and \citet{forrest2010hierarchical} being the exceptions). \citet{myers_1999_maximum} first provided estimates of B-H steepness for a large number of species and families based on Myers' S-R database. The estimates were simple transformations of the maximum lifetime reproductive rate, which was estimated from a meta-analysis using the Ricker S-R model across all stocks. \citet{michielsens_2004_bayesian} pointed out that fits of the Ricker and B-H functions lead to different estimates for the slope at the origin and different expectations for steepness. The direct transformation from Ricker model parameters to B-H steepness applied in Myers et al. 1999 therefore gives misleading (i.e., overly conservative) results. Furthermore, there is a potentially strong selection bias in the study (for managed, VPA assessed stocks), which could have further biased results at species level by including only a biased subset of populations for any particular species.
 
@@ -119,11 +119,11 @@ steep_reduced <- steep_merged %>%
 
 @
 
-\subsection{A Bayesian empirical node to avoid overfitting}
+\subsection{A Bayesian empirical node to avoid over-fitting}
 
-An initial attempt at defining a fishnet based on previously available nodes (brter: boosted regression trees; svmer: support vector machines; glmer: generalized linear models) suggested that overfitting of empirical relationships might be interferring with predictive power of the nodes. To investigate this potential problem, I implemented a Bayesian node based on the \href{http://www.r-inla.org/}{INLA} package in R. Fully Bayesian methods are less prone to overfitting, and the INLA approach, based on laplacian approximations, allows for fast parameter estiamtion in linear and linear mixed models. The resulting node, called \emph{bayser}, uses the same formula syntax as previous empirical nodes, with additional option to estiamte random effects with the $f(effect, 'iid')$ syntax (e.g., f(family,model="iid") for a family level random effect). This option should facilitate the use of taxonomic information in empirical nodes, whereas the use of taxonomy as a fixed effect frequently leads to overfitting. The \emph{bayser} node comes with $fit$, $sample$, $predict$ and $tune$ methods:
+An initial attempt at defining a fishnet based on previously available nodes (Brter: boosted regression trees; Svmer: support vector machines; Glmer: generalized linear models) suggested that over-fitting of empirical relationships might be interfering with predictive power of the nodes. To investigate this potential problem, I implemented a Bayesian node based on the \href{http://www.r-inla.org/}{INLA} package in R. Fully Bayesian methods are less prone to over-fitting, and the INLA approach, based on Laplacian approximations, allows for fast parameter estimation in linear and linear mixed models. The resulting node, called \emph{Bayser}, uses the same formula syntax as previous empirical nodes, with additional option to estimate random effects with the $f(effect, 'iid')$ syntax (e.g., f(family,model="iid") for a family level random effect). This option should facilitate the use of taxonomic information in empirical nodes, whereas the use of taxonomy as a fixed effect frequently leads to over-fitting. The \emph{Bayser} node comes with $fit$, $sample$, $predict$ and $tune$ methods:
 
-<<bayser example, cache=TRUE>>=
+<<bayser example>>=
 
 linf = Bayser(log(linf) ~ f(family,model="iid") +
                 f(order,model="iid") +
@@ -173,15 +173,15 @@ ggplot(predict_df) +
 
 \subsection{Sequential imputing of data in fishnets}
 
-In the $Bayser$ example above, $linf$ depends on $lmax$ in an empirical node. The relationship can only be estiamted for data rows (i.e.,species) with data for both traits. For more complex life history interactions, missing data for the combination of covariantes in the model can strongly influence the total number of species for which the relationship can be estriamted. For example, one species may not have a reported von Bertlanaffy k, while another species may have k but no estiamte of fecundity. Neither row could be inlcuded in a node like steepness, which may dpend on both factors. In the case of steepness, only 46 empirical estiamtes at the species level are available from the dataset described above, and missing values dramatically reduce the number of covariates taht could be used to construct an empirical node for steepness.
+In the $Bayser$ example above, $linf$ depends on $lmax$ in an empirical node. The relationship can only be estimated for data rows (i.e.,species) with data for both traits. For more complex life history interactions, missing data for the combination of covariates in the model can strongly influence the total number of species for which the relationship can be striated. For example, one species may not have a reported von Bertlanaffy k, while another species may have k but no estimate of fecundity. Neither row could be included in a node like steepness, which may depend on both factors. In the case of steepness, only 46 empirical estimates at the species level are available from the dataset described above, and missing values dramatically reduce the number of covariates that could be used to construct an empirical node for steepness.
 
-To obtain more data for complex empirical relationships, I implemented an option within the generic $fit$ method of a fishnet, which allows data to be sequentially imputed. Thus, if linf depends on lmax, and k in turn depends on linf, then linf could be imputed for species with missing linf based on the node relating it to lmax. This allows k to be estiamted for species with data for lamx and missing data for linf. The imputation naturally relies on a linearly evolving net, where relationships depend on  values imputed at lower level nodes. The option can be turned on using $impute = TRUE$ when fitting a fishnet (see the steepness node fitting below).
+To obtain more data for complex empirical relationships, I implemented an option within the generic $fit$ method of a fishnet, which allows data to be sequentially imputed. Thus, if linf depends on lmax, and k in turn depends on linf, then linf could be imputed for species with missing linf based on the node relating it to lmax. This allows k to be estimated for species with data for lamx and missing data for linf. The imputation naturally relies on a linearly evolving net, where relationships depend on  values imputed at lower level nodes. The option can be turned on using $impute = TRUE$ when fitting a fishnet (see the steepness node fitting below).
 
 \subsection{The empirical steepness node: fishing for predictive power}
 
-The empirical fishnet node to estiamte steepness was embedded in a larger fishnet that aimed to build a covariate set (using the $impute~=~T$ option). All empirical nodes leading up to steepness node itself used the Bayser node, and included taxonomic information as random effects. The actual steepness node was initially specified as a $Brter$ node, in order to capture potentially non-linear relationships between steepness and co-variates.
+The empirical fishnet node to estimate steepness was embedded in a larger fishnet that aimed to build a covariate set (using the $impute~=~T$ option). All empirical nodes leading up to steepness node itself used the Bayser node, and included taxonomic information as random effects. The actual steepness node was initially specified as a $Brter$ node, in order to capture potentially non-linear relationships between steepness and co-variates. After some discussion, the B-H estiamtes from Myers et all were used as these were deemed most useful in the context of NZ stock assessments, which seem to overwhelmingly use B-H S-R functions.
 
-<<fitting the steepness node,results='hide', cache=TRUE>>=
+<<fitting the steepness node,results='hide'>>=
 
 # build a net for steepnes. 
 # Use Bayesian nodes in an attempt to not overfit
@@ -257,7 +257,7 @@ BH_net$fit(steep_reduced,impute = T)
 
 @
 
-The predictive power of the steepness node was assessed using jacknifing and a tune method for Brter. The tune formulation included a number of 
+The predictive power of the steepness node was assessed using jackknifing and a tune method for Brter. The tune formulation included 6 formulae with increasing amounts of life-history information.
 
 <<checking>>=
 
@@ -314,14 +314,16 @@ formulae[6] <- paste('logit_BH(mean_BH_z) ~ ',
                      paste(covars,collapse = ' + '))
 @
 
-<<testing_brter,results='hide', cache=TRUE>>=
-BH_net$nodes$mean_BH_z$tune(testset,formulae,
+<<testing_brter,results='hide'>>=
+tune <- BH_net$nodes$mean_BH_z$tune(testset,formulae,
                             folds = sum(!is.na(testset[['mean_BH_z']])))
 # 
 steep_cv <- jacknife_cv(testset,BH_net,'mean_BH_z')
 @
 
-<<output_brter_jk,fig.cap='Observed vs predicted values from jacknife predictions using the Brter formulation of the empirical steepness node and the best model from the tune method. The black line indicates the $y=x$ line of perfect predictions, the red line is the regression fit to the predicted and observed data.'>>=
+<<output_brter_jk,fig.cap='Observed vs predicted values from jacknife predictions using the Brter formulation of the empirical steepness node and the best model from the tune method. The black line indicates the $y=x$ line of perfect predictions, the red line is the regression fit to the predicted and observed data.',tidy=TRUE>>=
+tune$best
+
 lm_pred_steep <- lm(Observed~Predicted,data=steep_cv)
 summary(lm_pred_steep)
 
@@ -330,9 +332,9 @@ abline(lm_pred_steep$coeff[1],lm_pred_steep$coeff[2],col=2,lwd=2)
 abline(0,1,lwd=2)
 @
 
-Even for the best Brter model, the jacknifing suggests very low predictive power, possibly due to overfitting. To investigate this possibility, the node was re-implemented as a Bayser node, and a tune step was used to define a best model among a set of 6 candidate models, which included taxonomic levels as predictors:
+Even for the best Brter model, the jackknifing suggests very low predictive power (\autoref{fig:output_brter_jk}), possibly due to over-fitting. To investigate this possibility, the node was re-implemented as a Bayser node, and a tune step was used to define a best model among a set of 8 candidate models, which included taxonomic levels as predictors:
 
-<<Bayeser steepness node>>=
+<<Bayser steepness node>>=
 
 BH_net$nodes$mean_BH_z  = Bayser(logit_BH(mean_BH_z) ~ f(family,model='iid') + 
                                    f(habit,model='iid') + 
@@ -375,14 +377,16 @@ formulae[8] <- paste('logit_BH(mean_BH_z) ~ ',
 
 @
 
-<<testing,results='hide', cache=TRUE>>=
-BH_net$nodes$mean_BH_z$tune(testset,formulae,folds = sum(!is.na(testset[['mean_BH_z']])))
+<<testing,results='hide'>>=
+tune <- BH_net$nodes$mean_BH_z$tune(testset,formulae,folds = sum(!is.na(testset[['mean_BH_z']])))
 # 
 steep_cv_bayes <- jacknife_cv(testset,BH_net,'mean_BH_z')
 @
 
 
-<<output_bayser_jk,fig.cap='Observed vs predicted values from jacknife predictions using the Bayser formulation of the empirical steepness node and the best model from the tune method. The black line indicates the $y=x$ line of perfect predictions, the red line is the regression fit to the predicted and observed data.'>>=
+<<output_bayser_jk,fig.cap='Observed vs predicted values from jacknife predictions using the Bayser formulation of the empirical steepness node and the best model from the tune method. The black line indicates the $y=x$ line of perfect predictions, the red line is the regression fit to the predicted and observed data.',tidy=TRUE>>=
+tune$best
+
 lm_pred_steep <- lm(Observed~Predicted,data=steep_cv_bayes)
 summary(lm_pred_steep)
 
@@ -392,15 +396,17 @@ abline(0,1,lwd=2)
 
 @
 
-Neither node seems to produce particularly good point predictions for steepness, however no clear bias seems to be present in the predictions. Predictive error may be in part due to the data-quality in fihbase, with potentially low-quality estimates for various life-history parameters obscuring their relationship with steepness.
+The Bayesian node does not improve predictions (\autoref{fig:output_bayser_jk}); neither node thus seems to produce particularly good point predictions for steepness. However no clear bias seems to be present in the predictions. Predictive error may be in part due to the somewhat biased estiamtes of steepness in the input data, with potentially low-quality estimates for various life-history parameters in fishbase further obscuring their relationship with steepness.
 
 \section{Examples}
 
 The examples follow some examples used in the bea2014 node, with additional life history data collected for hoki and snapper from the MPI plenary report 2014.
 
-\subsection(Information gained from life history: Bluenose)
+\subsection{Information gained from life history: Bluenose}
 
-<<fig.cap=c('Steepness samples from the for bluenose \\emph{Hyperoglyphe antarctica}, without any life history information','Steepness samples from the for bluenose \\emph{Hyperoglyphe antarctica}, using life history information'),cache=TRUE>>=
+This example shows how the steepness predictive distribution is shrunk when life-history information is added to the predictions (\autoref{fig:bluenose}). The life-history data particualarly trunkates the upper end of the distribution, sugegsting that steepness values above 0.9 are not consistent with life-history.
+
+<<bluenose,fig.cap=c('Steepness samples from the for bluenose \\emph{Hyperoglyphe antarctica}, without any life history information','Steepness samples from the for bluenose \\emph{Hyperoglyphe antarctica}, using life history information'),cache=TRUE>>=
 bwa <- BH_net$sample(list(
   species = 'Hyperoglyphe antarctica',
   # Maximum length, temperature and 
@@ -413,12 +419,12 @@ bwa <- BH_net$sample(list(
   linf = 92.5,
   k = 0.071,
   amax = 71  
-),samples = 10000)
+),samples = 1000)
 
 # how much information is gained from life-history
 
 bwa.org <- BH_net$sample(list(
-  species = 'Hyperoglyphe antarctica'),samples = 10000)
+  species = 'Hyperoglyphe antarctica'),samples = 1000)
 
 ggplot(bwa.org) + 
   geom_bar(aes(x=mean_BH_z,y=..density..),fill='grey40') + 
@@ -432,11 +438,11 @@ ggplot(bwa) +
 
 @
 
-\subsection(Comparing against data)
+\subsection{Comparing against data}
 
-\subsubsection{Atlantic Cod}
+This section compares steepness estiamtes from various levels of life-history information to available data in fishbase and steepness estiamtes from Myers et al. 1999. The first two examples are taken from the bea2014 fishnet, the other two examples treak NZ stocks specifically, namely hoki and snapper.
 
-<<preamble,cache=TRUE,results='hide'>>=
+<<preamble,results='hide'>>=
 
 BH_net_test <- BH_net
 
@@ -456,38 +462,43 @@ plot_samples <- function(samples,
     theme(strip.text.x=element_text(size=10))
 }
 
+@
+
+\subsubsection{Atlantic Cod}
+
+The net fits 
+
+<<Cod1,fig.cap='Predictions of life-history parameters and steepness for atlantic cod \\emph{Gadus morhua}, without life history data.'>>=
 
 # fit test net
 BH_net_test$fit(subset(steep_reduced,species!='Gadus morhua'),impute = T)
 
-@
-
-<<fig.cap='Predictions of life-history parameters and steepness for atlantic cod \\emph{Gadus morhua}, without life history data.',cache=TRUE>>=
 
 # predictions
 
 preds.nlh <- BH_net_test$sample(list(
   species = 'Gadus morhua'
-),samples=10000)
+),samples=1000)
 
 plot_samples(preds.nlh,steep_merged,'Gadus morhua')
+
 @ 
 
-<<fig.cap='Predictions of life-history parameters and steepness from life history data for atlantic cod \\emph{Gadus morhua}, using fixed values as inputs.',cache=TRUE>>=
+<<Cod2,fig.cap='Predictions of life-history parameters and steepness from life history data for atlantic cod \\emph{Gadus morhua}, using fixed values as inputs.'>>=
 preds.slh <- BH_net_test$sample(list(
   species = 'Gadus morhua',
   swimmode = 'subcarangiform',
   habit = 'benthopelagic',
   depthmax = 600,
   lmax = 132
-),samples = 10000)
+),samples = 1000)
 
 plot_samples(preds.slh,steep_merged,
   'Gadus morhua'
 )
 @
 
-<<fig.cap='Predictions of life-history parameters and steepness from life history data for atlantic cod \\emph{Gadus morhua}, using distributions as inputs.',cache=TRUE>>=
+<<Cod3,fig.cap='Predictions of life-history parameters and steepness from life history data for atlantic cod \\emph{Gadus morhua}, using distributions as inputs.'>>=
 m.k <- mean(as.numeric(subset(steep_merged,
                               subset = species == 'Gadus morhua',
                               select = 'k')$k))
@@ -496,7 +507,7 @@ sd.k <- sqrt(var(as.numeric(subset(steep_merged,
                                    subset = species == 'Gadus morhua',
                                    select = 'k')$k)))
 
-preds.lh <- BH_net$sample(dists(
+preds.lh <- BH_net_test$sample(dists(
   species =  Fixed('Gadus morhua'),
   swimmode = Fixed('subcarangiform'),
   habit = Fixed('benthopelagic'),
@@ -505,7 +516,7 @@ preds.lh <- BH_net$sample(dists(
   linf = Normal(110,20),
   k = Normal(m.k ,sd.k),
   amax=Fixed(20)
-),10000)
+),1000)
 
 
 plot_samples(preds.lh,steep_merged,'Gadus morhua')
@@ -513,10 +524,9 @@ plot_samples(preds.lh,steep_merged,'Gadus morhua')
 
 \subsubsection{Skipjack tuna}
 
-<<fig.cap='Predictions of life-history parameters and steepness for skipjack tuna \\emph{Katsuwonus pelamis}, without life history data.',cache=TRUE>>=
+<<fig.cap='Predictions of life-history parameters and steepness for skipjack tuna \\emph{Katsuwonus pelamis}, without life history data.'>>=
 
 # predictions
-
 BH_net_test$fit(subset(steep_reduced,
                        species!='Katsuwonus pelamis'),
                 impute=T)
@@ -524,21 +534,22 @@ BH_net_test$fit(subset(steep_reduced,
 Kp_pred <- BH_net_test$sample(list(
   species = 'Katsuwonus pelamis',
   family = 'Scombridae'
-), samples=10000)
+), samples=1000)
 
 plot_samples(Kp_pred,steep_merged,
   'Katsuwonus pelamis'
 )
+
 @
 
-<<fig.cap='Predictions of life-history parameters and steepness from life history data for skipjack tuna \\emph{Katsuwonus pelamis}, using distributions on limited life history parameters as inputs.',cache=TRUE>>=
+<<fig.cap='Predictions of life-history parameters and steepness from life history data for skipjack tuna \\emph{Katsuwonus pelamis}, using distributions on limited life history parameters as inputs.'>>=
 
-Kp_pred.slh <- BH_net$sample(dists(
+Kp_pred.slh <- BH_net_test$sample(dists(
   species = Fixed('Katsuwonus pelamis'),
   family = Fixed('Scombridae'),
   depthmax = Fixed(260),
   lmax = Fixed(90.5)
-),10000)
+),1000)
 
 plot_samples(Kp_pred.slh,steep_merged,
   'Katsuwonus pelamis'
@@ -546,7 +557,7 @@ plot_samples(Kp_pred.slh,steep_merged,
 
 @
 
-<<fig.cap='Predictions of life-history parameters and steepness from life history data for skipjack tuna \\emph{Katsuwonus pelamis}, using distributions as inputs.',cache=TRUE>>=
+<<fig.cap='Predictions of life-history parameters and steepness from life history data for skipjack tuna \\emph{Katsuwonus pelamis}, using distributions as inputs.'>>=
 
 m.k <- mean(as.numeric(subset(steep_merged,
                               subset = species == 'Katsuwonus pelamis',
@@ -556,14 +567,14 @@ sd.k <- sqrt(var(as.numeric(subset(steep_merged,
                                    subset = species == 'Katsuwonus pelamis',
                                    select = 'k')$k)))
 
-Kp_pred.lh <- BH_net$sample(dists(
+Kp_pred.lh <- BH_net_test$sample(dists(
   species = Fixed('Katsuwonus pelamis'),
   family = Fixed('Scombridae'),
   depthmax = Fixed(260),
   lmax = Fixed(90.5),
   linf = Normal(80,10),
   k = Normal(m.k ,sd.k)
-),10000)
+),1000)
 
 plot_samples(Kp_pred.lh,steep_merged,
   'Katsuwonus pelamis'
@@ -572,7 +583,9 @@ plot_samples(Kp_pred.lh,steep_merged,
 
 \subsubsection{Snapper}
 
-<<fig.cap='Predictions of life-history parameters and steepness from life history data for snapper \\emph{Pagrus auratus}, using distributions as inputs.',cache=TRUE>>=
+Life history data were taken from the stock assessment plenary, fishbase as well as individual Snapper assessments. The assumed value of steepness in SNA1 is 0.85 and 0.9 for SNA7, as determined by the working group. Steepness is fixed at 1 for SNA2, which (as shown in Magel et al. 2013) assumes that recruitment at 20\% of virgin biomass is (with 100\% certainty) equivalent to unfished recruitment.
+
+<<snapper,fig.cap='Predictions of life-history parameters and steepness from life history data for snapper \\emph{Pagrus auratus}, using distributions as inputs.'>>=
 
 BH_net_test$fit(subset(steep_reduced,
                        species!='Pagrus auratus'),
@@ -589,16 +602,20 @@ preds.snapper <- BH_net_test$sample(dists(
   amax = Fixed(60),
   linf = Normal(65,5),
   k = Normal(0.1,0.05)
-),samples = 10000)
+),samples = 1000)
 
 plot_samples(  preds.snapper,steep_merged,
                'Pagrus auratus'
 )
 @
 
+The snapper predictions from the Beverton-Holt steepness node seem to provide sensible estimates (\autoref{fig:snapper}), with a distribution centered around \Sexpr{mean(preds.snapper$mean_BH_z)}, which is reasonably close to estiamtes used in the assessments for SNA1 and SNA7. However, the density near 1 is very low, suggesting that the SNA7 assumption of z=1 is not consistent with life-history traits.
+
 \subsubsection{Hoki}
 
-<<fig.cap='Predictions of life-history parameters and steepness from life history data for hoki \\emph{Macruronus novaezelandiae}, using distributions as inputs.',cache=TRUE>>=
+Hoki life-history parameters were extracted from the 2012 assessment of HOK1. The steepness value in the assessment is .75, reduced from .9, which was used prior to 2008. Estiamtes from the steepness node suggest that even 0.75 is at the upper limit of what life history correlates would suggest (\autoref{fig:hoki}).
+
+<<hoki,fig.cap='Predictions of life-history parameters and steepness from life history data for hoki \\emph{Macruronus novaezelandiae}, using distributions as inputs.'>>=
 
 BH_net_test$fit(subset(steep_reduced,
                        species!='Macruronus novaezelandiae'),
@@ -615,7 +632,7 @@ preds.hoki <- BH_net_test$sample(dists(
   amax = Fixed(25),
   linf = Normal(100,10),
   k = Normal(0.2,0.06)
-),samples = 10000)
+),samples = 1000)
 
 plot_samples(  preds.hoki,steep_merged,
                'Macruronus novaezelandiae'
@@ -626,9 +643,30 @@ plot_samples(  preds.hoki,steep_merged,
 
 \subsection{Can the steepness node be improved?}
 
-An alternative to using meta-analysis estimates to inform an empirical node would be to repeat simulations based on theory \citep{mangel_2010_reproductive, mangel2013perspective} with species for which sufficient data is available. This subset is probably small, and the simulations would require assumptions about larval/early-juvenile survival. This would be a much trickier start but give consistent priors for both Ricker and B-H. A regression against life history parameters from fish-base could then make it possible to get a predicted distribution from the fishnet. 
+
+Examples for steepness for individual species gave reasonable results, but since the steepness nodes did not produce high predictive power in jackknife tests, the accuracy of the estiamtes in these examples is unclear.The most evident improvement for a steepness node would most likely come from a new meta-analysis of steepness values, using methods outlined in \citet{michielsens_2004_bayesian}. Since both the data and methods are available, this would be a relatively straightforward exercise. An alternative to using meta-analysis estimates to inform an empirical node would be to repeat simulations based on theory \citep{mangel_2010_reproductive, mangel2013perspective} with species for which sufficient data is available. This subset is probably small, and the simulations would require assumptions about larval/early-juvenile survival. The upshot would be that they could give consistent priors for both Ricker and B-H.
 
 \subsection{Suggested developments for fishnets}
+
+Suggestions relating to packaging and ensuring code integrity in the open source context:
+
+\begin{itemize}
+
+\item The code is still somewhat cryptic, and the proto-type object structure will be difficult to digest by some potential users that are more familiar with the classical R object systems such as S3 and S4. The proto approach has its advantages, and writing some good documentation, along with a vignette that explains the object system, would be a good way to make the package more accessible. The documentation would, I imagine, be somewhat more difficult given that packages like roxygen2 or others used for R documentation do no integrate automatically with this structure. 
+
+\item Distributed development can easily lead to modifications by one developer breaking code that others are working on. Having a testing and deployment routine that involves tests over all main features in fishnets would be extremely helpful and could be considered part of the package, such that package builds fail if tests fail (and pull requests should not be accepted if the package does not build successfully). The testthat package seems like an ideal way to achieve this.
+
+\end{itemize}
+
+Other suggestions:
+
+\begin{itemize}
+
+\item Fully Bayesian outputs from the predictions process (i.e., posterior predictive distributions as priors from the Bayser node), which would be more consistent priors in a strict Bayesian sense.
+
+\item A hierarchical model parser, which would take a linear fishnet (i.e., the graph) and transform it into a Bayesian hierarchical model. The fully Bayesian approach has the advantage that estimation and predictions would be consistent over the whole graph, such that likelihoods at one level of the graph are conditional on information at other levels. 
+
+\end{itemize}
 
 \printbibliography
 
