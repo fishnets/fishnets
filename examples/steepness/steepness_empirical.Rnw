@@ -25,12 +25,12 @@ The most promising avenue for a steepness node within fishnets that could be use
 
 Given that the range of steepness varies among the B-H and Ricker S-R functions, steepness estimated from one S-R function is not directly applicable to the other. This posed a non-trivial problem for the development of a general purpose prior for steepness; Ideally, the steepness node should have a method for Ricker and B-H steepness. However, empirical approaches to the specification of prior distributions for steepness have generally focused on either one S-R model (with \citet{michielsens_2004_bayesian} and \citet{forrest2010hierarchical} being the exceptions). \citet{myers_1999_maximum} first provided estimates of B-H steepness for a large number of species and families based on Myers' S-R database. The estimates were simple transformations of the maximum lifetime reproductive rate, which was estimated from a meta-analysis using the Ricker S-R model across all stocks. \citet{michielsens_2004_bayesian} pointed out that fits of the Ricker and B-H functions lead to different estimates for the slope at the origin and different expectations for steepness. The direct transformation from Ricker model parameters to B-H steepness applied in Myers et al. 1999 therefore gives misleading (i.e., overly conservative) results. Furthermore, there is a potentially strong selection bias in the study (for managed, VPA assessed stocks), which could have further biased results at species level by including only a biased subset of populations for any particular species.
 
-Nevertheless, short of doing a new meta-analysis of steepness from the RAM legacy DB or other data source, \citet{myers_1999_maximum} was considered the only possible starting point for an empirical node in fishnets. Estimates for US/Canada west-coast rockfish from \citet{forrest2010hierarchical} were included to improve estimates of empirical relationships with life-history parameters. The reported estimates for the maximum lifetime reproductive rate in \citet{myers_1999_maximum} made it possible to re-calculate the Ricker steepness (alongside the somewhat biased Beverton-Holt steepness reported in their paper). These estimates were then combined with life-history information in fishbase to build a predictive model for steepness within fishnets. Given the complex relationships between life-history parameters and their constraints on steepness, a non-parametric node based on `brter` was considered the most practical starting point.
+Nevertheless, short of doing a new meta-analysis of steepness from the RAM legacy DB or other data source, \citet{myers_1999_maximum} was considered the only possible starting point for an empirical node in fishnets. Estimates for US/Canada west-coast rockfish from \citet{forrest2010hierarchical} were included to improve estimates of empirical relationships with life-history parameters, as were estiamtes for tuna by S. Harley from https://www.wcpfc.int/system/files/SC-7-SA-WP-04\%20\%5BSKJ\%20Assessment-rev1\%5D.pdf. The reported estimates for the maximum lifetime reproductive rate in \citet{myers_1999_maximum} made it possible to re-calculate the Ricker steepness (alongside the somewhat biased Beverton-Holt steepness reported in their paper). These estimates were then combined with life-history information in fishbase to build a predictive model for steepness within fishnets. Given the complex relationships between life-history parameters and their constraints on steepness, a non-parametric node based on `brter` was considered the most practical starting point.
 \section{An empirical steepness node}
 
 \subsection{Data: a collated dataset for steepness}
 
-Empirical estimates based on maximum lifetime reproductive rates were extracted from \citet{myers_1999_maximum}, and both mean B-H and Ricker steepness were recorded (the latter calculated using formulae in \citet{michielsens_2004_bayesian}), along with other parameters reported in \citet{myers_1999_maximum}. These data were augmented with data from \citet{forrest2010hierarchical} for \emph{Sebastes ssp.}. The combined dataset is available in the $\/data\/steepness$ directory as Myers\_et\_al\_steepness\_extended.csv. Data at the family level as also extracted and saved into Myers\_et\_al\_steepness\_families\_extended.csv.
+Empirical estimates based on maximum lifetime reproductive rates were extracted from \citet{myers_1999_maximum}, and both mean B-H and Ricker steepness were recorded (the latter calculated using formulae in \citet{michielsens_2004_bayesian}), along with other parameters reported in \citet{myers_1999_maximum}. These data were augmented with data from \citet{forrest2010hierarchical} for \emph{Sebastes ssp.} and estiatmes from S. Harley for tuna. The combined dataset is available in the $\/data\/steepness$ directory as Myers\_et\_al\_steepness\_extended.csv. Data at the family level as also extracted and saved into Myers\_et\_al\_steepness\_families\_extended.csv.
 
 <<setup,echo=FALSE>>=
 
@@ -466,7 +466,7 @@ plot_samples <- function(samples,
 
 \subsubsection{Atlantic Cod}
 
-The net fits 
+Steepness estiamtes for Atlantic Cod are consistently below the value estiamted in Myers et al., and does not seem to fluctuate much with increasingly detailed life-history information (\autoref{fig:Cod1},\autoref{fig:Cod2},\autoref{fig:Cod3}).
 
 <<Cod1,fig.cap='Predictions of life-history parameters and steepness for atlantic cod \\emph{Gadus morhua}, without life history data.'>>=
 
@@ -524,7 +524,9 @@ plot_samples(preds.lh,steep_merged,'Gadus morhua')
 
 \subsubsection{Skipjack tuna}
 
-<<fig.cap='Predictions of life-history parameters and steepness for skipjack tuna \\emph{Katsuwonus pelamis}, without life history data.'>>=
+Although there is no empirical estiamte for steepness in skipjack, the steepness estiamte is clearly too low given the productivity of skipjack that is assumed in assessments (\autoref{fig:SJ1},\autoref{fig:SJ2},\autoref{fig:SJ3}).
+
+<<SJ1,fig.cap='Predictions of life-history parameters and steepness for skipjack tuna \\emph{Katsuwonus pelamis}, without life history data.'>>=
 
 # predictions
 BH_net_test$fit(subset(steep_reduced,
@@ -542,7 +544,7 @@ plot_samples(Kp_pred,steep_merged,
 
 @
 
-<<fig.cap='Predictions of life-history parameters and steepness from life history data for skipjack tuna \\emph{Katsuwonus pelamis}, using distributions on limited life history parameters as inputs.'>>=
+<<SJ2,fig.cap='Predictions of life-history parameters and steepness from life history data for skipjack tuna \\emph{Katsuwonus pelamis}, using distributions on limited life history parameters as inputs.'>>=
 
 Kp_pred.slh <- BH_net_test$sample(dists(
   species = Fixed('Katsuwonus pelamis'),
@@ -557,7 +559,7 @@ plot_samples(Kp_pred.slh,steep_merged,
 
 @
 
-<<fig.cap='Predictions of life-history parameters and steepness from life history data for skipjack tuna \\emph{Katsuwonus pelamis}, using distributions as inputs.'>>=
+<<SJ3,fig.cap='Predictions of life-history parameters and steepness from life history data for skipjack tuna \\emph{Katsuwonus pelamis}, using distributions as inputs.'>>=
 
 m.k <- mean(as.numeric(subset(steep_merged,
                               subset = species == 'Katsuwonus pelamis',
