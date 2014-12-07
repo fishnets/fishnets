@@ -7,7 +7,7 @@
 \title{Improving steepness priors in \emph{fishnets}}{Improving
   priors for the steepness of the stock-recruitment function within the R package \emph{fishnets}}
 
-\subtitle{}
+\subtitle{Alternative Ricker formulation}
 \author{Philipp Neubauer}
 
 \addbibresource{steepness.bib}
@@ -89,7 +89,7 @@ steep_reduced <- steep_merged %>%
          family, 
          class, 
          order, 
-         mean_BH_z, 
+         mean_R_z, 
          linf, 
          m, 
          fecundity, 
@@ -102,7 +102,7 @@ steep_reduced <- steep_merged %>%
          trophic, 
          depthmax) %>% 
   group_by(order,class,genus,family,species) %>% 
-  summarise(mean_BH_z = unique(mean_BH_z),
+  summarise(mean_R_z = unique(mean_R_z),
             habit = unique(habit),
             trophic = gmean(trophic), 
             linf = gmean(linf), 
@@ -180,23 +180,19 @@ To obtain more data for complex empirical relationships, I implemented an option
 
 \subsection{The empirical steepness node: fishing for predictive power}
 
-The empirical fishnet node to estimate steepness was embedded in a larger fishnet that aimed to build a covariate set (using the $impute~=~T$ option). All empirical nodes leading up to steepness node itself used the Bayser node, and included taxonomic information as random effects. The actual steepness node was initially specified as a $Brter$ node, in order to capture potentially non-linear relationships between steepness and co-variates. After some discussion, the B-H estiamtes from Myers et all were used as these were deemed most useful in the context of NZ stock assessments, which seem to overwhelmingly use B-H S-R functions.
+The empirical fishnet node to estimate steepness was embedded in a larger fishnet that aimed to build a covariate set (using the $impute~=~T$ option). All empirical nodes leading up to steepness node itself used the Bayser node, and included taxonomic information as random effects. The actual steepness node was initially specified as a $Brter$ node, in order to capture potentially non-linear relationships between steepness and co-variates. This example uses the Ricker estimates in the dataset, as an alternative to the biased B-H estiamtes.
 
 <<fitting the steepness node,results='hide'>>=
 
 # build a net for steepnes. 
 # Use Bayesian nodes in an attempt to not overfit
-# Transformations are defined for Beverton-Holt S-R 
+# Transformations are defined for Ricker S-R 
 # parameters to map steepness onto the real line and back.
 
-logit <- function(x) log(x/(1-x))
-logit_inv <- function(xt) 1/(1 + exp(-xt))
-BH_tr <- function(h) h/0.8-0.25
-BH_tr_inv <- function(ht) (ht+0.25)*0.8
-logit_BH <- function(h) logit(BH_tr(h))
-logit_BH_inv <- function(ht) BH_tr_inv(logit_inv(ht))
+R_tr <- function(h) log(h-0.2)
+R_tr_inv <- function(ht) exp(ht)+0.2
 
-BH_net <- Fishnet(
+R_net <- Fishnet(
   species   = SpeciesRandom(),
   genus     = GenusParser(),
   family    = FamilyLookupper(),
@@ -239,7 +235,7 @@ BH_net <- Fishnet(
   
   recsigma  = RecsigmaThorsonEtAl2014(),
   
-  mean_BH_z = Brter(logit_BH(mean_BH_z) ~  habit + 
+  mean_R_z = Brter(tr_R(mean_R_z) ~  habit + 
                       log(linf) + 
                       log(k) + 
                       log(m) + 
@@ -247,14 +243,14 @@ BH_net <- Fishnet(
                       recsigma + 
                       trophic + 
                       log(depthmax),
-                    transform = logit_BH_inv,
+                    transform = tr_R_inv,
                     ntrees =3500,
                     bag.fraction=0.9)
   
 )
 
-# fit the BH_et to the summarised fishbase data
-BH_net$fit(steep_reduced,impute = T)
+# fit the R_et to the summarised fishbase data
+R_net$fit(steep_reduced,impute = T)
 
 @
 
@@ -269,7 +265,7 @@ make_testset <- function(net,org_data,name){
   testset
 }
 
-testset <- make_testset(BH_net,steep_reduced,'mean_BH_z')
+testset <- make_testset(R_net,steep_reduced,'mean_R_z')
 
 # jacknifing - could be done with $cross, 
 # but is implemented here to produce 
@@ -301,25 +297,25 @@ covars <- c('log(linf)',
             'log(depthmax)')
 
 formulae <- vector(,6)
-formulae[1] <- paste('logit_BH(mean_BH_z) ~ ',
+formulae[1] <- paste('tr_R(mean_R_z) ~ ',
                      paste(covars[c(3,4)],collapse = ' + '))
-formulae[2] <- paste('logit_BH(mean_BH_z) ~ ',
+formulae[2] <- paste('tr_R(mean_R_z) ~ ',
                      paste(covars[c(3,4,7)],collapse = ' + '))
-formulae[3] <- paste('logit_BH(mean_BH_z) ~ ',
+formulae[3] <- paste('tr_R(mean_R_z) ~ ',
                      paste(covars[c(2,4,7)],collapse = ' + '))
-formulae[4] <- paste('logit_BH(mean_BH_z) ~ ',
+formulae[4] <- paste('tr_R(mean_R_z) ~ ',
                      paste(covars[c(2,3,4,7)],collapse = ' + '))
-formulae[5] <- paste('logit_BH(mean_BH_z) ~ ',
+formulae[5] <- paste('tr_R(mean_R_z) ~ ',
                      paste(covars[c(1,2,3,4,5,7)],collapse = ' + '))
-formulae[6] <- paste('logit_BH(mean_BH_z) ~ ',
+formulae[6] <- paste('tr_R(mean_R_z) ~ ',
                      paste(covars,collapse = ' + '))
 @
 
 <<testing_brter,results='hide'>>=
-tune <- BH_net$nodes$mean_BH_z$tune(testset,formulae,
-                            folds = sum(!is.na(testset[['mean_BH_z']])))
+tune <- R_net$nodes$mean_R_z$tune(testset,formulae,
+                            folds = sum(!is.na(testset[['mean_R_z']])))
 # 
-steep_cv <- jackknife_cv(testset,BH_net,'mean_BH_z')
+steep_cv <- jackknife_cv(testset,R_net,'mean_R_z')
 @
 
 <<output_brter_jk,fig.cap='Observed vs predicted values from jacknife predictions using the Brter formulation of the empirical steepness node and the best model from the tune method. The black line indicates the $y=x$ line of perfect predictions, the red line is the regression fit to the predicted and observed data.',tidy=TRUE>>=
@@ -337,7 +333,7 @@ Even for the best Brter model, the jackknifing suggests very low predictive powe
 
 <<Bayser steepness node>>=
 
-BH_net$nodes$mean_BH_z  = Bayser(logit_BH(mean_BH_z) ~ f(family,model='iid') + 
+R_net$nodes$mean_R_z  = Bayser(tr_R(mean_R_z) ~ f(family,model='iid') + 
                                    f(habit,model='iid') + 
                                    log(linf) + 
                                    log(k) + 
@@ -346,31 +342,31 @@ BH_net$nodes$mean_BH_z  = Bayser(logit_BH(mean_BH_z) ~ f(family,model='iid') +
                                    log(recsigma) +
                                    log(m)*log(recsigma) + 
                                    log(trophic) + 
-                                   log(depthmax),transform = logit_BH_inv)
+                                   log(depthmax),transform = tr_R_inv)
 
-BH_net$nodes$mean_BH_z$fit(testset)
+R_net$nodes$mean_R_z$fit(testset)
 
 formulae <- vector(,6)
-formulae[1] <- paste('logit_BH(mean_BH_z) ~ ',
+formulae[1] <- paste('tr_R(mean_R_z) ~ ',
                      paste(covars[7],collapse = ' + '))
-formulae[2] <- paste('logit_BH(mean_BH_z) ~ ',
+formulae[2] <- paste('tr_R(mean_R_z) ~ ',
                      "f(family,model='iid')")
-formulae[3] <- paste('logit_BH(mean_BH_z) ~ ',
+formulae[3] <- paste('tr_R(mean_R_z) ~ ',
                      "f(family,model='iid') +",
                      paste(covars[c(3,7)],collapse = ' + '))
-formulae[4] <- paste('logit_BH(mean_BH_z) ~ ',
+formulae[4] <- paste('tr_R(mean_R_z) ~ ',
                      paste(covars[c(2,3,4,7)],collapse = ' + '))
-formulae[5] <- paste('logit_BH(mean_BH_z) ~ ',
+formulae[5] <- paste('tr_R(mean_R_z) ~ ',
                      "f(family,model='iid') +",
                      paste(covars[c(2,3,4,7)],collapse = ' + '))
-formulae[6] <- paste('logit_BH(mean_BH_z) ~ ',
+formulae[6] <- paste('tr_R(mean_R_z) ~ ',
                      "f(family,model='iid') +",
                      "f(habit,model='iid') +",
                      paste(covars[c(2,3,4,7)],collapse = ' + '))
-formulae[7] <- paste('logit_BH(mean_BH_z) ~ ',
+formulae[7] <- paste('tr_R(mean_R_z) ~ ',
                      "f(family,model='iid') +",
                      paste(covars,collapse = ' + '))
-formulae[8] <- paste('logit_BH(mean_BH_z) ~ ',
+formulae[8] <- paste('tr_R(mean_R_z) ~ ',
                      "f(family,model='iid') +",
                      "f(habit,model='iid') +",
                      "log(m)*log(recsigma) +",
@@ -379,9 +375,9 @@ formulae[8] <- paste('logit_BH(mean_BH_z) ~ ',
 @
 
 <<testing,results='hide'>>=
-tune <- BH_net$nodes$mean_BH_z$tune(testset,formulae,folds = sum(!is.na(testset[['mean_BH_z']])))
+tune <- R_net$nodes$mean_R_z$tune(testset,formulae,folds = sum(!is.na(testset[['mean_R_z']])))
 # 
-steep_cv_bayes <- jackknife_cv(testset,BH_net,'mean_BH_z')
+steep_cv_bayes <- jackknife_cv(testset,R_net,'mean_R_z')
 @
 
 
@@ -408,7 +404,7 @@ The examples follow some examples used in the bea2014 node, with additional life
 This example shows how the steepness predictive distribution is shrunk when life-history information is added to the predictions (\autoref{fig:bluenose}). The life-history data particualarly trunkates the upper end of the distribution, sugegsting that steepness values above 0.9 are not consistent with life-history.
 
 <<bluenose,fig.cap=c('Steepness samples from the for bluenose \\emph{Hyperoglyphe antarctica}, without any life history information','Steepness samples from the for bluenose \\emph{Hyperoglyphe antarctica}, using life history information'),cache=TRUE>>=
-bwa <- BH_net$sample(list(
+bwa <- R_net$sample(list(
   species = 'Hyperoglyphe antarctica',
   # Maximum length, temperature and 
   # maximum depth from Fishbase
@@ -424,16 +420,16 @@ bwa <- BH_net$sample(list(
 
 # how much information is gained from life-history
 
-bwa.org <- BH_net$sample(list(
+bwa.org <- R_net$sample(list(
   species = 'Hyperoglyphe antarctica'),samples = 1000)
 
 ggplot(bwa.org) + 
-  geom_bar(aes(x=mean_BH_z,y=..density..),fill='grey40') + 
+  geom_bar(aes(x=mean_R_z,y=..density..),fill='grey40') + 
   scale_x_continuous(limits=c(0.2,1)) + 
   labs(x='Steepness (z)',y='Density')
 
 ggplot(bwa) + 
-  geom_bar(aes(x=mean_BH_z,y=..density..),fill='grey40') + 
+  geom_bar(aes(x=mean_R_z,y=..density..),fill='grey40') + 
   scale_x_continuous(limits=c(0.2,1)) + 
   labs(x='Steepness (z)',y='Density')
 
@@ -445,12 +441,12 @@ This section compares steepness estiamtes from various levels of life-history in
 
 <<preamble,results='hide'>>=
 
-BH_net_test <- BH_net
+R_net_test <- R_net
 
 #' Plot density histograms
 plot_samples <- function(samples,
                          inp_data,
-                         species_,pars=c('linf','k','m','mean_BH_z')){
+                         species_,pars=c('linf','k','m','mean_R_z')){
   datas = subset(inp_data,species==species_)
   
   melted <- melt(samples[,pars])
@@ -472,12 +468,12 @@ Steepness estiamtes for Atlantic Cod are consistently below the value estiamted 
 <<Cod1,fig.cap='Predictions of life-history parameters and steepness for atlantic cod \\emph{Gadus morhua}, without life history data.'>>=
 
 # fit test net
-BH_net_test$fit(subset(steep_reduced,species!='Gadus morhua'),impute = T)
+R_net_test$fit(subset(steep_reduced,species!='Gadus morhua'),impute = T)
 
 
 # predictions
 
-preds.nlh <- BH_net_test$sample(list(
+preds.nlh <- R_net_test$sample(list(
   species = 'Gadus morhua'
 ),samples=1000)
 
@@ -486,7 +482,7 @@ plot_samples(preds.nlh,steep_merged,'Gadus morhua')
 @ 
 
 <<Cod2,fig.cap='Predictions of life-history parameters and steepness from life history data for atlantic cod \\emph{Gadus morhua}, using fixed values as inputs.'>>=
-preds.slh <- BH_net_test$sample(list(
+preds.slh <- R_net_test$sample(list(
   species = 'Gadus morhua',
   swimmode = 'subcarangiform',
   habit = 'benthopelagic',
@@ -508,7 +504,7 @@ sd.k <- sqrt(var(as.numeric(subset(steep_merged,
                                    subset = species == 'Gadus morhua',
                                    select = 'k')$k)))
 
-preds.lh <- BH_net_test$sample(dists(
+preds.lh <- R_net_test$sample(dists(
   species =  Fixed('Gadus morhua'),
   swimmode = Fixed('subcarangiform'),
   habit = Fixed('benthopelagic'),
@@ -530,11 +526,11 @@ The estimated steepness values are clearly too low given the productivity of ski
 <<SJ1,fig.cap='Predictions of life-history parameters and steepness for skipjack tuna \\emph{Katsuwonus pelamis}, without life history data.'>>=
 
 # predictions
-BH_net_test$fit(subset(steep_reduced,
+R_net_test$fit(subset(steep_reduced,
                        species!='Katsuwonus pelamis'),
                 impute=T)
 
-Kp_pred <- BH_net_test$sample(list(
+Kp_pred <- R_net_test$sample(list(
   species = 'Katsuwonus pelamis',
   family = 'Scombridae'
 ), samples=1000)
@@ -547,7 +543,7 @@ plot_samples(Kp_pred,steep_merged,
 
 <<SJ2,fig.cap='Predictions of life-history parameters and steepness from life history data for skipjack tuna \\emph{Katsuwonus pelamis}, using distributions on limited life history parameters as inputs.'>>=
 
-Kp_pred.slh <- BH_net_test$sample(dists(
+Kp_pred.slh <- R_net_test$sample(dists(
   species = Fixed('Katsuwonus pelamis'),
   family = Fixed('Scombridae'),
   depthmax = Fixed(260),
@@ -570,7 +566,7 @@ sd.k <- sqrt(var(as.numeric(subset(steep_merged,
                                    subset = species == 'Katsuwonus pelamis',
                                    select = 'k')$k)))
 
-Kp_pred.lh <- BH_net_test$sample(dists(
+Kp_pred.lh <- R_net_test$sample(dists(
   species = Fixed('Katsuwonus pelamis'),
   family = Fixed('Scombridae'),
   depthmax = Fixed(260),
@@ -590,11 +586,11 @@ Life history data were taken from the stock assessment plenary, fishbase as well
 
 <<snapper,fig.cap='Predictions of life-history parameters and steepness from life history data for snapper \\emph{Pagrus auratus}, using distributions as inputs.'>>=
 
-BH_net_test$fit(subset(steep_reduced,
+R_net_test$fit(subset(steep_reduced,
                        species!='Pagrus auratus'),
                 impute = T)
 
-preds.snapper <- BH_net_test$sample(dists(
+preds.snapper <- R_net_test$sample(dists(
   species = Fixed('Pagrus auratus'),
   family = Fixed('Sparidae'),
   habit = Fixed('benthopelagic'),
@@ -613,7 +609,7 @@ plot_samples(  preds.snapper,steep_merged,
 @
 
 
-The snapper predictions from the Beverton-Holt steepness node seem to provide sensible estimates (\autoref{fig:snapper}), with a distribution centered around \Sexpr{mean(preds.snapper$mean_BH_z)}, which is reasonably close to estiamtes used in the assessments for SNA1 and SNA7. However, the density near 1 is very low, suggesting that the SNA7 assumption of z=1 is not consistent with life-history traits.
+The snapper predictions from the Beverton-Holt steepness node seem to provide sensible estimates (\autoref{fig:snapper}), with a distribution centered around \Sexpr{mean(preds.snapper$mean_R_z)}, which is reasonably close to estiamtes used in the assessments for SNA1 and SNA7. However, the density near 1 is very low, suggesting that the SNA7 assumption of z=1 is not consistent with life-history traits.
 
 \subsubsection{Hoki}
 
@@ -621,11 +617,11 @@ Hoki life-history parameters were extracted from the 2012 assessment of HOK1. Th
 
 <<hoki,fig.cap='Predictions of life-history parameters and steepness from life history data for hoki \\emph{Macruronus novaezelandiae}, using distributions as inputs.'>>=
 
-BH_net_test$fit(subset(steep_reduced,
+R_net_test$fit(subset(steep_reduced,
                        species!='Macruronus novaezelandiae'),
                 impute = T)
 
-preds.hoki <- BH_net_test$sample(dists(
+preds.hoki <- R_net_test$sample(dists(
   species = Fixed('Macruronus novaezelandiae'),
   family = Fixed('Merlucciidae'),
   swimmode = Fixed('subcarangiform'),
