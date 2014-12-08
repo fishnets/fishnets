@@ -6,3 +6,12 @@
 .Rhistory
 .Rproj.user
 *.Rproj
+
+# Latex
+*.aux
+*.log
+*.blg
+*.bbl
+*.out
+*.synctex.gz
+
