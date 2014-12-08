@@ -77,7 +77,7 @@ head(tbl_df(steep_merged))
 
 In order to set up a fishnet that that extracts empirical relationships between steepness and life-history, the merged fishbase/steepness data was aggregated at species level to avoid multiple, possibly contradictory, life-history correlates with steepness. Geometric means were used to aggregate life-history parameters, under the assumption that most follow log-normal distributions.
 
-<<cache=TRUE>>=
+<<>>=
 
 # geometric mean
 gmean <- function(x) exp(mean(log(x),na.rm=T))
@@ -407,7 +407,7 @@ The examples follow some examples used in the bea2014 node, with additional life
 
 This example shows how the steepness predictive distribution is shrunk when life-history information is added to the predictions (\autoref{fig:bluenose}). The life-history data particualarly trunkates the upper end of the distribution, sugegsting that steepness values above 0.9 are not consistent with life-history.
 
-<<bluenose,fig.cap=c('Steepness samples from the for bluenose \\emph{Hyperoglyphe antarctica}, without any life history information','Steepness samples from the for bluenose \\emph{Hyperoglyphe antarctica}, using life history information'),cache=TRUE>>=
+<<bluenose,fig.cap=c('Steepness samples from the for bluenose \\emph{Hyperoglyphe antarctica}, without any life history information','Steepness samples from the for bluenose \\emph{Hyperoglyphe antarctica}, using life history information'),>>=
 bwa <- BH_net$sample(list(
   species = 'Hyperoglyphe antarctica',
   # Maximum length, temperature and 
@@ -643,13 +643,15 @@ plot_samples(  preds.hoki,steep_merged,
 )
 @
 
-\section{Potential further developments}
+\section{Discussion and potential further developments}
+
+Examples for B-H steepness for individual species gave reasonable results for New Zealand stocks, but gave questionable results in the case of Atlantic Cod and especially skipjack tuna. The latter is especialy surprising seeing that the dataset includes data from an analysis of tuna stocks. Since the steepness nodes did not produce high predictive power in jackknife tests, the accuracy of the estimates in these examples is unliekly to be good.
+
+This document analysed data using biased B-H estiamtes; a companion document shows that the unbiased Ricker estiamtes provide a slightly better basis for a predictive node. In that case, the Brter node suggested some predictive power, suggesting that the bias in B-H estimates contributed to obscuring of relationships with life-history parameters. Estiamtes for skipjack were also natably improved with the Ricker S-R data.
 
 \subsection{Can the steepness node be improved?}
 
-Examples for steepness for individual species gave reasonable results for New Zealand stocks, but gave questionable results in the case of Atlantic Cod and especially skipjack tuna. The latter is especialy surprising seeing that the dataset includes data from an analysis of tuna stocks. Since the steepness nodes did not produce high predictive power in jackknife tests, the accuracy of the estiamtes in these examples is unclear. 
-
-The biggest improvement for a steepness node would most likely come from a new meta-analysis of steepness values, using methods outlined in \citet{michielsens_2004_bayesian}. Since both the data and methods are available, this would be a relatively straightforward exercise. Collecting available S-R data over a range of species from primary and grey-litrature, in addition to data available in the RAM SRDB would be an important part of such an analysis.
+The biggest improvement for a steepness node would most likely come from a new meta-analysis of steepness values, using methods outlined in \citet{michielsens_2004_bayesian}. Since both, the data and methods are available, this avenue hold the most promise in improving steepness estiamtes. This could have a substantial benefits for stocks assessments, not just in New Zealand, but elsewhere as well. Collecting available S-R data over a range of species from primary and grey-litrature, in addition to data available in the RAM SRDB would be an important part of such an analysis.
 
 An alternative to using meta-analysis estimates to inform an empirical node would be to perform simulations based on theory \citep{mangel_2010_reproductive, mangel2013perspective}, with species for which sufficient data is available. This subset is probably small, and the simulations would require assumptions about larval/early-juvenile survival. The upshot would be that they could give consistent priors for both Ricker and B-H S-R functions.
 

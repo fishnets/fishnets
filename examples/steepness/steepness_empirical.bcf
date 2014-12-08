@@ -2091,25 +2091,27 @@
     <bcf:citekey order="1">this</bcf:citekey>
     <bcf:citekey order="2">this</bcf:citekey>
     <bcf:citekey order="3">this</bcf:citekey>
-    <bcf:citekey order="4">michielsens_2004_bayesian</bcf:citekey>
-    <bcf:citekey order="5">myers_1999_maximum</bcf:citekey>
-    <bcf:citekey order="6">michielsens_2004_bayesian</bcf:citekey>
-    <bcf:citekey order="7">myers_1999_maximum</bcf:citekey>
-    <bcf:citekey order="8">he_2006_prior</bcf:citekey>
-    <bcf:citekey order="9">rose2001compensatory</bcf:citekey>
-    <bcf:citekey order="10">myers_1999_maximum</bcf:citekey>
+    <bcf:citekey order="4">he_2006_prior</bcf:citekey>
+    <bcf:citekey order="5">rose2001compensatory</bcf:citekey>
+    <bcf:citekey order="6">myers_1999_maximum</bcf:citekey>
+    <bcf:citekey order="7">shertzer2012spawner</bcf:citekey>
+    <bcf:citekey order="8">michielsens_2004_bayesian</bcf:citekey>
+    <bcf:citekey order="9">dorn2002advice</bcf:citekey>
+    <bcf:citekey order="10">forrest2010hierarchical</bcf:citekey>
     <bcf:citekey order="11">michielsens_2004_bayesian</bcf:citekey>
-    <bcf:citekey order="12">shertzer2012spawner</bcf:citekey>
-    <bcf:citekey order="13">michielsens_2004_bayesian</bcf:citekey>
-    <bcf:citekey order="14">dorn2002advice</bcf:citekey>
-    <bcf:citekey order="15">forrest2010hierarchical</bcf:citekey>
+    <bcf:citekey order="12">forrest2010hierarchical</bcf:citekey>
+    <bcf:citekey order="13">myers_1999_maximum</bcf:citekey>
+    <bcf:citekey order="14">michielsens_2004_bayesian</bcf:citekey>
+    <bcf:citekey order="15">myers_1999_maximum</bcf:citekey>
     <bcf:citekey order="16">forrest2010hierarchical</bcf:citekey>
     <bcf:citekey order="17">myers_1999_maximum</bcf:citekey>
-    <bcf:citekey order="18">michielsens_2004_bayesian</bcf:citekey>
-    <bcf:citekey order="19">myers_1999_maximum</bcf:citekey>
-    <bcf:citekey order="20">forrest2010hierarchical</bcf:citekey>
-    <bcf:citekey order="21">mangel_2010_reproductive</bcf:citekey>
-    <bcf:citekey order="21">mangel2013perspective</bcf:citekey>
+    <bcf:citekey order="18">myers_1999_maximum</bcf:citekey>
+    <bcf:citekey order="19">michielsens_2004_bayesian</bcf:citekey>
+    <bcf:citekey order="20">myers_1999_maximum</bcf:citekey>
+    <bcf:citekey order="21">forrest2010hierarchical</bcf:citekey>
+    <bcf:citekey order="22">michielsens_2004_bayesian</bcf:citekey>
+    <bcf:citekey order="23">mangel_2010_reproductive</bcf:citekey>
+    <bcf:citekey order="23">mangel2013perspective</bcf:citekey>
   </bcf:section>
   <bcf:sortlist section="0" type="entry" label="mfish">
   <bcf:sorting>
