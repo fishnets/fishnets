@@ -14,4 +14,9 @@
 *.bbl
 *.out
 *.synctex.gz
+*.bcf
+*-concordance.tex
+*-self.bib
+examples/steepness/steepness_empirical.tex
+
 

@@ -5,3 +5,6 @@ steepness_empirical.pdf: steepness_empirical.tex
 
 steepness_empirical.tex: steepness_empirical.Rnw
 	Rscript --vanilla -e 'require(knitr); knit("steepness_empirical.Rnw")'
+
+clean:
+	rm -f *.aux *.bcf *.bbl *.blg *.out *.log *.run.xml
