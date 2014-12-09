@@ -15,8 +15,8 @@
 \maketitle
 <<setup,echo=FALSE>>=
 
-opts_knit$set(root.dir = '../../')
-opts_chunk$set(message = FALSE,warning=FALSE, dev = "pdf") 
+opts_knit$set(root.dir='../../')
+opts_chunk$set(message=FALSE,warning=FALSE, dev="pdf") 
 options(width=50)
 @
 
@@ -45,7 +45,7 @@ growth, fecundity and larval and adult mortality rates, and
 \citet{rose2001compensatory} provided evidence that empirical
 estimates of steepness follow expectations from life-history theory.
 However, given the multitude of assumptions that need to be made for a
-node based on theory alone \citep[i.e.,][]{mangel_2010_reproductive}, from
+node based on theory alone \citep[i.e., ][]{mangel_2010_reproductive}, from
 larval mortality schedules to fecundity at age, a theoretical node was
 not deemed achievable in the context of fishnets. As an aside, the paper
 by \citet{mangel_2010_reproductive} should be understood as an
@@ -63,7 +63,7 @@ only provided an ad-hoc fit of truncated normal and beta distributions
 to estimates of steepness from stock assessments, for south-east US
 stocks only. They did not provide individual estimates for species.
 Other datasets that provide more formally derived (and unbiased)
-priors for steepness \citep[e.g.,][]{michielsens_2004_bayesian,
+priors for steepness \citep[e.g., ][]{michielsens_2004_bayesian,
 dorn2002advice, forrest2010hierarchical} are too
 narrow to inform over a broad enough taxonomic range for an empirical
 node.
@@ -100,7 +100,7 @@ fishnets. Estimates for US-Canada west-coast rockfish from
 \citet{forrest2010hierarchical} were included to improve estimates of
 empirical relationships with life-history parameters, as were
 estimates for tuna by S.
-Harley \citep{hoyle_2011_stock}.
+Harley \citep{harley_2011_steepness}. Although it should be noded that Ricker estiamtes in that case are biased by the erroneous assumption that Ricker steepness is bound at 1.
 The reported estimates for the maximum lifetime reproductive rate in
 \citet{myers_1999_maximum} made it possible to re-calculate the Ricker
 steepness (alongside the somewhat biased Beverton-Holt steepness
@@ -161,7 +161,7 @@ fb$id <- 1:nrow(fb)
 fb$dummy <- 1.0
 
 # merge with steepness data
-steep_merged <- Steepness$merge(steep,fb)
+steep_merged <- Steepness$merge(steep, fb)
 
 head(tbl_df(steep_merged))
 
@@ -178,7 +178,7 @@ distributions.
 <<>>=
 
 # geometric mean
-gmean <- function(x) exp(mean(log(x),na.rm=T))
+gmean <- function(x) exp(mean(log(x), na.rm=T))
 
 # reduce dataset; gometric means for paramters by species
 steep_reduced <- steep_merged %>% 
@@ -199,20 +199,20 @@ steep_reduced <- steep_merged %>%
          habit, 
          trophic, 
          depthmax) %>% 
-  group_by(order,class,genus,family,species) %>% 
-  summarise(mean_BH_z = unique(mean_BH_z),
-            habit = unique(habit),
-            trophic = gmean(trophic), 
-            linf = gmean(linf), 
-            m = gmean(m), 
-            depthmax = gmean(depthmax),
-            fecundity = gmean(fecundity), 
-            trophic = gmean(trophic), 
-            lmax = gmean(lmax), 
-            lmat = gmean(lmat), 
-            k = gmean(k), 
-            amax = gmean(amax),
-            recsigma = NA) %>% 
+  group_by(order, class, genus, family, species) %>% 
+  summarise(mean_BH_z=unique(mean_BH_z),
+            habit=unique(habit),
+            trophic=gmean(trophic), 
+            linf=gmean(linf), 
+            m=gmean(m), 
+            depthmax=gmean(depthmax),
+            fecundity=gmean(fecundity), 
+            trophic=gmean(trophic), 
+            lmax=gmean(lmax), 
+            lmat=gmean(lmat), 
+            k=gmean(k), 
+            amax=gmean(amax),
+            recsigma=NA) %>% 
   ungroup() %>% 
   data.frame()
 
@@ -240,44 +240,44 @@ node comes with {\tt fit}, {\tt sample}, {\tt predict} and {\tt tune}
 methods:
 
 <<bayser example>>=
-linf = Bayser(log(linf) ~ f(family,model="iid") +
+linf=Bayser(log(linf) ~ f(family,model="iid") +
                 f(order,model="iid") +
                 log(lmax) +
                 habit,exp)
 
 # fitting to data
-linf$fit(steep_reduced[1:1500,])
+linf$fit(steep_reduced[1:1500, ])
 psamp <- 1501:nrow(steep_reduced)
 
 # predicting onto new data
 example_predictions <- 
-    linf$predict(steep_reduced[psamp,])
+    linf$predict(steep_reduced[psamp, ])
 
 nna_data <- !is.na(steep_reduced$lmax[psamp])
 
-predict_df <- data.frame(bayser = example_predictions[nna_data], 
-    observed = steep_reduced[psamp,'linf'][nna_data])
+predict_df <- data.frame(bayser=example_predictions[nna_data], 
+    observed=steep_reduced[psamp,'linf'][nna_data])
 
-linf_brter = Brter(log(linf) ~ family + 
+linf_brter=Brter(log(linf) ~ family + 
     order + log(lmax) + habit, exp)
 
 # fitting to data
 linf_brter$fit(steep_reduced[1:1500, ])
 # predicting onto new data
 example_predictions_brter <- 
-    linf_brter$predict(steep_reduced[psamp,])
+    linf_brter$predict(steep_reduced[psamp, ])
 
 predict_df <- reshape2::melt(
-        data.frame(brter = example_predictions_brter[nna_data],
-        predict_df), id.vars = c('observed')
+        data.frame(brter=example_predictions_brter[nna_data],
+        predict_df), id.vars=c('observed')
     )
 @
 
-<<fig.cap = 'Example predictions for {\\tt linf} as a function of {\\tt lmax} and taxonomy on a subset of Fishbase data, showing that the predictive power in {\\tt Bayser} can be superior to that of {\\tt Brter} when taxonomy is used as a predictor.'>>=
+<<fig.cap='Example predictions for {\\tt linf} as a function of {\\tt lmax} and taxonomy on a subset of Fishbase data, showing that the predictive power in {\\tt Bayser} can be superior to that of {\\tt Brter} when taxonomy is used as a predictor.'>>=
 require(ggplot2)
 
 ggplot(predict_df) + 
-  geom_point(aes(y = value, x = observed, col = variable)) + 
+  geom_point(aes(y=value, x=observed, col=variable)) + 
   geom_abline(slope=1, intercept=0) + 
   theme_bw() + 
   xlab('Data') + 
@@ -344,33 +344,33 @@ logit_BH <- function(h) logit(BH_tr(h))
 logit_BH_inv <- function(ht) BH_tr_inv(logit_inv(ht))
 
 BH_net <- Fishnet(
-  species   = SpeciesRandom(),
-  genus     = GenusParser(),
-  family    = FamilyLookupper(),
-  order     = OrderLookupper(),
-  class     = ClassLookupper(),
+  species  =SpeciesRandom(),
+  genus    =GenusParser(),
+  family   =FamilyLookupper(),
+  order    =OrderLookupper(),
+  class    =ClassLookupper(),
   
-  habit     = TaxonomicImputer('habit'),
-  depthmax  = TaxonomicImputer('depthmax',c(log,exp),5),
-  trophic   = TaxonomicImputer('trophic',c(log,exp),3),
-  lmax      = TaxonomicImputer('lmax',c(log,exp),5),
-  amax      = TaxonomicImputer('amax',c(log,exp),5),
+  habit    =TaxonomicImputer('habit'),
+  depthmax =TaxonomicImputer('depthmax',c(log,exp),5),
+  trophic  =TaxonomicImputer('trophic',c(log,exp),3),
+  lmax     =TaxonomicImputer('lmax',c(log,exp),5),
+  amax     =TaxonomicImputer('amax',c(log,exp),5),
   
-  linf      = Bayser(log(linf) ~ f(family,model="iid") + 
+  linf     =Bayser(log(linf) ~ f(family,model="iid") + 
                        f(class,model="iid") + 
                        log(lmax),exp),
   
-  fecundity = Bayser(log(fecundity) ~ f(family,model="iid") +
+  fecundity=Bayser(log(fecundity) ~ f(family,model="iid") +
                        f(class,model="iid") + 
                        log(linf) + 
                        log(depthmax),exp),
   
-  k         = Bayser(log(k) ~ f(family,model="iid") + 
+  k        =Bayser(log(k) ~ f(family,model="iid") + 
                        log(linf) + 
                        f(habit,model="iid") + 
                        log(depthmax),exp),
   
-  m         = Bayser(log(m) ~ f(family,model="iid") +
+  m        =Bayser(log(m) ~ f(family,model="iid") +
                        f(class,model="iid") + 
                        log(k) + 
                        log(linf) + 
@@ -378,15 +378,15 @@ BH_net <- Fishnet(
                        log(depthmax) + 
                        trophic,exp),
   
-  lmat      = Bayser(log(lmat) ~ f(family,model="iid") + 
+  lmat     =Bayser(log(lmat) ~ f(family,model="iid") + 
                        log(k) + 
                        log(linf) + 
                        f(habit,model="iid") + 
                        log(depthmax),exp),
   
-  recsigma  = RecsigmaThorsonEtAl2014(),
+  recsigma =RecsigmaThorsonEtAl2014(),
   
-  mean_BH_z = Brter(logit_BH(mean_BH_z) ~  habit + 
+  mean_BH_z=Brter(logit_BH(mean_BH_z) ~  habit + 
                       log(linf) + 
                       log(k) + 
                       log(m) + 
@@ -394,14 +394,14 @@ BH_net <- Fishnet(
                       recsigma + 
                       trophic + 
                       log(depthmax),
-                    transform = logit_BH_inv,
+                    transform=logit_BH_inv,
                     ntrees=3500,
                     bag.fraction=0.9)
   
 )
 
 # fit the BH_net to the summarised Fishbase data
-BH_net$fit(steep_reduced,impute = T)
+BH_net$fit(steep_reduced,impute=T)
 
 @
 
@@ -415,7 +415,7 @@ life-history information.
 # Function to make a test set for cross validation
 make_testset <- function(net, org_data, name){
   testset <- data.frame(net$data[, -which(colnames(net$data) == name)], 
-                        name = org_data[name])
+                        name=org_data[name])
   testset
 }
 
@@ -427,7 +427,7 @@ testset <- make_testset(BH_net, steep_reduced, 'mean_BH_z')
 
 jackknife_cv <- function(data, net, node){
   testnet <- net
-  data <- data[!is.na(data[[node]]),]
+  data <- data[!is.na(data[[node]]), ]
   
   pred <- vector(,nrow(data))
   for (i in 1:nrow(data)){
@@ -452,17 +452,17 @@ covars <- c('log(linf)',
 
 formulae <- vector(, 6)
 formulae[1] <- paste('logit_BH(mean_BH_z) ~ ',
-    paste(covars[c(3, 4)], collapse = ' + '))
+    paste(covars[c(3, 4)], collapse=' + '))
 formulae[2] <- paste('logit_BH(mean_BH_z) ~ ',
-    paste(covars[c(3, 4, 7)], collapse = ' + '))
+    paste(covars[c(3, 4, 7)], collapse=' + '))
 formulae[3] <- paste('logit_BH(mean_BH_z) ~ ',
-    paste(covars[c(2, 4, 7)], collapse = ' + '))
+    paste(covars[c(2, 4, 7)], collapse=' + '))
 formulae[4] <- paste('logit_BH(mean_BH_z) ~ ',
-    paste(covars[c(2, 3, 4, 7)], collapse = ' + '))
+    paste(covars[c(2, 3, 4, 7)], collapse=' + '))
 formulae[5] <- paste('logit_BH(mean_BH_z) ~ ',
-    paste(covars[c(1, 2, 3, 4, 5, 7)], collapse = ' + '))
+    paste(covars[c(1, 2, 3, 4, 5, 7)], collapse=' + '))
 formulae[6] <- paste('logit_BH(mean_BH_z) ~ ',
-                     paste(covars, collapse = ' + '))
+                     paste(covars, collapse=' + '))
 @
 
 <<testing_brter,results='hide'>>=
@@ -509,29 +509,29 @@ BH_net$nodes$mean_BH_z$fit(testset)
 
 formulae <- vector(, 6)
 formulae[1] <- paste('logit_BH(mean_BH_z) ~ ',
-    paste(covars[7], collapse = ' + '))
+    paste(covars[7], collapse=' + '))
 formulae[2] <- paste('logit_BH(mean_BH_z) ~ ',
     "f(family, model='iid')")
 formulae[3] <- paste('logit_BH(mean_BH_z) ~ ',
     "f(family, model='iid') +",
-    paste(covars[c(3, 7)], collapse = ' + '))
+    paste(covars[c(3, 7)], collapse=' + '))
 formulae[4] <- paste('logit_BH(mean_BH_z) ~ ',
-    paste(covars[c(2, 3, 4, 7)], collapse = ' + '))
+    paste(covars[c(2, 3, 4, 7)], collapse=' + '))
 formulae[5] <- paste('logit_BH(mean_BH_z) ~ ',
     "f(family, model='iid') +",
-    paste(covars[c(2, 3, 4, 7)], collapse = ' + '))
+    paste(covars[c(2, 3, 4, 7)], collapse=' + '))
 formulae[6] <- paste('logit_BH(mean_BH_z) ~ ',
     "f(family, model='iid') +",
     "f(habit, model='iid') +",
-    paste(covars[c(2, 3, 4, 7)], collapse = ' + '))
+    paste(covars[c(2, 3, 4, 7)], collapse=' + '))
 formulae[7] <- paste('logit_BH(mean_BH_z) ~ ',
     "f(family, model='iid') +",
-    paste(covars, collapse = ' + '))
+    paste(covars, collapse=' + '))
 formulae[8] <- paste('logit_BH(mean_BH_z) ~ ',
     "f(family, model='iid') +",
     "f(habit, model='iid') +",
     "log(m)*log(recsigma) +",
-    paste(covars, collapse = ' + '))
+    paste(covars, collapse=' + '))
 @
 
 <<testing,results='hide'>>=
@@ -578,23 +578,23 @@ above 0.9 are not consistent with life-history.
 
 <<bluenose,fig.cap=c('Steepness samples from the for bluenose \\emph{Hyperoglyphe antarctica}, without any life history information','Steepness samples from the for bluenose \\emph{Hyperoglyphe antarctica}, using life history information'),>>=
 bwa <- BH_net$sample(list(
-  species = 'Hyperoglyphe antarctica',
+  species='Hyperoglyphe antarctica',
   # Maximum length, temperature and 
   # maximum depth from Fishbase
-  lmax = 140,
-  temp = 11,
-  depthmax = 1500,
+  lmax=140,
+  temp=11,
+  depthmax=1500,
   # Female growth and max age from 
   # Horn et al 2010
-  linf = 92.5,
-  k = 0.071,
-  amax = 71  
-),samples = 1000)
+  linf=92.5,
+  k=0.071,
+  amax=71  
+),samples=1000)
 
 # how much information is gained from life-history
 
 bwa.org <- BH_net$sample(list(
-  species = 'Hyperoglyphe antarctica'),samples = 1000)
+  species='Hyperoglyphe antarctica'),samples=1000)
 
 ggplot(bwa.org) + 
   geom_bar(aes(x=mean_BH_z,y=..density..),fill='grey40') + 
@@ -624,12 +624,12 @@ BH_net_test <- BH_net
 plot_samples <- function(samples,
                          inp_data,
                          species_,pars=c('linf','k','m','mean_BH_z')){
-  datas = subset(inp_data,species==species_)
+  datas=subset(inp_data,species==species_)
   
   melted <- melt(samples[,pars])
   data_melted <- melt(datas[,pars])
   ggplot(melted,aes(x=value)) +
-    geom_histogram(aes(y = ..density..),data=data_melted) +
+    geom_histogram(aes(y=..density..),data=data_melted) +
     geom_density(fill=hsv(0,0.7,0.7),alpha=0.5) +
     facet_wrap(~variable,scales='free') + 
     labs(x='',y='Density') + 
@@ -648,13 +648,13 @@ increasingly detailed life-history information
 <<Cod1,fig.cap='Predictions of life-history parameters and steepness for atlantic cod \\emph{Gadus morhua}, without life history data.'>>=
 
 # fit test net
-BH_net_test$fit(subset(steep_reduced,species!='Gadus morhua'),impute = T)
+BH_net_test$fit(subset(steep_reduced,species!='Gadus morhua'),impute=T)
 
 
 # predictions
 
 preds.nlh <- BH_net_test$sample(list(
-  species = 'Gadus morhua'
+  species='Gadus morhua'
 ),samples=1000)
 
 plot_samples(preds.nlh,steep_merged,'Gadus morhua')
@@ -663,12 +663,12 @@ plot_samples(preds.nlh,steep_merged,'Gadus morhua')
 
 <<Cod2,fig.cap='Predictions of life-history parameters and steepness from life history data for atlantic cod \\emph{Gadus morhua}, using fixed values as inputs.'>>=
 preds.slh <- BH_net_test$sample(list(
-  species = 'Gadus morhua',
-  swimmode = 'subcarangiform',
-  habit = 'benthopelagic',
-  depthmax = 600,
-  lmax = 132
-),samples = 1000)
+  species='Gadus morhua',
+  swimmode='subcarangiform',
+  habit='benthopelagic',
+  depthmax=600,
+  lmax=132
+),samples=1000)
 
 plot_samples(preds.slh,steep_merged,
   'Gadus morhua'
@@ -677,21 +677,21 @@ plot_samples(preds.slh,steep_merged,
 
 <<Cod3,fig.cap='Predictions of life-history parameters and steepness from life history data for atlantic cod \\emph{Gadus morhua}, using distributions as inputs.'>>=
 m.k <- mean(as.numeric(subset(steep_merged,
-                              subset = species == 'Gadus morhua',
-                              select = 'k')$k))
+                              subset=species == 'Gadus morhua',
+                              select='k')$k))
 
 sd.k <- sqrt(var(as.numeric(subset(steep_merged,
-                                   subset = species == 'Gadus morhua',
-                                   select = 'k')$k)))
+                                   subset=species == 'Gadus morhua',
+                                   select='k')$k)))
 
 preds.lh <- BH_net_test$sample(dists(
-  species =  Fixed('Gadus morhua'),
-  swimmode = Fixed('subcarangiform'),
-  habit = Fixed('benthopelagic'),
-  depthmax = Fixed(600),
-  lmax = Fixed(132),
-  linf = Normal(110,20),
-  k = Normal(m.k ,sd.k),
+  species= Fixed('Gadus morhua'),
+  swimmode=Fixed('subcarangiform'),
+  habit=Fixed('benthopelagic'),
+  depthmax=Fixed(600),
+  lmax=Fixed(132),
+  linf=Normal(110,20),
+  k=Normal(m.k ,sd.k),
   amax=Fixed(20)
 ),1000)
 
@@ -711,8 +711,8 @@ BH_net_test$fit(subset(steep_reduced,
                 impute=T)
 
 Kp_pred <- BH_net_test$sample(list(
-  species = 'Katsuwonus pelamis',
-  family = 'Scombridae'
+  species='Katsuwonus pelamis',
+  family='Scombridae'
 ), samples=1000)
 
 plot_samples(Kp_pred,steep_merged,
@@ -724,10 +724,10 @@ plot_samples(Kp_pred,steep_merged,
 <<SJ2,fig.cap='Predictions of life-history parameters and steepness from life history data for skipjack tuna \\emph{Katsuwonus pelamis}, using distributions on limited life history parameters as inputs.'>>=
 
 Kp_pred.slh <- BH_net_test$sample(dists(
-  species = Fixed('Katsuwonus pelamis'),
-  family = Fixed('Scombridae'),
-  depthmax = Fixed(260),
-  lmax = Fixed(90.5)
+  species=Fixed('Katsuwonus pelamis'),
+  family=Fixed('Scombridae'),
+  depthmax=Fixed(260),
+  lmax=Fixed(90.5)
 ),1000)
 
 plot_samples(Kp_pred.slh,steep_merged,
@@ -739,20 +739,20 @@ plot_samples(Kp_pred.slh,steep_merged,
 <<SJ3,fig.cap='Predictions of life-history parameters and steepness from life history data for skipjack tuna \\emph{Katsuwonus pelamis}, using distributions as inputs.'>>=
 
 m.k <- mean(as.numeric(subset(steep_merged,
-                              subset = species == 'Katsuwonus pelamis',
-                              select = 'k')$k))
+                              subset=species == 'Katsuwonus pelamis',
+                              select='k')$k))
 
 sd.k <- sqrt(var(as.numeric(subset(steep_merged,
-                                   subset = species == 'Katsuwonus pelamis',
-                                   select = 'k')$k)))
+                                   subset=species == 'Katsuwonus pelamis',
+                                   select='k')$k)))
 
 Kp_pred.lh <- BH_net_test$sample(dists(
-  species = Fixed('Katsuwonus pelamis'),
-  family = Fixed('Scombridae'),
-  depthmax = Fixed(260),
-  lmax = Fixed(90.5),
-  linf = Normal(80,10),
-  k = Normal(m.k ,sd.k)
+  species=Fixed('Katsuwonus pelamis'),
+  family=Fixed('Scombridae'),
+  depthmax=Fixed(260),
+  lmax=Fixed(90.5),
+  linf=Normal(80,10),
+  k=Normal(m.k ,sd.k)
 ),1000)
 
 plot_samples(Kp_pred.lh,steep_merged,
@@ -773,7 +773,7 @@ is (with 100\% certainty) equivalent to unfished recruitment
 
 BH_net_test$fit(subset(steep_reduced,
                        species!='Pagrus auratus'),
-                impute = T)
+                impute=T)
 
 preds.snapper <- BH_net_test$sample(dists(
   species=Fixed('Pagrus auratus'),
@@ -814,7 +814,7 @@ would suggest (\autoref{fig:hoki}).
 
 BH_net_test$fit(subset(steep_reduced,
     species!='Macruronus novaezelandiae'),
-    impute = T)
+    impute=T)
 
 preds.hoki <- BH_net_test$sample(dists(
     species=Fixed('Macruronus novaezelandiae'),
@@ -850,7 +850,7 @@ better basis for a predictive node. In that case, the {\tt Brter} node
 suggested some predictive power, suggesting that the bias in B-H
 estimates contributed to obscuring of relationships with life-history
 parameters. Estimates for skipjack were also notably improved with the
-Ricker S-R data.
+Ricker S-R data. However, this may have been due to biased estiamtes in \citet{harley_2011_steepness}, which assumed an upper bound of 1 for Ricker steepness.
 
 \subsection{Can the steepness node be improved?}
 
