@@ -11,6 +11,9 @@ require(INLA)
 Bayser <- function(formula,transform=identity,factors.min=5){
   self <- extend(Node,'Bayser')
   
+  
+  
+  
   self$formula <- formula
   self$transform <- transform
   self$factors.min <- factors.min
@@ -19,6 +22,7 @@ Bayser <- function(formula,transform=identity,factors.min=5){
   self$predictors <- all.vars(self$formula)[-1]
   
   self$fit <- function(data){    
+
     # Restrict data to rows with variable of interest
     data <- data[!is.na(data[,self$predictand]),]
     # Prepare the data before fiting
@@ -58,7 +62,9 @@ Bayser <- function(formula,transform=identity,factors.min=5){
     
     # subset the fit data to only model components; necessary to concatenate with prediction data
     fdata <- model.frame(paste(self$predictand,'~',paste(self$predictors,collapse='+')),self$fit_data)
-    pdata <- model.frame(paste(self$predictand,'~',paste(self$predictors,collapse='+')),data)
+    pdata <- model.frame(paste(self$predictand,'~',paste(self$predictors,collapse='+')),data,na.action = 'na.pass')
+    
+    if(nrow(pdata)<1) return(NA)
     
     pdata[,self$predictand] <- NA
     
@@ -92,6 +98,29 @@ Bayser <- function(formula,transform=identity,factors.min=5){
     preds <- rnorm(nrow(predictions),mean=predictions$mean,predictions$sd)
     # Apply post transformation
     self$transform(preds)
+  }
+  
+  #' Tune model formulas simple search over a range of values
+  self$tune <-function(data,trials,...){
+    results <- NULL
+    for(formula in trials){
+      cat("formula:",deparse(as.formula(formula)),"\n")
+      self$formula = as.formula(formula)
+      self$predictand <- all.vars(self$formula)[1]
+      self$predictors <- all.vars(self$formula)[-1]
+      results <- rbind(results,data.frame(
+        formula = formula,
+        t(self$cross(data,...)$summary$mean)
+      ))
+    }
+    formula = trials[which.min(results[,3])]
+    self$formula = as.formula(formula)
+    self$predictand <- all.vars(self$formula)[1]
+    self$predictors <- all.vars(self$formula)[-1]
+    list(
+      best = trials[which.min(results[,3])],
+      trials = results
+    )
   }
   
   self

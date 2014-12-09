@@ -27,7 +27,7 @@ Node <- function(){
   #' @param folds Number of folds (number of times that data is split into training and testing datasets)
   #' @param fit Function for fitting model. Should return an object with a "predict" method.
   #' @param ... Other arguments to fit function
-  self$cross <- function(data,folds,pars,jacknife=FALSE){
+  self$cross <- function(data,folds,jacknife=FALSE,...){
     # Begin by removing all data rows with NAs for variable of interest
     data <- model.frame(paste(self$predictand,'~',paste(self$predictors,collapse='+')),data) 
     # data = data[!is.na(data[,self$predictand]),]
@@ -57,7 +57,7 @@ Node <- function(){
       train = data[folder!=fold,]
       test = data[folder==fold,]
       # Fit model to training data
-      self$fit(train,pars)
+      self$fit(train,...)
       #cat(self$brt$gbm.call$predictor.names,'\n')
       # Get predictions for testing data
       preds = self$predict(test)

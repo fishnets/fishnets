@@ -6,3 +6,18 @@
 .Rhistory
 .Rproj.user
 *.Rproj
+
+# Latex
+*.aux
+*.log
+*.blg
+*.bbl
+*.out
+*.synctex.gz
+*.bcf
+*-concordance.tex
+*-self.bib
+examples/steepness/steepness_empirical.run.xml
+examples/steepness/steepness_empirical.tex
+
+
